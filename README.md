@@ -1,6 +1,9 @@
 #### Introduction
 This is a first-person shooter for the blind and visually impaired I wrote in 2004 using Visual BASIC.NET. The game uses audio-only cues to represent enemies and other objects.
 
+#### Support The Project
+This project is open source, so it'll remain free. If you'd like to show your support for it, [please consider donating!](http://paypal.me/munawarb)
+
 #### Background
 In Treasure Hunt, your goal is to stop a mad scientist from completing his experiment of cloning. For some reason, the US doesn't like the idea of people cloning creatures, so you're the lucky one sent in to stop this scientist who goes by the name of James Brutus.
 

@@ -23,7 +23,7 @@ So, on to my next goal! I wanted a tool to take my IL code mess thing, and give 
 
 Using De4dot and .NET Reflector together I was able to recover the source code to a classic. But it wasn't over yet!
 
-If you've reverse-engineered anything in the past, you know that the resulting dump isn't exactly, well, pretty. DotPeek took the IL instructions and translated them into VB (the original language Treasure Hunt was written in.) So some things weren't working right, and my horrible code from 2004 became more horrible in O(1) time after it got imported to a Visual Studio project.
+If you've reverse-engineered anything in the past, you know that the resulting dump isn't exactly, well, pretty. .NET Reflector took the IL instructions and translated them into VB (the original language Treasure Hunt was written in.) So some things weren't working right, and my horrible code from 2004 became more horrible in O(1) time after it got imported to a Visual Studio project.
 
 From the time I first recovered my source code to the GitHub push, it's taken at least three months to get things in order. Most of that time was me running away in fear of what I was looking at. But once I got my wits together, I started to fill in the missing pieces of the map that weren't there. There were litterally chunks of the map missing, as if either .NET Reflector or De4dot were like "well, we don't like this room, so we'll just wipe it out." Or maybe it was testament to how poorly I had coded Treasure Hunt in 2004 to where even ILDasm fell over when giving an IL dump.
 

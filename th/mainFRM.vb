@@ -2811,9 +2811,9 @@ Label_0912:
             '
             'ProgressBar1
             '
-            Me.ProgressBar1.Location = New System.Drawing.Point(0, 0)
+            Me.ProgressBar1.Location = New System.Drawing.Point(172, 121)
             Me.ProgressBar1.Name = "ProgressBar1"
-            Me.ProgressBar1.Size = New System.Drawing.Size(100, 23)
+            Me.ProgressBar1.Size = New System.Drawing.Size(611, 41)
             Me.ProgressBar1.TabIndex = 0
             Me.ProgressBar1.Visible = False
             '
@@ -2821,7 +2821,7 @@ Label_0912:
             '
             Me.AutoScaleBaseSize = New System.Drawing.Size(5, 13)
             Me.BackColor = System.Drawing.SystemColors.Control
-            Me.ClientSize = New System.Drawing.Size(120, 13)
+            Me.ClientSize = New System.Drawing.Size(924, 312)
             Me.Controls.Add(Me.ProgressBar1)
             Me.Cursor = System.Windows.Forms.Cursors.Default
             Me.Font = New System.Drawing.Font("Arial", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
@@ -3502,6 +3502,10 @@ Label_0912:
                 THConstVars.CannotDoKeydown = True
                 Dim winHandle As Long = Me.Handle.ToInt32
                 DXSound.InitDX(winHandle)
+                If (isUpdating()) Then
+                    THConstVars.CannotDoKeydown = True
+                    Exit Sub
+                End If
                 Me.NNumber = DXSound.LoadSound((DXSound.string_0 & "\reg1.wav"))
                 Me.reg()
                 Me.NNumber.Stop()
@@ -5107,39 +5111,43 @@ Label_0123:
         End Sub
 
         Private Sub StartTimer()
-            Dim num As Short
-            Dim num2 As Single
-            goto Label_006D
-        Label_0043:
-            Me.OMove_Tick
-            THConstVars.MWait(100)
-            num = CShort((num + 1))
-        Label_006D:
-            num2 = THConstVars.Difficulty
-            If (num2 <> 1!) Then
-                Select Case num2
-                    Case 2!
-                        If (num >= 6) Then
-                            num = 0
-                            Me.EMove_Tick
-                        End If
-                        goto Label_0043
-                    Case 3!
-                        If (num >= 4) Then
-                            num = 0
-                            Me.EMove_Tick
-                        End If
-                        goto Label_0043
-                End Select
-                If ((num2 = 4!) AndAlso (num >= 1)) Then
+            Try
+                Dim num As Short
+                Dim num2 As Single
+                GoTo Label_006D
+Label_0043:
+                Me.OMove_Tick()
+                THConstVars.MWait(100)
+                num = CShort((num + 1))
+Label_006D:
+                num2 = THConstVars.Difficulty
+                If (num2 <> 1.0!) Then
+                    Select Case num2
+                        Case 2.0!
+                            If (num >= 6) Then
+                                num = 0
+                                Me.EMove_Tick()
+                            End If
+                            GoTo Label_0043
+                        Case 3.0!
+                            If (num >= 4) Then
+                                num = 0
+                                Me.EMove_Tick()
+                            End If
+                            GoTo Label_0043
+                    End Select
+                    If ((num2 = 4.0!) AndAlso (num >= 1)) Then
+                        num = 0
+                        Me.EMove_Tick()
+                    End If
+                ElseIf (num >= 10) Then
                     num = 0
-                    Me.EMove_Tick
+                    Me.EMove_Tick()
                 End If
-            ElseIf (num >= 10) Then
-                num = 0
-                Me.EMove_Tick
-            End If
-            goto Label_0043
+                GoTo Label_0043
+            Catch e As Exception
+                THConstVars.handleException(e)
+            End Try
         End Sub
 
         Private Sub Stats()
@@ -5846,7 +5854,7 @@ Label_0123:
             Me.MenuSound = DXSound.LoadSound((DXSound.SoundPath & "\menus.wav"))
             Me.MenuSound.SetVolume(0)
             DXSound.PlaySound(Me.MenuSound, True, True, False, 0, 0, "", False)
-            downloadUpdate("https://github.com/munawarb/Three-D-Velocity-Binaries/archive/master.zip", "Three-D-Velocity-Binaries-master.zip")
+            downloadUpdate("https://github.com/munawarb/Treasure-Hunt/archive/master.zip", "master.zip")
         End Sub
 
         Private Sub downloadUpdate(url As String, localPath As String)
@@ -5860,9 +5868,11 @@ Label_0123:
         End Sub
 
         Private Sub progressUpdated(sender As Object, e As DownloadProgressChangedEventArgs)
-            If (e.ProgressPercentage <> lastProgress) Then
-                lastProgress = e.ProgressPercentage
-                ProgressBar1.Value = lastProgress
+            Dim progressPercentage As Integer = e.BytesReceived / totalSize * 100
+            System.Diagnostics.Debug.WriteLine(progressPercentage)
+            If (progressPercentage <> Me.lastProgress) Then
+                Me.lastProgress = progressPercentage
+                ProgressBar1.Invoke(Sub() ProgressBar1.Value = Me.lastProgress)
             End If
         End Sub
 
@@ -5873,11 +5883,18 @@ Label_0123:
                 downloadError = True
             End If
             completedDownload = True
+            If (Not downloadError) Then
+                MessageBox.Show("The update download is complete. Click OK to begin installing. Treasure Hunt will restart once the update is complete.", "Download Complete", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+                System.Diagnostics.Process.Start("Updater.exe", "th.exe")
+            Else
+                MessageBox.Show("The update failed to download. Click OK to close the game.", "Update Failed", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End If
+            THF.F.ShutDown()
         End Sub
 
 
         Private Function isUpdating() As Boolean
-            Dim updatever As String = getPageContent("https://raw.githubusercontent.com/munawarb/Three-D-Velocity/master/version")
+            Dim updatever As String = getPageContent("https://raw.githubusercontent.com/munawarb/Treasure-Hunt/master/bin/Debug/version.dat")
             If (updatever.Equals("failed")) Then
                 Return False
             End If
@@ -6139,6 +6156,7 @@ Label_0123:
         Private downloadError As Boolean
         Private completedDownload As Boolean
         Private lastProgress As Integer
+        Private totalSize As Integer = 99047691
     End Class
 End Namespace
 

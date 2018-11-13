@@ -11,6 +11,7 @@ Imports System.Windows.Forms
 Imports System.Net
 Imports System.Security.Authentication
 Imports System.Text
+Imports System.Globalization
 
 
 Namespace th
@@ -2805,20 +2806,31 @@ Label_0912:
 
         <DebuggerStepThrough>
         Private Sub InitializeComponent()
-            Me.components = New Container
-            Me.ToolTip1 = New ToolTip(Me.components)
-            Dim size As New Size(5, 13)
-            Me.AutoScaleBaseSize = size
-            Me.BackColor = SystemColors.Control
-            size = New Size(&H138, &HD5)
-            Me.ClientSize = size
-            Me.Cursor = Cursors.Default
-            Me.Font = New Font("Arial", 8.0!, FontStyle.Regular, GraphicsUnit.Point, 0)
-            Dim point As New System.Drawing.Point(11, 30)
-            Me.Location = point
+            Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
+            Me.SuspendLayout()
+            '
+            'ProgressBar1
+            '
+            Me.ProgressBar1.Location = New System.Drawing.Point(0, 0)
+            Me.ProgressBar1.Name = "ProgressBar1"
+            Me.ProgressBar1.Size = New System.Drawing.Size(100, 23)
+            Me.ProgressBar1.TabIndex = 0
+            Me.ProgressBar1.Visible = False
+            '
+            'mainFRM
+            '
+            Me.AutoScaleBaseSize = New System.Drawing.Size(5, 13)
+            Me.BackColor = System.Drawing.SystemColors.Control
+            Me.ClientSize = New System.Drawing.Size(120, 13)
+            Me.Controls.Add(Me.ProgressBar1)
+            Me.Cursor = System.Windows.Forms.Cursors.Default
+            Me.Font = New System.Drawing.Font("Arial", 8.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+            Me.Location = New System.Drawing.Point(11, 30)
             Me.Name = "mainFRM"
-            Me.RightToLeft = RightToLeft.No
+            Me.RightToLeft = System.Windows.Forms.RightToLeft.No
             Me.Text = "The Hunt"
+            Me.ResumeLayout(False)
+
         End Sub
 
         Private Sub InitVars()
@@ -5825,9 +5837,67 @@ Label_0123:
             End Try
         End Function
 
+        Private Sub updateTo(from As String, toVersion As String, comments As String)
+            Me.Invoke(Sub()
+                          Me.Text = "Downloading update, please wait..."
+                          Me.ProgressBar1.Visible = True
+                      End Sub
+                      )
+            Me.MenuSound = DXSound.LoadSound((DXSound.SoundPath & "\menus.wav"))
+            Me.MenuSound.SetVolume(0)
+            DXSound.PlaySound(Me.MenuSound, True, True, False, 0, 0, "", False)
+            downloadUpdate("https://github.com/munawarb/Three-D-Velocity-Binaries/archive/master.zip", "Three-D-Velocity-Binaries-master.zip")
+        End Sub
+
+        Private Sub downloadUpdate(url As String, localPath As String)
+            If (webClient Is Nothing) Then
+                webClient = New WebClient()
+            End If
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+            AddHandler webClient.DownloadFileCompleted, New System.ComponentModel.AsyncCompletedEventHandler(AddressOf downloadComplete)
+            AddHandler webClient.DownloadProgressChanged, New DownloadProgressChangedEventHandler(AddressOf progressUpdated)
+            webClient.DownloadFileAsync(New Uri(url), localPath)
+        End Sub
+
+        Private Sub progressUpdated(sender As Object, e As DownloadProgressChangedEventArgs)
+            If (e.ProgressPercentage <> lastProgress) Then
+                lastProgress = e.ProgressPercentage
+                ProgressBar1.Value = lastProgress
+            End If
+        End Sub
+
+        Private Sub downloadComplete(sender As Object, e As System.ComponentModel.AsyncCompletedEventArgs)
+            ProgressBar1.Visible = False
+            Me.MenuSound.Stop()
+            If (Not e.Error Is Nothing) Then
+                downloadError = True
+            End If
+            completedDownload = True
+        End Sub
+
+
+        Private Function isUpdating() As Boolean
+            Dim updatever As String = getPageContent("https://raw.githubusercontent.com/munawarb/Three-D-Velocity/master/version")
+            If (updatever.Equals("failed")) Then
+                Return False
+            End If
+            Dim newVersion As Single = Single.Parse(updatever, CultureInfo.InvariantCulture.NumberFormat)
+            Dim oldVersion As Single = Single.Parse(Me.AppVersion, CultureInfo.InvariantCulture.NumberFormat)
+            If (oldVersion < newVersion) Then
+                Dim download As DialogResult = MessageBox.Show("Treasure Hunt version " & newVersion & " is available. You are running version " & oldVersion & ". Would you like to download version " & newVersion & " now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                If (download = DialogResult.Yes) Then
+                    updateTo(Me.AppVersion, updatever, Nothing)
+                    Return True
+                Else
+                    Return False
+                End If
+            End If
+            Return False
+        End Function
+
+
         ' Fields
         Private components As IContainer
-        Public ToolTip1 As ToolTip
         Private Const SupplyRoomX As Short = &H2E
         Private Const SupplyRoomY As Short = 180
         Private Const LookRange As Short = 20
@@ -6064,7 +6134,11 @@ Label_0123:
         Private WNeedle As Short
         Private IsFirstTimeLoading As Boolean
         Private V As Short
+        Friend WithEvents ProgressBar1 As ProgressBar
         Private webClient As WebClient
+        Private downloadError As Boolean
+        Private completedDownload As Boolean
+        Private lastProgress As Integer
     End Class
 End Namespace
 

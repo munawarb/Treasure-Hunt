@@ -8,6 +8,10 @@ Imports System.Diagnostics
 Imports System.Drawing
 Imports System.Runtime.InteropServices
 Imports System.Windows.Forms
+Imports System.Net
+Imports System.Security.Authentication
+Imports System.Text
+
 
 Namespace th
     Public Class mainFRM
@@ -3219,16 +3223,16 @@ Label_0912:
                         Select Case keyCode
                             Case &H53
                                 Me.file_save_click()
-                                GoTo Label_0900
+                                Exit Sub
                             Case &H4C
                                 Me.file_load_click()
-                                GoTo Label_0900
+                                Exit Sub
                             Case &H25
                                 Me.ChangeSpeechRate()
-                                GoTo Label_0900
+                                Exit Sub
                             Case &H27
                                 Me.ChangeSpeechRate()
-                                GoTo Label_0900
+                                Exit Sub
                         End Select
                         If Not Me.NStop Then
                             Me.NStop = True
@@ -3431,12 +3435,12 @@ Label_0912:
                                         Me.VoiceNumber(points)
                                         Me.WDepth = CShort(points)
                                         If Me.NStop Then
-                                            GoTo Label_0900
+                                            Exit Sub
                                         End If
                                         Me.NumWait()
 
                                         If Me.NStop Then
-                                            GoTo Label_0900
+                                            Exit Sub
                                         End If
                                         flag4 = False
                                         Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag4)
@@ -3453,43 +3457,9 @@ Label_0912:
                         End If
                     End If
                 End If
-                GoTo Label_0900
-Label_081C:
-                If ((Information.Err.Number = 9) And ((((Me.px > Me.x) Or (Me.px < 1)) Or (Me.py > Me.y)) Or (Me.py < 1))) Then
-                    If (Me.px < 1) Then
-                        Me.px = 1
-                    End If
-                    If (Me.px > Me.x) Then
-                        Me.px = Me.x
-                    End If
-                    If (Me.py < 1) Then
-                        Me.py = 1
-                    End If
-                    If (Me.py > Me.y) Then
-                        Me.py = Me.y
-                    End If
-                Else
-                    THConstVars.HandleError()
-                End If
-                GoTo Label_0900
-Label_08BB:
-                num8 = -1
-                Select Case num7
-                    Case 0, 1
-                        GoTo Label_08F5
-                    Case 2
-                        GoTo Label_081C
-                End Select
             Catch obj1 As Exception
-                ProjectData.SetProjectError(DirectCast(obj1, Exception))
-                GoTo Label_08BB
+                THConstVars.HandleException(obj1)
             End Try
-Label_08F5:
-            Throw ProjectData.CreateProjectError(-2146828237)
-Label_0900:
-            If (num8 <> 0) Then
-                ProjectData.ClearProjectError()
-            End If
         End Sub
 
         Private Sub mainFRM_KeyUp(ByVal sender As Object, ByVal e As KeyEventArgs)
@@ -3982,129 +3952,117 @@ Label_060A:
 
         Private Sub MovePlayer(ByRef KeyCode As Long, ByRef Shift As Long)
             Dim num4 As Integer
-            Try
-                ProjectData.ClearProjectError()
-                Dim num3 As Integer = 2
-                If Not ((KeyCode = &H10000) And (Not Shift = &H20)) Then
-                    Dim flag As Boolean
-                    Dim str As String
-                    Dim flag2 As Boolean
-                    Me.TX = Me.px
-                    Me.TY = Me.py
-                    If ((Shift = &H26) Or ((Not KeyCode = &H10000) And (Shift = &H20))) Then
-                        If (Me.IsInWater And Not Me.IsResting) Then
-                            If (Shift = &H20) Then
-                                Me.SubPY = CShort((Me.SubPY + 1))
-                                If (Me.SubPY > 5.0!) Then
-                                    Me.py = CShort((Me.py + 1))
-                                    Me.SubPY = 0
-                                End If
-                                Me.DidNotSwim = 0
-                                flag = True
-                            Else
-                                Me.DepthDecrease()
-                            End If
-                        ElseIf ((Not Shift = &H20) AndAlso Not Me.IsResting) Then
-                            If Me.IsDoingGMissile Then
-                                str = "u"
-                                Me.GChangeSpeed(str)
-                            Else
+            Dim num3 As Integer = 2
+            If Not ((KeyCode = &H10000) And (Not Shift = &H20)) Then
+                Dim flag As Boolean
+                Dim str As String
+                Dim flag2 As Boolean
+                Me.TX = Me.px
+                Me.TY = Me.py
+                If ((Shift = &H26) Or ((Not KeyCode = &H10000) And (Shift = &H20))) Then
+                    If (Me.IsInWater And Not Me.IsResting) Then
+                        If (Shift = &H20) Then
+                            Me.SubPY = CShort((Me.SubPY + 1))
+                            If (Me.SubPY > 5.0!) Then
                                 Me.py = CShort((Me.py + 1))
+                                Me.SubPY = 0
                             End If
+                            Me.DidNotSwim = 0
                             flag = True
-                        End If
-                    End If
-                    If (Shift = 40) Then
-                        If Me.IsInWater Then
-                            Me.DepthIncrease()
                         Else
-                            If Me.IsDoingGMissile Then
-                                str = "d"
-                                Me.GChangeSpeed(str)
-                            Else
-                                Me.py = CShort((Me.py - 1))
-                            End If
-                            flag = True
+                            Me.DepthDecrease()
                         End If
-                    End If
-                    If ((Shift = &H25) AndAlso Not Me.IsResting) Then
-                        If Me.IsInWater Then
-                            Me.SubPX = CShort((Me.SubPX - 1))
-                            If (Me.SubPX < 0) Then
-                                Me.SubPX = 5
-                                Me.px = CShort((Me.px - 1))
-                            End If
-                        ElseIf Me.IsDoingGMissile Then
-                            str = "l"
-                            Me.TurnGMissile(str)
+                    ElseIf ((Not Shift = &H20) AndAlso Not Me.IsResting) Then
+                        If Me.IsDoingGMissile Then
+                            str = "u"
+                            Me.GChangeSpeed(str)
                         Else
-                            Me.px = CShort((Me.px - 1))
+                            Me.py = CShort((Me.py + 1))
                         End If
-                        Me.DidNotSwim = 0
                         flag = True
                     End If
-                    If ((Shift = &H27) AndAlso Not Me.IsResting) Then
-                        If Me.IsInWater Then
-                            Me.SubPX = CShort((Me.SubPX + 1))
-                            If (Me.SubPX > 5.0!) Then
-                                Me.SubPX = 0
-                                Me.px = CShort((Me.px + 1))
-                            End If
-                        ElseIf Me.IsDoingGMissile Then
-                            str = "r"
-                            Me.TurnGMissile(str)
+                End If
+                If (Shift = 40) Then
+                    If Me.IsInWater Then
+                        Me.DepthIncrease()
+                    Else
+                        If Me.IsDoingGMissile Then
+                            str = "d"
+                            Me.GChangeSpeed(str)
                         Else
-                            Me.px = CShort((Me.px + 1))
-                        End If
-                        Me.DidNotSwim = 0
-                        flag = True
-                    End If
-                    If (((KeyCode = &H10000) And (Shift = &H20)) AndAlso (Me.IsInWater And Not Me.IsResting)) Then
-                        Me.SubPY = CShort((Me.SubPY - 1))
-                        If (Me.SubPY < 0) Then
-                            Me.SubPY = 5
                             Me.py = CShort((Me.py - 1))
                         End If
-                        Me.DidNotSwim = 0
                         flag = True
                     End If
-                    If ((((Me.px < 1) Or (Me.px > Me.x)) Or (Me.py < 1)) Or (Me.py > Me.y)) Then
-                        flag2 = False
-                        Me.NLS((DXSound.string_0 & "\ncannot.wav"), flag2)
-                        Me.NStop = True
+                End If
+                If ((Shift = &H25) AndAlso Not Me.IsResting) Then
+                    If Me.IsInWater Then
+                        Me.SubPX = CShort((Me.SubPX - 1))
+                        If (Me.SubPX < 0) Then
+                            Me.SubPX = 5
+                            Me.px = CShort((Me.px - 1))
+                        End If
+                    ElseIf Me.IsDoingGMissile Then
+                        str = "l"
+                        Me.TurnGMissile(str)
+                    Else
+                        Me.px = CShort((Me.px - 1))
+                    End If
+                    Me.DidNotSwim = 0
+                    flag = True
+                End If
+                If ((Shift = &H27) AndAlso Not Me.IsResting) Then
+                    If Me.IsInWater Then
+                        Me.SubPX = CShort((Me.SubPX + 1))
+                        If (Me.SubPX > 5.0!) Then
+                            Me.SubPX = 0
+                            Me.px = CShort((Me.px + 1))
+                        End If
+                    ElseIf Me.IsDoingGMissile Then
+                        str = "r"
+                        Me.TurnGMissile(str)
+                    Else
+                        Me.px = CShort((Me.px + 1))
+                    End If
+                    Me.DidNotSwim = 0
+                    flag = True
+                End If
+                If (((KeyCode = &H10000) And (Shift = &H20)) AndAlso (Me.IsInWater And Not Me.IsResting)) Then
+                    Me.SubPY = CShort((Me.SubPY - 1))
+                    If (Me.SubPY < 0) Then
+                        Me.SubPY = 5
+                        Me.py = CShort((Me.py - 1))
+                    End If
+                    Me.DidNotSwim = 0
+                    flag = True
+                End If
+                If ((((Me.px < 1) Or (Me.px > Me.x)) Or (Me.py < 1)) Or (Me.py > Me.y)) Then
+                    flag2 = False
+                    Me.NLS((DXSound.string_0 & "\ncannot.wav"), flag2)
+                    Me.NStop = True
+                    Me.px = Me.TX
+                    Me.py = Me.TY
+                Else
+                    Dim flag3 As Boolean
+                    Dim flag4 As Boolean
+                    Dim num As Short
+                    Dim num2 As Short
+                    Dim flag5 As Boolean
+                    If Me.GetBlock(Me.px, Me.py) Then
                         Me.px = Me.TX
                         Me.py = Me.TY
-                    Else
-                        Dim flag3 As Boolean
-                        Dim flag4 As Boolean
-                        Dim num As Short
-                        Dim num2 As Short
-                        Dim flag5 As Boolean
-                        If Me.GetBlock(Me.px, Me.py) Then
-                            Me.px = Me.TX
-                            Me.py = Me.TY
-                            flag2 = True
-                            flag3 = False
-                            flag4 = False
-                            num = 0
-                            num2 = 0
-                            str = ""
-                            flag5 = False
-                            DXSound.PlaySound(Me.WallCrashSound, flag2, flag3, flag4, num, num2, str, flag5)
-                        ElseIf flag Then
-                            Me.CGrid(Me.TX, Me.TY) = 1.0!
-                            If Me.IsInWater Then
-                                If ((((Shift = &H25) Or (Shift = &H27)) Or (Shift = &H20)) Or ((KeyCode = &H10000) And (Shift = &H20))) Then
-                                    flag5 = True
-                                    flag4 = False
-                                    flag3 = False
-                                    num2 = 0
-                                    num = 0
-                                    str = ""
-                                    flag2 = False
-                                    DXSound.PlaySound(Me.SwimSound, flag5, flag4, flag3, num2, num, str, flag2)
-                                End If
-                            ElseIf Not Me.IsDoingGMissile Then
+                        flag2 = True
+                        flag3 = False
+                        flag4 = False
+                        num = 0
+                        num2 = 0
+                        str = ""
+                        flag5 = False
+                        DXSound.PlaySound(Me.WallCrashSound, flag2, flag3, flag4, num, num2, str, flag5)
+                    ElseIf flag Then
+                        Me.CGrid(Me.TX, Me.TY) = 1.0!
+                        If Me.IsInWater Then
+                            If ((((Shift = &H25) Or (Shift = &H27)) Or (Shift = &H20)) Or ((KeyCode = &H10000) And (Shift = &H20))) Then
                                 flag5 = True
                                 flag4 = False
                                 flag3 = False
@@ -4112,36 +4070,23 @@ Label_060A:
                                 num = 0
                                 str = ""
                                 flag2 = False
-                                DXSound.PlaySound(Me.FootstepSound, flag5, flag4, flag3, num2, num, str, flag2)
+                                DXSound.PlaySound(Me.SwimSound, flag5, flag4, flag3, num2, num, str, flag2)
                             End If
-                            If Not Me.IsDoingGMissile Then
-                                Me.Determine()
-                            End If
+                        ElseIf Not Me.IsDoingGMissile Then
+                            flag5 = True
+                            flag4 = False
+                            flag3 = False
+                            num2 = 0
+                            num = 0
+                            str = ""
+                            flag2 = False
+                            DXSound.PlaySound(Me.FootstepSound, flag5, flag4, flag3, num2, num, str, flag2)
+                        End If
+                        If Not Me.IsDoingGMissile Then
+                            Me.Determine()
                         End If
                     End If
                 End If
-                GoTo Label_04DE
-Label_047F:
-                Me.px = Me.TX
-                Me.py = Me.TY
-                GoTo Label_04DE
-Label_0499:
-                num4 = -1
-                Select Case num3
-                    Case 0, 1
-                        GoTo Label_04D3
-                    Case 2
-                        GoTo Label_047F
-                End Select
-            Catch obj1 As Exception
-                ProjectData.SetProjectError(DirectCast(obj1, Exception))
-                GoTo Label_0499
-            End Try
-Label_04D3:
-            Throw ProjectData.CreateProjectError(-2146828237)
-Label_04DE:
-            If (num4 <> 0) Then
-                ProjectData.ClearProjectError()
             End If
         End Sub
 
@@ -5864,6 +5809,21 @@ Label_0123:
             End If
         End Sub
 
+        Public Function getPageContent(url As String) As String
+            Try
+                If (webClient Is Nothing) Then
+                    webClient = New WebClient()
+                End If
+                Dim output() As Byte = webClient.DownloadData(url)
+                Dim Str As StringBuilder = New StringBuilder()
+                For Each b As Byte In output
+                    Str.Append(ChrW(b))
+                Next b
+                Return Str.ToString()
+            Catch e As System.Net.WebException
+                Return "failed"
+            End Try
+        End Function
 
         ' Fields
         Private components As IContainer
@@ -6104,6 +6064,7 @@ Label_0123:
         Private WNeedle As Short
         Private IsFirstTimeLoading As Boolean
         Private V As Short
+        Private webClient As WebClient
     End Class
 End Namespace
 

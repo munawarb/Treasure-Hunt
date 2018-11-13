@@ -63,6 +63,15 @@ Namespace th
             End If
         End Sub
 
+        Public Shared Sub handleException(e As Exception)
+            FileSystem.Reset()
+            FileSystem.FileOpen(1, (Addendums.FilePath & "\error.log"), OpenMode.Output, OpenAccess.Default, OpenShare.Default, -1)
+            FileSystem.WriteLine(1, New Object() {e.Message})
+            FileSystem.Write(1, New Object() {e.StackTrace})
+            FileSystem.Reset()
+            Interaction.MsgBox("An error of type " & e.Message & " has occurred. Treasure Hunt can't continue, and a log has been generated.", MsgBoxStyle.Critical, "Error")
+            THF.F.ShutDown()
+        End Sub
         Public Shared Sub MWait(ByVal TimeToWait As Long)
             Dim num As Long = (THConstVars.GetTickCount + TimeToWait)
             Do While (THConstVars.GetTickCount <= num)

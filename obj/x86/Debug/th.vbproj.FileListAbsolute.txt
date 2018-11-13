@@ -11,3 +11,10 @@ C:\Users\munawar\projects\th\obj\x86\Debug\th.vbproj.CoreCompileInputs.cache
 C:\Users\munawar\projects\th\obj\x86\Debug\th.vbproj.CopyComplete
 C:\Users\munawar\projects\th\obj\x86\Debug\th.exe
 C:\Users\munawar\projects\th\obj\x86\Debug\th.pdb
+C:\Users\munawar\projects\Treasure-Hunt\obj\x86\Debug\th.vbprojAssemblyReference.cache
+C:\Users\munawar\projects\Treasure-Hunt\obj\x86\Debug\th.vbproj.CoreCompileInputs.cache
+C:\Users\munawar\projects\Treasure-Hunt\obj\x86\Debug\th.exe
+C:\Users\munawar\projects\Treasure-Hunt\obj\x86\Debug\th.pdb
+C:\Users\munawar\projects\Treasure-Hunt\bin\Debug\th.exe
+C:\Users\munawar\projects\Treasure-Hunt\bin\Debug\th.pdb
+C:\Users\munawar\projects\Treasure-Hunt\obj\x86\Debug\th.vbproj.CopyComplete

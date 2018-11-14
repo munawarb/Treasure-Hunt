@@ -39,3 +39,9 @@ You can either download the zip file of the master branch, or if you're normal l
 `git clone https://github.com/munawarb/Treasure-Hunt.git`
  
  Run the file Treasure-Hunt/Bin/Debug/th.exe to start the game. If you find any issues or have suggestions, simply post them on the issues page. And most of all, have fun! It's been quite a challenge for me to get this game working from nothing but a Reactor-protected executable, so I really hope you enjoy this classic. Oh yeah, I removed the demo restrictions. You're welcome.
+ 
+ #### Changes
+ 
+ ##### 4.42 11/13/2018
+ - Treasure Hunt now has an auto updater, and the window layout has been fixed ([#2](../../issues/2))
+ - Exceptions should be logged properly now ([#1](../../issues/1))

@@ -12,6 +12,7 @@ Imports System.Net
 Imports System.Security.Authentication
 Imports System.Text
 Imports System.Globalization
+Imports System.Collections.Generic
 
 
 Namespace th
@@ -23,15 +24,22 @@ Namespace th
             AddHandler MyBase.KeyUp, New KeyEventHandler(AddressOf Me.mainFRM_KeyUp)
             AddHandler MyBase.KeyDown, New KeyEventHandler(AddressOf Me.mainFRM_KeyDown)
             AddHandler MyBase.Closed, New EventHandler(AddressOf Me.mainFRM_Closed)
-            Me.PassageSound = New DirectSoundSecondaryBuffer8(5  - 1) {}
-            Me.DoorSound = New DirectSoundSecondaryBuffer8(5  - 1) {}
+            Me.PassageSound = New DirectSoundSecondaryBuffer8(5 - 1) {}
+            Me.DoorSound = New DirectSoundSecondaryBuffer8(5 - 1) {}
             'Me.grid = New Short(1  - 1, 1  - 1) {}
             'Me.BGrid = New Short(1  - 1, 1  - 1) {}
             'Me.CGrid = New Single(1  - 1, 1  - 1) {}
-            Me.Weapons = New String(8  - 1) {}
-            Me.C = New Single(6  - 1) {}
+            Me.Weapons = New String(8 - 1) {}
+            Me.C = New Single(6 - 1) {}
             Me.InitializeComponent
         End Sub
+
+        Private Function canTakeStep() As Boolean
+            If Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
+                Return True
+            End If
+            Return False
+        End Function
 
         Public Sub AllThingReplace(ByRef X As Short, ByRef Y As Short, ByRef Thing As Short)
             Me.ThingReplace(X, Y, Thing)
@@ -2949,7 +2957,8 @@ Label_0912:
             Me.GunSound = DXSound.LoadSound((DXSound.SoundPath & "\gun.wav"))
             Me.DuelSound = DXSound.LoadSound((DXSound.SoundPath & "\battle.wav"))
             Me.DuelSound.SetVolume(Conversions.ToInteger(Interaction.GetSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(-1600))))
-            Me.FootstepSound = DXSound.LoadSound((DXSound.SoundPath & "\footstep.wav"))
+            Me.Footstep1Sound = DXSound.LoadSound((DXSound.SoundPath & "\footstep.wav"))
+            Me.Footstep2Sound = DXSound.LoadSound((DXSound.SoundPath & "\footstep2.wav"))
             Me.PickUpSWeaponSound = DXSound.LoadSound((DXSound.SoundPath & "\pweapon1.wav"))
             Me.LaserGunSound = DXSound.LoadSound((DXSound.SoundPath & "\sweapon2.wav"))
             Me.GLaunchSound = DXSound.LoadSound((DXSound.SoundPath & "\sweapon1.wav"))
@@ -3215,6 +3224,7 @@ Label_0912:
         Private Sub mainFRM_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs)
             Dim num8 As Integer
             Try
+                Me.inKeyDown = True
                 Dim points As Long
                 ProjectData.ClearProjectError()
                 Dim num7 As Integer = 2
@@ -3338,146 +3348,145 @@ Label_0912:
                             If ((keyCode = 13) And (modifiers = &H10000)) Then
                                 Me.LockUnlockDoor()
                             End If
-                            If (Me.KeyAmount >= 1.0!) Then
-                                Me.KeyAmount = 0
-                                If ((modifiers <> &H10000) And (modifiers <> &H20000)) Then
-                                    Me.NStop = True
-                                    Me.NNumber.Stop()
+                            If ((modifiers <> &H10000) And (modifiers <> &H20000)) Then
+                                Me.NStop = True
+                                Me.NNumber.Stop()
+                            End If
+                            Select Case keyCode
+                                Case &H31
+                                    num6 = 0
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                                Case 50
+                                    num6 = 1
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                                Case &H33
+                                    num6 = 2
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                                Case &H34
+                                    num6 = 3
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                                Case &H35
+                                    num6 = 4
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                                Case &H36
+                                    num6 = 5
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                                Case &H37
+                                    num6 = 6
+                                    Me.SwitchToWeapon(num6)
+                                    Exit Select
+                            End Select
+                            If Me.IsControling Then
+                                Me.challs(CInt(Me.WControl)).ControlChall(modifiers, keyCode)
+                            Else
+                                Me.MovePlayer(modifiers, keyCode)
+                                If ((keyCode = &H4C) And (modifiers <> &H20000)) Then
+                                    Me.SayLocation()
                                 End If
-                                Select Case keyCode
-                                    Case &H31
-                                        num6 = 0
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                    Case 50
-                                        num6 = 1
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                    Case &H33
-                                        num6 = 2
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                    Case &H34
-                                        num6 = 3
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                    Case &H35
-                                        num6 = 4
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                    Case &H36
-                                        num6 = 5
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                    Case &H37
-                                        num6 = 6
-                                        Me.SwitchToWeapon(num6)
-                                        Exit Select
-                                End Select
-                                If Me.IsControling Then
-                                    Me.challs(CInt(Me.WControl)).ControlChall(modifiers, keyCode)
-                                Else
-                                    Me.MovePlayer(modifiers, keyCode)
-                                    If ((keyCode = &H4C) And (modifiers <> &H20000)) Then
-                                        Me.SayLocation()
-                                    End If
-                                    If (keyCode = &H49) Then
-                                        Me.SayInventory()
-                                    End If
-                                    If (keyCode = &H56) Then
-                                        Me.SayHasVisited()
-                                    End If
-                                    If (keyCode = &H41) Then
-                                        flag4 = False
-                                        Me.ReportAmunition(flag4)
-                                    End If
-                                    If (keyCode = &H42) Then
-                                        Me.BuyAmunition()
-                                    End If
-                                    If (keyCode = &H54) Then
-                                        Me.position()
-                                    End If
-                                    If (keyCode = 80) Then
-                                        If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
-                                            flag4 = True
-                                            Me.ControlPanelWork(flag4)
-                                        Else
-                                            Me.NStop = False
-                                            Me.NNumber.Stop()
-                                            points = Me.Points
-                                            Me.VoiceNumber(points)
-                                            Me.Points = CInt(points)
-                                            Me.NStop = True
-                                        End If
-                                    End If
-                                    If (((modifiers <> &H10000) And (keyCode = &H20)) AndAlso (Not Me.IsInWater Or (Me.IsInWater And (Me.WDepth = 0)))) Then
-                                        If Not Me.JustCameFromWater Then
-                                            Me.UseWeapon()
-                                        Else
-                                            Me.JustCameFromWater = False
-                                        End If
-                                    End If
-                                    If (keyCode = &H48) Then
+                                If (keyCode = &H49) Then
+                                    Me.SayInventory()
+                                End If
+                                If (keyCode = &H56) Then
+                                    Me.SayHasVisited()
+                                End If
+                                If (keyCode = &H41) Then
+                                    flag4 = False
+                                    Me.ReportAmunition(flag4)
+                                End If
+                                If (keyCode = &H42) Then
+                                    Me.BuyAmunition()
+                                End If
+                                If (keyCode = &H54) Then
+                                    Me.position()
+                                End If
+                                If (keyCode = 80) Then
+                                    If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
+                                        flag4 = True
+                                        Me.ControlPanelWork(flag4)
+                                    Else
                                         Me.NStop = False
                                         Me.NNumber.Stop()
-
-                                        If Me.UnlimitedHealth Then
-                                            flag4 = False
-                                            Me.NLS((DXSound.string_0 & "\nunlimited.wav"), flag4)
-                                            Me.NStop = True
-                                        Else
-                                            points = Me.h
-                                            Me.VoiceNumber(points)
-                                            Me.h = CShort(points)
-                                            Me.NStop = True
-                                        End If
-                                    End If
-                                    If (keyCode = &H43) Then
-                                        Me.NStop = False
-                                        Me.NNumber.Stop()
-                                        points = Me.NumAlert
+                                        points = Me.Points
                                         Me.VoiceNumber(points)
-                                        Me.NumAlert = CInt(points)
+                                        Me.Points = CInt(points)
                                         Me.NStop = True
                                     End If
-                                    If (keyCode = &H44) Then
-                                        Me.NStop = False
-                                        Me.NNumber.Stop()
-                                        points = Me.WDepth
-                                        Me.VoiceNumber(points)
-                                        Me.WDepth = CShort(points)
-                                        If Me.NStop Then
-                                            Exit Sub
-                                        End If
-                                        Me.NumWait()
+                                End If
+                                If (((modifiers <> &H10000) And (keyCode = &H20)) AndAlso (Not Me.IsInWater Or (Me.IsInWater And (Me.WDepth = 0)))) Then
+                                    If Not Me.JustCameFromWater Then
+                                        Me.UseWeapon()
+                                    Else
+                                        Me.JustCameFromWater = False
+                                    End If
+                                End If
+                                If (keyCode = &H48) Then
+                                    Me.NStop = False
+                                    Me.NNumber.Stop()
 
-                                        If Me.NStop Then
-                                            Exit Sub
-                                        End If
+                                    If Me.UnlimitedHealth Then
                                         flag4 = False
-                                        Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag4)
+                                        Me.NLS((DXSound.string_0 & "\nunlimited.wav"), flag4)
+                                        Me.NStop = True
+                                    Else
+                                        points = Me.h
+                                        Me.VoiceNumber(points)
+                                        Me.h = CShort(points)
                                         Me.NStop = True
                                     End If
-                                    If (((keyCode = 13) And (modifiers <> &H10000)) And (modifiers <> &H20000)) Then
-                                        Me.OpenOrCloseDoor()
+                                End If
+                                If (keyCode = &H43) Then
+                                    Me.NStop = False
+                                    Me.NNumber.Stop()
+                                    points = Me.NumAlert
+                                    Me.VoiceNumber(points)
+                                    Me.NumAlert = CInt(points)
+                                    Me.NStop = True
+                                End If
+                                If (keyCode = &H44) Then
+                                    Me.NStop = False
+                                    Me.NNumber.Stop()
+                                    points = Me.WDepth
+                                    Me.VoiceNumber(points)
+                                    Me.WDepth = CShort(points)
+                                    If Me.NStop Then
+                                        Exit Sub
                                     End If
-                                    If (keyCode = &H52) Then
-                                        Me.ReturnToStartingPoint()
+                                    Me.NumWait()
+
+                                    If Me.NStop Then
+                                        Exit Sub
                                     End If
+                                    flag4 = False
+                                    Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag4)
+                                    Me.NStop = True
+                                End If
+                                If (((keyCode = 13) And (modifiers <> &H10000)) And (modifiers <> &H20000)) Then
+                                    Me.OpenOrCloseDoor()
+                                End If
+                                If (keyCode = &H52) Then
+                                    Me.ReturnToStartingPoint()
                                 End If
                             End If
                         End If
                     End If
                 End If
             Catch obj1 As Exception
-                THConstVars.HandleException(obj1)
+                THConstVars.handleException(obj1)
+            Finally ' So that we can prematurely terminate this subroutine but inKeyDown will still go to off.
+                Me.inKeyDown = False
             End Try
         End Sub
 
         Private Sub mainFRM_KeyUp(ByVal sender As Object, ByVal e As KeyEventArgs)
             Dim keyCode As Short = CShort(e.KeyCode)
             Dim num2 As Short = CShort((e.KeyData / Keys.Shift))
-            Me.KeyAmount = 1
+            ' Me.KeyAmount = 1
         End Sub
 
         Private Sub mainFRM_Load(ByVal sender As Object, ByVal e As EventArgs)
@@ -3992,7 +4001,7 @@ Label_060A:
                         If Me.IsDoingGMissile Then
                             str = "u"
                             Me.GChangeSpeed(str)
-                        Else
+                        ElseIf (canTakeStep()) Then
                             Me.py = CShort((Me.py + 1))
                         End If
                         flag = True
@@ -4005,7 +4014,7 @@ Label_060A:
                         If Me.IsDoingGMissile Then
                             str = "d"
                             Me.GChangeSpeed(str)
-                        Else
+                        ElseIf (canTakeStep()) Then
                             Me.py = CShort((Me.py - 1))
                         End If
                         flag = True
@@ -4021,7 +4030,7 @@ Label_060A:
                     ElseIf Me.IsDoingGMissile Then
                         str = "l"
                         Me.TurnGMissile(str)
-                    Else
+                    ElseIf (canTakeStep()) Then
                         Me.px = CShort((Me.px - 1))
                     End If
                     Me.DidNotSwim = 0
@@ -4037,7 +4046,7 @@ Label_060A:
                     ElseIf Me.IsDoingGMissile Then
                         str = "r"
                         Me.TurnGMissile(str)
-                    Else
+                    ElseIf (canTakeStep()) Then
                         Me.px = CShort((Me.px + 1))
                     End If
                     Me.DidNotSwim = 0
@@ -4088,7 +4097,7 @@ Label_060A:
                                 flag2 = False
                                 DXSound.PlaySound(Me.SwimSound, flag5, flag4, flag3, num2, num, str, flag2)
                             End If
-                        ElseIf Not Me.IsDoingGMissile Then
+                        ElseIf Not Me.IsDoingGMissile And canTakeStep() Then
                             flag5 = True
                             flag4 = False
                             flag3 = False
@@ -4096,10 +4105,15 @@ Label_060A:
                             num = 0
                             str = ""
                             flag2 = False
-                            DXSound.PlaySound(Me.FootstepSound, flag5, flag4, flag3, num2, num, str, flag2)
-                        End If
-                        If Not Me.IsDoingGMissile Then
-                            Me.Determine()
+                            If (Me.whichFootstep = 0) Then
+                                DXSound.PlaySound(Me.Footstep1Sound, flag5, flag4, flag3, num2, num, str, flag2)
+                            Else
+                                DXSound.PlaySound(Me.Footstep2Sound, flag5, flag4, flag3, num2, num, str, flag2)
+                            End If
+                            Me.whichFootstep = whichFootstep Mod maxFootsteps
+                            If Not Me.IsDoingGMissile Then
+                                Me.Determine()
+                            End If
                         End If
                     End If
                 End If
@@ -4146,56 +4160,21 @@ Label_060A:
         End Sub
 
         Private Sub OMove_Tick()
-            Dim num2 As Integer
-            Try
-                ProjectData.ClearProjectError()
-                Dim num As Integer = 2
-                If ((Not ((THConstVars.CannotDoKeydown And Not Me.IsLaunchingControl) And Not Me.IsLaunchingNeedle) AndAlso Not Me.IsInPauseState) AndAlso Me.NStop) Then
-                    If (Me.ASubs(0) >= 10) Then
-                        Me.ASubs(0) = 0
-                        Me.KeyAmount = CShort((Me.KeyAmount + 1))
-                    Else
-                        Me.ASubs(0) = CShort((Me.ASubs(0) + 1))
-                    End If
-                    Me.SetC()
-                    Me.DoIfInWater()
-                    Me.RemoteControlMissile()
-                    Me.EndReflector()
-                    Me.ToCloseToMachine()
-                    Me.DoIfEscapingFromBomb()
-                    Me.CountdownMachine()
-                    Me.GenHealth()
-                    Me.TargetBeep()
-                    Me.TSSRooms()
-                    Dim onlyDoPassage As Boolean = False
-                    Me.FindPassage(onlyDoPassage)
-                    Me.EndControl()
-                    Me.ProjectControl()
-                    Me.ProjectNeedle()
-                    Me.StartMusic()
-                End If
-                GoTo Label_0123
-Label_00DB:
-                THConstVars.HandleError()
-                GoTo Label_0123
-Label_00E2:
-                num2 = -1
-                Select Case num
-                    Case 0, 1
-                        GoTo Label_0118
-                    Case 2
-                        GoTo Label_00DB
-                End Select
-            Catch obj1 As Exception
-                ProjectData.SetProjectError(DirectCast(obj1, Exception))
-                GoTo Label_00E2
-            End Try
-Label_0118:
-            Throw ProjectData.CreateProjectError(-2146828237)
-Label_0123:
-            If (num2 <> 0) Then
-                ProjectData.ClearProjectError()
-            End If
+            Me.SetC()
+            Me.DoIfInWater()
+            Me.RemoteControlMissile()
+            Me.EndReflector()
+            Me.ToCloseToMachine()
+            Me.DoIfEscapingFromBomb()
+            Me.CountdownMachine()
+            Me.GenHealth()
+            Me.TargetBeep()
+            Me.TSSRooms()
+            Me.FindPassage(False)
+            Me.EndControl()
+            Me.ProjectControl()
+            Me.ProjectNeedle()
+            Me.StartMusic()
         End Sub
 
         Private Sub OOCD(ByRef x As Short, ByRef y As Short)
@@ -5113,33 +5092,33 @@ Label_0123:
         Private Sub StartTimer()
             Try
                 Dim num As Short
-                Dim num2 As Single
                 While (True)
-                    Me.OMove_Tick()
+                    If ((Not ((THConstVars.CannotDoKeydown And Not Me.IsLaunchingControl) And Not Me.IsLaunchingNeedle) AndAlso Not Me.IsInPauseState) AndAlso Me.NStop) Then
+                        Me.OMove_Tick()
+                    End If
                     THConstVars.MWait(10)
                     num = CShort((num + 1))
-                    num2 = THConstVars.Difficulty
-                    Select Case num2
+                    Select Case THConstVars.Difficulty
                         Case 1.0!
-                            If (num >= 10) Then
+                            If (num >= 100) Then
                                 num = 0
                                 Me.EMove_Tick()
                             End If
                             Exit Select
                         Case 2.0!
-                            If (num >= 6) Then
+                            If (num >= 60) Then
                                 num = 0
                                 Me.EMove_Tick()
                             End If
                             Exit Select
                         Case 3.0!
-                            If (num >= 4) Then
+                            If (num >= 40) Then
                                 num = 0
                                 Me.EMove_Tick()
                             End If
                             Exit Select
                         Case 4.0!
-                            If (num >= 1) Then
+                            If (num >= 10) Then
                                 num = 0
                                 EMove_Tick()
                             End If
@@ -5560,29 +5539,33 @@ Label_0123:
         End Sub
 
         Private Sub UseWeapon()
-            Select Case Strings.LCase(Me.Weapons(Me.WPos))
-                Case "gun"
-                    Me.shoot
-                    Exit Select
-                Case "sword"
-                    Me.SwingSword
-                    Exit Select
-                Case "bombs"
-                    Me.Bomb
-                    Exit Select
-                Case "laser"
-                    Me.ShootLaser
-                    Exit Select
-                Case "gmissile"
-                    Me.FireRemoteControlMissile
-                    Exit Select
-                Case "reflector"
-                    Me.UseReflector
-                    Exit Select
-                Case "control"
-                    Me.UseControler
-                    Exit Select
-            End Select
+            Dim w As String = Strings.LCase(Me.Weapons(Me.WPos))
+            If ((DateTime.Now - fireDate).TotalMilliseconds() >= fireRates(w)) Then
+                Select Case w
+                    Case "gun"
+                        Me.shoot()
+                        Exit Select
+                    Case "sword"
+                        Me.SwingSword()
+                        Exit Select
+                    Case "bombs"
+                        Me.Bomb()
+                        Exit Select
+                    Case "laser"
+                        Me.ShootLaser()
+                        Exit Select
+                    Case "gmissile"
+                        Me.FireRemoteControlMissile()
+                        Exit Select
+                    Case "reflector"
+                        Me.UseReflector()
+                        Exit Select
+                    Case "control"
+                        Me.UseControler()
+                        Exit Select
+                End Select
+                fireDate = DateTime.Now
+            End If
         End Sub
 
         Private Sub v1(ByRef string_2 As String)
@@ -6006,7 +5989,8 @@ Label_0123:
         Public CharHitSound As DirectSoundSecondaryBuffer8
         Private GunSound As DirectSoundSecondaryBuffer8
         Public DuelSound As DirectSoundSecondaryBuffer8
-        Private FootstepSound As DirectSoundSecondaryBuffer8
+        Private Footstep1Sound As DirectSoundSecondaryBuffer8
+        Private Footstep2Sound As DirectSoundSecondaryBuffer8
         Public CharDieSound As DirectSoundSecondaryBuffer8
         Private SwingSwordSound As DirectSoundSecondaryBuffer8
         Public Treasure As Short
@@ -6112,7 +6096,6 @@ Label_0123:
         Private ExitX As Short
         Private ExitY As Short
         Private JustCameFromWater As Boolean
-        Private KeyAmount As Short
         Private test As Short
         Private DisableTeleports As Boolean
         Private PassageMarker As Short
@@ -6152,6 +6135,13 @@ Label_0123:
         Private WNeedle As Short
         Private IsFirstTimeLoading As Boolean
         Private V As Short
+        ' How many milliseconds between each fire of this weapon if the fire button is being held down.
+        Private fireRates As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer) From {{"gun", 100}, {"sword", 100}, {"bombs", 50}, {"laser", 50}, {"missile", 50}, {"reflector", 50}, {"control", 50}}
+        Private fireDate As DateTime = DateTime.Now
+        Private whichFootstep As Integer
+        Private maxFootsteps As Integer = 2
+        Private isFirstPress As Boolean
+        Private inKeyDown As Boolean
         Friend WithEvents ProgressBar1 As ProgressBar
         Private webClient As WebClient
         Private downloadError As Boolean

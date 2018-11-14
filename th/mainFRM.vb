@@ -5114,37 +5114,38 @@ Label_0123:
             Try
                 Dim num As Short
                 Dim num2 As Single
-                GoTo Label_006D
-Label_0043:
-                Me.OMove_Tick()
-                THConstVars.MWait(100)
-                num = CShort((num + 1))
-Label_006D:
-                num2 = THConstVars.Difficulty
-                If (num2 <> 1.0!) Then
+                While (True)
+                    Me.OMove_Tick()
+                    THConstVars.MWait(10)
+                    num = CShort((num + 1))
+                    num2 = THConstVars.Difficulty
                     Select Case num2
+                        Case 1.0!
+                            If (num >= 10) Then
+                                num = 0
+                                Me.EMove_Tick()
+                            End If
+                            Exit Select
                         Case 2.0!
                             If (num >= 6) Then
                                 num = 0
                                 Me.EMove_Tick()
                             End If
-                            GoTo Label_0043
+                            Exit Select
                         Case 3.0!
                             If (num >= 4) Then
                                 num = 0
                                 Me.EMove_Tick()
                             End If
-                            GoTo Label_0043
+                            Exit Select
+                        Case 4.0!
+                            If (num >= 1) Then
+                                num = 0
+                                EMove_Tick()
+                            End If
+                            Exit Select
                     End Select
-                    If ((num2 = 4.0!) AndAlso (num >= 1)) Then
-                        num = 0
-                        Me.EMove_Tick()
-                    End If
-                ElseIf (num >= 10) Then
-                    num = 0
-                    Me.EMove_Tick()
-                End If
-                GoTo Label_0043
+                End While
             Catch e As Exception
                 THConstVars.handleException(e)
             End Try

@@ -42,6 +42,9 @@ You can either [download the zip file of the master branch](https://github.com/m
  
  #### Changes
  
+ ##### 4.44
+ - The game loop is now much cleaner and no longer runs every tenth of a second. The slow frame rate would force the player to slow down so the game could update the state ([#4](../../issues/4))
+ 
  ##### 4.42 11/13/2018
  - Treasure Hunt now has an auto updater, and the window layout has been fixed ([#2](../../issues/2))
  - Exceptions should be logged properly now ([#1](../../issues/1))

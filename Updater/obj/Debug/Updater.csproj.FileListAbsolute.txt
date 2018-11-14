@@ -1,7 +1,0 @@
-C:\Users\munawar\projects\Treasure-Hunt\Updater\obj\Debug\Updater.csprojAssemblyReference.cache
-C:\Users\munawar\projects\Treasure-Hunt\Updater\obj\Debug\Updater.csproj.CoreCompileInputs.cache
-C:\Users\munawar\projects\Treasure-Hunt\bin\Debug\Updater.exe.config
-C:\Users\munawar\projects\Treasure-Hunt\bin\Debug\Updater.exe
-C:\Users\munawar\projects\Treasure-Hunt\bin\Debug\Updater.pdb
-C:\Users\munawar\projects\Treasure-Hunt\Updater\obj\Debug\Updater.exe
-C:\Users\munawar\projects\Treasure-Hunt\Updater\obj\Debug\Updater.pdb

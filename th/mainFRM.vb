@@ -35,6 +35,93 @@ Namespace th
             Me.isFirstPress = True
         End Sub
 
+        Private Sub sayDepth()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            Me.NStop = False
+            Me.NNumber.Stop()
+            Me.VoiceNumber(Me.WDepth)
+            If Me.NStop Then
+                Exit Sub
+            End If
+            Me.NumWait()
+            If Me.NStop Then
+                Exit Sub
+            End If
+            Me.NLS((DXSound.string_0 & "\ntfeet.wav"), False)
+            Me.NStop = True
+        End Sub
+
+        Private Sub sayNumAlert()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            Me.NStop = False
+            Me.NNumber.Stop()
+            Me.VoiceNumber(Me.NumAlert)
+            Me.NStop = True
+        End Sub
+
+        Private Sub sayHealth()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            Me.NStop = False
+            Me.NNumber.Stop()
+            If Me.UnlimitedHealth Then
+                Me.NLS((DXSound.string_0 & "\nunlimited.wav"), False)
+                Me.NStop = True
+            Else
+                Me.VoiceNumber(Me.h)
+                Me.NStop = True
+            End If
+        End Sub
+
+        Private Sub pauseOrUnpauseGame()
+            If Me.IsInPauseState Then
+                Me.UnmuteSounds()
+                Me.IsInPauseState = False
+                THConstVars.CannotDoKeydown = False
+            ElseIf Not THConstVars.CannotDoKeydown Then
+                Me.MuteSounds()
+                Me.IsInPauseState = True
+                THConstVars.CannotDoKeydown = True
+                DXSound.PlaySound(Me.GetSound, True, False, False, 0, 0, "", False)
+            End If
+        End Sub
+
+        Private Sub changeMusicVolume(action As VolumeAction)
+            Select Case action
+                Case VolumeAction.up
+                    If ((Me.BackgroundSound.GetVolume + 200) > 0) Then
+                        Me.BackgroundSound.SetVolume(0)
+                    Else
+                        Me.BackgroundSound.SetVolume(Me.BackgroundSound.GetVolume + 200)
+                    End If
+                    Exit Select
+                Case VolumeAction.down
+                    If ((Me.BackgroundSound.GetVolume - 200) < -10000) Then
+                        Me.BackgroundSound.SetVolume(-10000)
+                    Else
+                        Me.BackgroundSound.SetVolume(Me.BackgroundSound.GetVolume - 200)
+                    End If
+                    Exit Select
+                Case VolumeAction.mute
+                    Me.BackgroundSound.SetVolume(-10000)
+                    Exit Select
+                Case VolumeAction.unmute
+                    Me.BackgroundSound.SetVolume(0)
+                    Exit Select
+            End Select
+            Me.DuelSound.SetVolume(Me.BackgroundSound.GetVolume)
+            If Me.IsFightingLast Then
+                Me.FinalDuelSound.SetVolume(Me.BackgroundSound.GetVolume)
+            End If
+            Interaction.SaveSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(Me.BackgroundSound.GetVolume))
+            Me.V = CShort(Me.BackgroundSound.GetVolume)
+        End Sub
+
         Private Function canTakeStep() As Boolean
             If (Me.isFirstPress) Then
                 Return True
@@ -442,6 +529,9 @@ Label_05FF:
         End Sub
 
         Private Sub BuyAmunition()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             If (Me.Weapons(Me.WPos) <> "control") Then
                 Me.NStop = False
                 Dim nWait As Boolean = False
@@ -461,7 +551,8 @@ Label_05FF:
                         num2 = num
                         Me.VoiceNumber(num2)
                         num = CShort(num2)
-                        Me.NumWait
+                        Me.NumWait()
+
                         If Me.NStop Then
                             Return
                         End If
@@ -497,7 +588,8 @@ Label_05FF:
                         num2 = num
                         Me.VoiceNumber(num2)
                         num = CShort(num2)
-                        Me.NumWait
+                        Me.NumWait()
+
                         If Me.NStop Then
                             Return
                         End If
@@ -2118,21 +2210,21 @@ Label_0912:
             If (Me.MenuPos < 0) Then
                 Me.MenuPos = 0
             End If
-            Me.HasAlreadyPressedKey = False
-            Do While (Me.CurrentKey <> 13)
-                If Not Me.HasAlreadyPressedKey Then
-                    If ((Me.CurrentKey = &H26) Or (Me.CurrentKey = &H25)) Then
+            Do While (Me.CurrentKey <> Keys.Enter)
+                If Me.isFirstPress Then
+                    If ((Me.CurrentKey = Keys.Up) Or (Me.CurrentKey = Keys.Left)) Then
                         Me.MenuPos = CShort((Me.MenuPos - 1))
                     End If
-                    If ((Me.CurrentKey = 40) Or (Me.CurrentKey = &H27)) Then
+                    If ((Me.CurrentKey = Keys.Down) Or (Me.CurrentKey = Keys.Right)) Then
                         Me.MenuPos = CShort((Me.MenuPos + 1))
                     End If
-                    If (Me.CurrentKey = &H24) Then
+                    If (Me.CurrentKey = Keys.Home) Then
                         Me.MenuPos = 0
                     End If
-                    If (Me.CurrentKey = &H23) Then
+                    If (Me.CurrentKey = Keys.End) Then
                         Me.MenuPos = num2
                     End If
+                    Me.isFirstPress = False
                     If (Me.MenuPos < 0) Then
                         Me.MenuPos = num2
                     End If
@@ -2141,7 +2233,6 @@ Label_0912:
                     End If
                     flag = False
                     Me.NLS((DXSound.string_0 & "\" & array(Me.MenuPos)), flag)
-                    Me.HasAlreadyPressedKey = True
                 End If
                 Application.DoEvents()
             Loop
@@ -2965,6 +3056,9 @@ Label_0912:
         End Sub
 
         Private Sub LockUnlockDoor()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Dim num As Short
             If ((Me.px - 1) > 0) Then
                 num = CShort((Me.px - 1))
@@ -2984,214 +3078,215 @@ Label_0912:
             End If
         End Sub
 
-        Private Sub LookInDir(ByRef KeyCode As Long, ByRef Shift As Long)
-            If ((KeyCode = &H10000) And (Not Shift = &H20)) Then
-                Dim num As Short
-                Dim num2 As Short
-                Dim flag As Boolean
-                Dim gX As Short
-                Dim gY As Short
-                Dim num5 As Short
-                Dim flag2 As Boolean
-                Dim num6 As Long
-                If Me.IsDoingGMissile Then
-                    gX = Me.GX
-                    gY = Me.GY
-                ElseIf Me.IsControling Then
-                    gX = Me.challs(CInt(Me.WControl)).x
-                    gY = Me.challs(CInt(Me.WControl)).y
-                Else
-                    gX = Me.px
-                    gY = Me.py
-                End If
-                Me.NStop = False
-                If (Shift = &H26) Then
-                    Do While (num5 < 20)
-                        num5 = CShort((num5 + 1))
-                        If (CShort((gY + num5)) > Me.y) Then
-                            Me.NStop = True
-                            Return
-                        End If
-                        num = Me.Grid(gX, CShort((gY + num5)))
-                        num2 = Me.BGrid(gX, CShort((gY + num5)))
-                        If ((num > 0) And (num <> Me.PassageMarker)) Then
-                            flag2 = True
-                            Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
-                            If Not Me.NStop Then
-                                If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
-                                    flag2 = True
-                                    Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
-                                    flag2 = True
-                                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
+        Private Sub LookInDir(ByRef KeyCode As Long)
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            Dim num As Short
+            Dim num2 As Short
+            Dim flag As Boolean
+            Dim gX As Short
+            Dim gY As Short
+            Dim num5 As Short
+            Dim flag2 As Boolean
+            Dim num6 As Long
+            If Me.IsDoingGMissile Then
+                gX = Me.GX
+                gY = Me.GY
+            ElseIf Me.IsControling Then
+                gX = Me.challs(CInt(Me.WControl)).x
+                gY = Me.challs(CInt(Me.WControl)).y
+            Else
+                gX = Me.px
+                gY = Me.py
+            End If
+            Me.NStop = False
+            If (KeyCode = Keys.Up) Then
+                Do While (num5 < 20)
+                    num5 = CShort((num5 + 1))
+                    If (CShort((gY + num5)) > Me.y) Then
+                        Me.NStop = True
+                        Return
+                    End If
+                    num = Me.Grid(gX, CShort((gY + num5)))
+                    num2 = Me.BGrid(gX, CShort((gY + num5)))
+                    If ((num > 0) And (num <> Me.PassageMarker)) Then
+                        flag2 = True
+                        Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
+                        If Not Me.NStop Then
+                            If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
+                                flag2 = True
+                                Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
+                                If Me.NStop Then
+                                    Return
                                 End If
-                                num6 = num5
-                                Me.VoiceNumber(num6)
-                                num5 = CShort(num6)
-                                If Not Me.NStop Then
-                                    Me.NumWait()
-
-                                    If Not Me.NStop Then
-                                        flag2 = False
-                                        Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
-                                        Me.NStop = True
-                                    End If
+                                flag2 = True
+                                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
+                                If Me.NStop Then
+                                    Return
                                 End If
                             End If
-                            Return
-                        End If
-                        Application.DoEvents()
-                    Loop
-                    flag2 = False
-                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
-                    flag = True
-                End If
-                If (Shift = 40) Then
-                    Do While (num5 < 20)
-                        num5 = CShort((num5 + 1))
-                        If (CShort((gY - num5)) < 1) Then
-                            Me.NStop = True
-                            Return
-                        End If
-                        num = Me.Grid(gX, CShort((gY - num5)))
-                        num2 = Me.BGrid(gX, CShort((gY - num5)))
-                        If ((num > 0) And (num <> Me.PassageMarker)) Then
-                            flag2 = True
-                            Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
+                            num6 = num5
+                            Me.VoiceNumber(num6)
+                            num5 = CShort(num6)
                             If Not Me.NStop Then
-                                If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
-                                    flag2 = True
-                                    Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
-                                    flag2 = True
-                                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
-                                End If
-                                num6 = num5
-                                Me.VoiceNumber(num6)
-                                num5 = CShort(num6)
-                                If Not Me.NStop Then
-                                    Me.NumWait()
+                                Me.NumWait()
 
-                                    If Not Me.NStop Then
-                                        flag2 = False
-                                        Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
-                                        Me.NStop = True
-                                    End If
+                                If Not Me.NStop Then
+                                    flag2 = False
+                                    Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
+                                    Me.NStop = True
                                 End If
                             End If
-                            Return
                         End If
-                        Application.DoEvents()
-                    Loop
-                    flag2 = False
-                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
-                    flag = True
-                End If
-                If (Shift = &H25) Then
-                    Do While (num5 < 20)
-                        num5 = CShort((num5 + 1))
-                        If (CShort((gX - num5)) < 1) Then
-                            Me.NStop = True
-                            Return
-                        End If
-                        num = Me.Grid(CShort((gX - num5)), gY)
-                        num2 = Me.BGrid(CShort((gX - num5)), gY)
-                        If ((num > 0) And (num <> Me.PassageMarker)) Then
-                            flag2 = True
-                            Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
-                            If Not Me.NStop Then
-                                If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
-                                    flag2 = True
-                                    Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
-                                    flag2 = True
-                                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
+                        Return
+                    End If
+                    Application.DoEvents()
+                Loop
+                flag2 = False
+                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
+                flag = True
+            End If
+            If (KeyCode = Keys.Down) Then
+                Do While (num5 < 20)
+                    num5 = CShort((num5 + 1))
+                    If (CShort((gY - num5)) < 1) Then
+                        Me.NStop = True
+                        Return
+                    End If
+                    num = Me.Grid(gX, CShort((gY - num5)))
+                    num2 = Me.BGrid(gX, CShort((gY - num5)))
+                    If ((num > 0) And (num <> Me.PassageMarker)) Then
+                        flag2 = True
+                        Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
+                        If Not Me.NStop Then
+                            If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
+                                flag2 = True
+                                Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
+                                If Me.NStop Then
+                                    Return
                                 End If
-                                num6 = num5
-                                Me.VoiceNumber(num6)
-                                num5 = CShort(num6)
-                                If Not Me.NStop Then
-                                    Me.NumWait()
-
-                                    If Not Me.NStop Then
-                                        flag2 = False
-                                        Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
-                                        Me.NStop = True
-                                    End If
+                                flag2 = True
+                                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
+                                If Me.NStop Then
+                                    Return
                                 End If
                             End If
-                            Return
-                        End If
-                        Application.DoEvents()
-                    Loop
-                    flag2 = False
-                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
-                    flag = True
-                End If
-                If (Shift = &H27) Then
-                    Do While (num5 < 20)
-                        num5 = CShort((num5 + 1))
-                        If (CShort((gX + num5)) > Me.x) Then
-                            Me.NStop = True
-                            Return
-                        End If
-                        num = Me.Grid(CShort((gX + num5)), gY)
-                        num2 = Me.BGrid(CShort((gX + num5)), gY)
-                        If ((num > 0) And (num <> Me.PassageMarker)) Then
-                            flag2 = True
-                            Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
+                            num6 = num5
+                            Me.VoiceNumber(num6)
+                            num5 = CShort(num6)
                             If Not Me.NStop Then
-                                If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
-                                    flag2 = True
-                                    Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
-                                    flag2 = True
-                                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
-                                    If Me.NStop Then
-                                        Return
-                                    End If
-                                End If
-                                num6 = num5
-                                Me.VoiceNumber(num6)
-                                num5 = CShort(num6)
-                                If Not Me.NStop Then
-                                    Me.NumWait()
+                                Me.NumWait()
 
-                                    If Not Me.NStop Then
-                                        flag2 = False
-                                        Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
-                                        Me.NStop = True
-                                    End If
+                                If Not Me.NStop Then
+                                    flag2 = False
+                                    Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
+                                    Me.NStop = True
                                 End If
                             End If
-                            Return
                         End If
-                        Application.DoEvents()
-                    Loop
-                    flag2 = False
-                    Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
-                    flag = True
-                End If
-                If flag Then
-                    Me.NStop = True
-                End If
+                        Return
+                    End If
+                    Application.DoEvents()
+                Loop
+                flag2 = False
+                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
+                flag = True
+            End If
+            If (KeyCode = Keys.Left) Then
+                Do While (num5 < 20)
+                    num5 = CShort((num5 + 1))
+                    If (CShort((gX - num5)) < 1) Then
+                        Me.NStop = True
+                        Return
+                    End If
+                    num = Me.Grid(CShort((gX - num5)), gY)
+                    num2 = Me.BGrid(CShort((gX - num5)), gY)
+                    If ((num > 0) And (num <> Me.PassageMarker)) Then
+                        flag2 = True
+                        Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
+                        If Not Me.NStop Then
+                            If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
+                                flag2 = True
+                                Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
+                                If Me.NStop Then
+                                    Return
+                                End If
+                                flag2 = True
+                                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
+                                If Me.NStop Then
+                                    Return
+                                End If
+                            End If
+                            num6 = num5
+                            Me.VoiceNumber(num6)
+                            num5 = CShort(num6)
+                            If Not Me.NStop Then
+                                Me.NumWait()
+
+                                If Not Me.NStop Then
+                                    flag2 = False
+                                    Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
+                                    Me.NStop = True
+                                End If
+                            End If
+                        End If
+                        Return
+                    End If
+                    Application.DoEvents()
+                Loop
+                flag2 = False
+                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
+                flag = True
+            End If
+            If (KeyCode = Keys.Right) Then
+                Do While (num5 < 20)
+                    num5 = CShort((num5 + 1))
+                    If (CShort((gX + num5)) > Me.x) Then
+                        Me.NStop = True
+                        Return
+                    End If
+                    num = Me.Grid(CShort((gX + num5)), gY)
+                    num2 = Me.BGrid(CShort((gX + num5)), gY)
+                    If ((num > 0) And (num <> Me.PassageMarker)) Then
+                        flag2 = True
+                        Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
+                        If Not Me.NStop Then
+                            If (((num2 <> 0) And (num2 <> num)) And (num2 <> Me.PassageMarker)) Then
+                                flag2 = True
+                                Me.NLS((DXSound.string_0 & "\and.wav"), flag2)
+                                If Me.NStop Then
+                                    Return
+                                End If
+                                flag2 = True
+                                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num2}, Nothing))), flag2)
+                                If Me.NStop Then
+                                    Return
+                                End If
+                            End If
+                            num6 = num5
+                            Me.VoiceNumber(num6)
+                            num5 = CShort(num6)
+                            If Not Me.NStop Then
+                                Me.NumWait()
+
+                                If Not Me.NStop Then
+                                    flag2 = False
+                                    Me.NLS((DXSound.string_0 & "\ntfeet.wav"), flag2)
+                                    Me.NStop = True
+                                End If
+                            End If
+                        End If
+                        Return
+                    End If
+                    Application.DoEvents()
+                Loop
+                flag2 = False
+                Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
+                flag = True
+            End If
+            If flag Then
+                Me.NStop = True
             End If
         End Sub
 
@@ -3234,8 +3329,30 @@ Label_0912:
                 Me.CurrentKey = keyCode
                 Me.CurrentModifier = modifiers
                 If (Me.isFirstPress) Then
-                    If (e.Control) Then ' If ctrl
-                        If (Me.HasDoneInit) Then
+                    If (Me.HasDoneInit) Then
+                        If (e.Shift) Then
+                            Select Case keyCode
+                                Case Keys.Left, Keys.Right, Keys.Up, Keys.Down
+                                    LookInDir(keyCode)
+                                    Exit Sub
+                                Case Keys.Enter
+                                    LockUnlockDoor()
+                                    Exit Sub
+                                Case Keys.PageUp
+                                    changeMusicVolume(VolumeAction.mute)
+                                    Exit Sub
+                                Case Keys.PageDown
+                                    changeMusicVolume(VolumeAction.unmute)
+                                    Exit Sub
+                            End Select
+                        Else ' If not shift. These keys can be pressed with either the shift key held or released.
+                            Select Case keyCode
+                                Case Keys.Enter
+                                    OpenOrCloseDoor()
+                                    Exit Sub
+                            End Select
+                        End If
+                        If (e.Control) Then ' If ctrl
                             Select Case keyCode
                                 Case Keys.S
                                     Me.file_save_click()
@@ -3255,200 +3372,114 @@ Label_0912:
                                 Me.NNumber.Stop()
                                 Exit Sub
                             End If
-                        End If
-                    End If ' If ctrl
-                    If (keyCode = Keys.F) Then
-                        Dim num6 As Short
-                        Dim flag4 As Boolean
-                        If Me.IsInPauseState Then
-                            Me.UnmuteSounds()
-                            Me.IsInPauseState = False
-                            THConstVars.CannotDoKeydown = False
-                            Exit Sub
-                        ElseIf Not THConstVars.CannotDoKeydown Then
-                            Me.MuteSounds()
-                            Me.IsInPauseState = True
-                            THConstVars.CannotDoKeydown = True
-                            Dim bCloseFirst As Boolean = True
-                            Dim bLoopSound As Boolean = False
-                            Dim performEffects As Boolean = False
-                            Dim x As Short = 0
-                            num6 = 0
-                            Dim dVolume As String = ""
-                            flag4 = False
-                            DXSound.PlaySound(Me.GetSound, bCloseFirst, bLoopSound, performEffects, x, num6, dVolume, flag4)
-                            Exit Sub
-                        End If
-                    End If
-                End If ' If firstPress
-                If (keyCode = 90) Then
-                    points = CLng(Math.Round(CDbl(THConstVars.Difficulty)))
-                    Me.VoiceNumber(points)
-                    THConstVars.Difficulty = points
-                    Me.NumWait()
-                ElseIf Me.IsInMenu Then
-                    Me.HasAlreadyPressedKey = False
-                    Me.NStop = True
-                Else
-                    If (keyCode = &H1B) Then
-                        Me.MainMenu(True)
-                    End If
-                    If Me.HasDoneInit Then
-                        If ((keyCode = &H53) And (modifiers <> &H20000)) Then
-                            Me.Stats()
-                        End If
-                        If ((keyCode = &H21) AndAlso Not Me.IsInPauseState) Then
-                            If (modifiers = &H10000) Then
-                                Me.BackgroundSound.SetVolume(-10000)
-                            ElseIf ((Me.BackgroundSound.GetVolume - 200) <= -10000) Then
-                                Me.BackgroundSound.SetVolume(-10000)
-                            Else
-                                Me.BackgroundSound.SetVolume((Me.BackgroundSound.GetVolume - 200))
-                            End If
-                            Me.DuelSound.SetVolume(Me.BackgroundSound.GetVolume)
-                            If Me.IsFightingLast Then
-                                Me.FinalDuelSound.SetVolume(Me.BackgroundSound.GetVolume)
-                            End If
-                            Interaction.SaveSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(Me.BackgroundSound.GetVolume))
-                            Me.V = CShort(Me.BackgroundSound.GetVolume)
-                        End If
-                        If ((keyCode = &H22) AndAlso Not Me.IsInPauseState) Then
-                            If (modifiers = &H10000) Then
-                                Me.BackgroundSound.SetVolume(0)
-                            ElseIf ((Me.BackgroundSound.GetVolume + 200) >= 0) Then
-                                Me.BackgroundSound.SetVolume(0)
-                            Else
-                                Me.BackgroundSound.SetVolume((Me.BackgroundSound.GetVolume + 200))
-                            End If
-                            Me.DuelSound.SetVolume(Me.BackgroundSound.GetVolume)
-                            If Me.IsFightingLast Then
-                                Me.FinalDuelSound.SetVolume(Me.BackgroundSound.GetVolume)
-                            End If
-                            Interaction.SaveSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(Me.BackgroundSound.GetVolume))
-                            Me.V = CShort(Me.BackgroundSound.GetVolume)
-                        End If
-                    End If
-                    If Not THConstVars.CannotDoKeydown Then
-                        If ((modifiers = &H10000) And ((((keyCode = &H25) Or (keyCode = &H27)) Or (keyCode = &H26)) Or (keyCode = 40))) Then
-                            Me.LookInDir(modifiers, keyCode)
-                        Else
-                            If ((keyCode = 13) And (modifiers = &H10000)) Then
-                                Me.LockUnlockDoor()
-                            End If
-                            If ((modifiers <> &H10000) And (modifiers <> &H20000)) Then
-                                Me.NStop = True
-                                Me.NNumber.Stop()
-                            End If
+                        Else ' if not ctrl, for keys that can be pressed with both ctrl and without
                             Select Case keyCode
-                                Case &H31
-                                    Me.SwitchToWeapon(0)
-                                    Exit Select
-                                Case 50
-                                    Me.SwitchToWeapon(1)
-                                    Exit Select
-                                Case &H33
-                                    Me.SwitchToWeapon(2)
-                                    Exit Select
-                                Case &H34
-                                    Me.SwitchToWeapon(3)
-                                    Exit Select
-                                Case &H35
-                                    Me.SwitchToWeapon(4)
-                                    Exit Select
-                                Case &H36
-                                    Me.SwitchToWeapon(5)
-                                    Exit Select
-                                Case &H37
-                                    Me.SwitchToWeapon(6)
-                                    Exit Select
+                                Case Keys.S
+                                    Me.Stats()
+                                    Exit Sub
                             End Select
-                            If Me.IsControling Then
+                        End If ' if ctrl
+                        ' Here, the keys will register no matter which modifiers are held because there is no modifier conflict
+                        Select Case keyCode
+                            Case Keys.Escape
+                                Me.MainMenu(True)
+                                Exit Sub
+                            Case Keys.F
+                                pauseOrUnpauseGame()
+                                Exit Sub
+                            Case Keys.D1
+                                Me.SwitchToWeapon(0)
+                                Exit Sub
+                            Case Keys.D2
+                                Me.SwitchToWeapon(1)
+                                Exit Sub
+                            Case Keys.D3
+                                Me.SwitchToWeapon(2)
+                                Exit Sub
+                            Case Keys.D4
+                                Me.SwitchToWeapon(3)
+                                Exit Sub
+                            Case Keys.D5
+                                Me.SwitchToWeapon(4)
+                                Exit Sub
+                            Case Keys.D6
+                                Me.SwitchToWeapon(5)
+                                Exit Sub
+                            Case Keys.D7
+                                Me.SwitchToWeapon(6)
+                                Exit Sub
+                            Case Keys.Z
+                                If keyDownDisabled() Then
+                                    Exit Sub
+                                End If
+                                Me.VoiceNumber(CLng(Math.Round(CDbl(THConstVars.Difficulty))))
+                                Me.NumWait()
+                                Exit Sub
+                            Case Keys.L
+                                SayLocation()
+                                Exit Sub
+                            Case Keys.I
+                                Me.SayInventory()
+                                Exit Sub
+                            Case Keys.V
+                                Me.SayHasVisited()
+                                Exit Sub
+                            Case Keys.A
+                                Me.ReportAmunition(False)
+                                Exit Sub
+                            Case Keys.B
+                                Me.BuyAmunition()
+                                Exit Sub
+                            Case Keys.T
+                                Me.position()
+                                Exit Sub
+                            Case Keys.P
+                                If keyDownDisabled() Then
+                                    Exit Sub
+                                End If
+                                If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
+                                    Me.ControlPanelWork(True)
+                                Else
+                                    Me.NStop = False
+                                    Me.NNumber.Stop()
+                                    Me.VoiceNumber(Me.Points)
+                                    Me.NStop = True
+                                End If
+                                Exit Sub
+                            Case Keys.H
+                                sayHealth()
+                                Exit Sub
+                            Case Keys.C
+                                sayNumAlert()
+                                Exit Sub
+                            Case Keys.D
+                                sayDepth()
+                                Exit Sub
+                            Case Keys.R
+                                Me.ReturnToStartingPoint()
+                                Exit Sub
+                        End Select
+                    End If ' If hasDoneInit
+                End If ' If firstPress
+                If Me.HasDoneInit Then
+                    Select Case keyCode
+                        Case Keys.PageUp
+                            changeMusicVolume(VolumeAction.down)
+                            Exit Select
+                        Case Keys.PageDown
+                            changeMusicVolume(VolumeAction.up)
+                            Exit Select
+                    End Select
+                    If Not THConstVars.CannotDoKeydown Then
+                        If Me.IsControling Then
+                            If Not keyDownDisabled() Then
                                 Me.challs(CInt(Me.WControl)).ControlChall(modifiers, keyCode)
-                            Else
-                                Me.MovePlayer(modifiers, keyCode)
-                                If ((keyCode = &H4C) And (modifiers <> &H20000)) Then
-                                    Me.SayLocation()
-                                End If
-                                If (keyCode = &H49) Then
-                                    Me.SayInventory()
-                                End If
-                                If (keyCode = &H56) Then
-                                    Me.SayHasVisited()
-                                End If
-                                If (keyCode = &H41) Then
-                                    Me.ReportAmunition(False)
-                                End If
-                                If (keyCode = &H42) Then
-                                    Me.BuyAmunition()
-                                End If
-                                If (keyCode = &H54) Then
-                                    Me.position()
-                                End If
-                                If (keyCode = 80) Then
-                                    If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
-                                        Me.ControlPanelWork(True)
-                                    Else
-                                        Me.NStop = False
-                                        Me.NNumber.Stop()
-                                        points = Me.Points
-                                        Me.VoiceNumber(points)
-                                        Me.Points = CInt(points)
-                                        Me.NStop = True
-                                    End If
-                                End If
-                                If (((modifiers <> &H10000) And (keyCode = &H20)) AndAlso (Not Me.IsInWater Or (Me.IsInWater And (Me.WDepth = 0)))) Then
-                                    If Not Me.JustCameFromWater Then
-                                        Me.UseWeapon()
-                                    Else
-                                        Me.JustCameFromWater = False
-                                    End If
-                                End If
-                                If (keyCode = &H48) Then
-                                    Me.NStop = False
-                                    Me.NNumber.Stop()
-
-                                    If Me.UnlimitedHealth Then
-                                        Me.NLS((DXSound.string_0 & "\nunlimited.wav"), False)
-                                        Me.NStop = True
-                                    Else
-                                        points = Me.h
-                                        Me.VoiceNumber(points)
-                                        Me.h = CShort(points)
-                                        Me.NStop = True
-                                    End If
-                                End If
-                                If (keyCode = &H43) Then
-                                    Me.NStop = False
-                                    Me.NNumber.Stop()
-                                    points = Me.NumAlert
-                                    Me.VoiceNumber(points)
-                                    Me.NumAlert = CInt(points)
-                                    Me.NStop = True
-                                End If
-                                If (keyCode = &H44) Then
-                                    Me.NStop = False
-                                    Me.NNumber.Stop()
-                                    points = Me.WDepth
-                                    Me.VoiceNumber(points)
-                                    Me.WDepth = CShort(points)
-                                    If Me.NStop Then
-                                        Exit Sub
-                                    End If
-                                    Me.NumWait()
-
-                                    If Me.NStop Then
-                                        Exit Sub
-                                    End If
-                                    Me.NLS((DXSound.string_0 & "\ntfeet.wav"), False)
-                                    Me.NStop = True
-                                End If
-                                If (((keyCode = 13) And (modifiers <> &H10000)) And (modifiers <> &H20000)) Then
-                                    Me.OpenOrCloseDoor()
-                                End If
-                                If (keyCode = &H52) Then
-                                    Me.ReturnToStartingPoint()
-                                End If
                             End If
+                        Else
+                                Me.MovePlayer(modifiers, keyCode)
+                        End If
+                        If Not e.Shift And keyCode = Keys.Space Then
+                            Me.UseWeapon()
                         End If
                     End If
                 End If
@@ -3957,6 +3988,9 @@ Label_060A:
         End Sub
 
         Private Sub MovePlayer(ByRef KeyCode As Long, ByRef Shift As Long)
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Dim num4 As Integer
             Dim num3 As Integer = 2
             If Not ((KeyCode = &H10000) And (Not Shift = &H20)) Then
@@ -4177,6 +4211,9 @@ Label_060A:
         End Sub
 
         Private Sub OpenOrCloseDoor()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Dim num As Short
             Me.OOCD(Me.px, Me.py)
             If ((Me.px - 1) > 0) Then
@@ -4198,6 +4235,9 @@ Label_060A:
         End Sub
 
         Private Sub position()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Dim str As String
             Dim gX As Short
             Dim gY As Short
@@ -4661,6 +4701,9 @@ Label_060A:
         End Sub
 
         Private Sub ReportAmunition(ByRef Optional DNStop As Boolean = False)
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Me.NStop = False
             Me.NNumber.Stop()
 
@@ -4713,6 +4756,9 @@ Label_060A:
         End Sub
 
         Private Sub ReturnToStartingPoint()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             If Not Me.IsFightingLast Then
                 THConstVars.CannotDoKeydown = True
                 Dim bCloseFirst As Boolean = True
@@ -4733,6 +4779,9 @@ Label_060A:
         End Sub
 
         Private Sub SayHasVisited()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Dim flag As Boolean
             Me.NStop = True
             If (Me.CGrid(Me.px, Me.py) = 1.0!) Then
@@ -4745,6 +4794,9 @@ Label_060A:
         End Sub
 
         Private Sub SayInventory()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Me.NNumber.Stop()
             Me.NStop = False
             Dim nWait As Boolean = True
@@ -4779,6 +4831,9 @@ Label_060A:
         End Sub
 
         Private Sub SayLocation()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Me.NNumber.Stop()
             Me.NStop = False
             Dim px As Long = Me.px
@@ -5112,7 +5167,10 @@ Label_060A:
         End Sub
 
         Private Sub Stats()
-            Me.NNumber.Stop
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            Me.NNumber.Stop()
             Me.NStop = False
             Dim nWait As Boolean = True
             Me.NLS((DXSound.string_0 & "\nstatus1.wav"), nWait)
@@ -5209,8 +5267,8 @@ Label_060A:
                 If Me.IsChall(Me.px, Me.py) Then
                     Dim num2 As Short = CShort(Math.Round(CDbl(VBMath.Rnd)))
                     If (num2 <= Me.Accuracy) Then
-                        Me.Accuracy = CShort(Math.Round(CDbl((Me.Accuracy + ((11! + Conversion.Int(CSng((10! * VBMath.Rnd)))) / 1000!)))))
-                        Dim amount As Short = CShort(Math.Round(CDbl(((11! + Conversion.Int(CSng((10! * VBMath.Rnd)))) * Me.Swrd))))
+                        Me.Accuracy = CShort(Math.Round(CDbl((Me.Accuracy + ((11.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) / 1000.0!)))))
+                        Dim amount As Short = CShort(Math.Round(CDbl(((11.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) * Me.Swrd))))
                         THConstVars.CannotDoKeydown = True
                         Do While (Me.SwingSwordSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
                             Application.DoEvents
@@ -5222,9 +5280,16 @@ Label_060A:
             End If
         End Sub
 
+        Private Function keyDownDisabled() As Boolean
+            Return THConstVars.CannotDoKeydown Or Me.IsInMenu
+        End Function
+
         Private Sub SwitchToWeapon(ByRef pos As Short)
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             Me.NStop = False
-            Me.NNumber.Stop
+            Me.NNumber.Stop()
             Dim str As String = Strings.LCase(Me.Weapons(pos))
             If (Me.Weapons(pos) <> "") Then
                 Dim flag As Boolean
@@ -5520,6 +5585,9 @@ Label_060A:
         End Sub
 
         Private Sub UseWeapon()
+            If Me.IsInWater And Me.WDepth > 0 Then
+                Exit Sub
+            End If
             Dim w As String = Strings.LCase(Me.Weapons(Me.WPos))
             If (fireRates(w) = 0 And Me.isFirstPress) Or ((DateTime.Now - fireDate).TotalMilliseconds() >= fireRates(w)) Then
                 Select Case w
@@ -6092,7 +6160,6 @@ Label_060A:
         Private CMachine As Short
         Public ChallAmount As Short
         Private MenuPos As Short
-        Private HasAlreadyPressedKey As Boolean
         Private IsInMenu As Boolean
         Private ASubs As Short()
         Public DefCaption As String
@@ -6132,6 +6199,13 @@ Label_060A:
         Private lastProgress As Integer
         Private totalSize As Integer = 99047691
         Private reflectorTime As Integer
+        ' All the things we can do with the background music
+        Enum VolumeAction
+            up
+            down
+            mute
+            unmute
+        End Enum
     End Class
 End Namespace
 

@@ -3455,7 +3455,7 @@ Label_0912:
             Catch obj1 As Exception
                 THConstVars.handleException(obj1)
             Finally ' So that we can prematurely terminate this subroutine but inKeyDown will still go to off.
-                If (keyCode <> 0) Then ' Don't count it as a first press if we're only holding a modifier
+                If (keyCode <> Keys.ShiftKey And keyCode <> Keys.Alt And keyCode <> Keys.ControlKey) Then ' Don't count it as a first press if we're only holding a modifier
                     Me.isFirstPress = False
                 End If
                 Me.inKeyDown = False
@@ -6122,7 +6122,7 @@ Label_060A:
         Private whichFootstep As Integer
         Private maxFootsteps As Integer = 2
         Private frameTime As Integer = 10 ' Number of ms per frame
-        Private isFirstPress As Boolean
+        Private isFirstPress As Boolean = True
         Private pendingKeyUp As Boolean ' In case keyUp fires before keyDown completes
         Private inKeyDown As Boolean
         Friend WithEvents ProgressBar1 As ProgressBar

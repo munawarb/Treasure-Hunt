@@ -2196,9 +2196,11 @@ Label_0912:
         End Sub
 
         Private Function GenerateMenu(ByRef intro As String, ByRef menu_Renamed As String, ByRef Optional StartPos As Short = 0) As Short
+            Dim hasSaid As Boolean = False
+            Dim firstMenuPress As Boolean = True
             Dim flag As Boolean
             Me.IsInMenu = True
-            Me.CurrentKey = 0
+            Me.CurrentKey = Keys.None
             Dim array As String() = Strings.Split(menu_Renamed, "|", -1, CompareMethod.Binary)
             Dim num2 As Short = CShort(Information.UBound(array, 1))
             Me.NStop = False
@@ -2212,27 +2214,38 @@ Label_0912:
             End If
             Do While (Me.CurrentKey <> Keys.Enter)
                 If Me.isFirstPress Then
+                    CurrentKey = Keys.None
+                    firstMenuPress = True
+                End If
+                If firstMenuPress Then
                     If ((Me.CurrentKey = Keys.Up) Or (Me.CurrentKey = Keys.Left)) Then
                         Me.MenuPos = CShort((Me.MenuPos - 1))
-                    End If
-                    If ((Me.CurrentKey = Keys.Down) Or (Me.CurrentKey = Keys.Right)) Then
+                        hasSaid = False
+                        firstMenuPress = False
+                    ElseIf ((Me.CurrentKey = Keys.Down) Or (Me.CurrentKey = Keys.Right)) Then
                         Me.MenuPos = CShort((Me.MenuPos + 1))
-                    End If
-                    If (Me.CurrentKey = Keys.Home) Then
+                        hasSaid = False
+                        firstMenuPress = False
+                    ElseIf (Me.CurrentKey = Keys.Home) Then
                         Me.MenuPos = 0
-                    End If
-                    If (Me.CurrentKey = Keys.End) Then
+                        hasSaid = False
+                        firstMenuPress = False
+                    ElseIf (Me.CurrentKey = Keys.End) Then
                         Me.MenuPos = num2
+                        hasSaid = False
+                        firstMenuPress = False
                     End If
-                    Me.isFirstPress = False
                     If (Me.MenuPos < 0) Then
                         Me.MenuPos = num2
                     End If
                     If (Me.MenuPos > num2) Then
                         Me.MenuPos = 0
                     End If
-                    flag = False
-                    Me.NLS((DXSound.string_0 & "\" & array(Me.MenuPos)), flag)
+                    CurrentKey = Keys.None
+                End If
+                If Not hasSaid Then
+                    Me.NLS((DXSound.string_0 & "\" & array(Me.MenuPos)), False)
+                    hasSaid = True
                 End If
                 Application.DoEvents()
             Loop
@@ -3329,6 +3342,7 @@ Label_0912:
                 Me.CurrentKey = keyCode
                 Me.CurrentModifier = modifiers
                 If (Me.isFirstPress) Then
+                    NStop = True
                     If (Me.HasDoneInit) Then
                         If (e.Shift) Then
                             Select Case keyCode

@@ -43,6 +43,7 @@ You can either [download the zip file of the master branch](https://github.com/m
  #### Changes
  
  ##### 4.44
+ - Treasure Hunt no longer uses `KeyDown` and takes advantage of `DirectInput` through the use of `BPCSharedComponent.dll`, a library I wrote for Three-D Velocity. Keys are now processed in the game loop, making key processing smoother ([#9](../../issues/9))
  - The single footstep sound has been replaced with better footstep sounds ([#7](../../issues/7))
  - Key presses are handled better now and weapons can be rapid-fired. A lot of the key-handling code was cleaned up ([#6](../../issues/6))
  - The game loop is now much cleaner and no longer runs every tenth of a second. The slow frame rate would force the player to slow down so the game could update the state ([#4](../../issues/4))

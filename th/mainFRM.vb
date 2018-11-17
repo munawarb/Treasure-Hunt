@@ -13,6 +13,9 @@ Imports System.Security.Authentication
 Imports System.Text
 Imports System.Globalization
 Imports System.Collections.Generic
+Imports BPCSharedComponent.Input
+Imports SharpDX.DirectInput
+
 
 
 Namespace th
@@ -21,8 +24,6 @@ Namespace th
         ' Methods
         Public Sub New()
             AddHandler MyBase.Load, New EventHandler(AddressOf Me.mainFRM_Load)
-            AddHandler MyBase.KeyUp, New KeyEventHandler(AddressOf Me.mainFRM_KeyUp)
-            AddHandler MyBase.KeyDown, New KeyEventHandler(AddressOf Me.mainFRM_KeyDown)
             AddHandler MyBase.Closed, New EventHandler(AddressOf Me.mainFRM_Closed)
             Me.PassageSound = New DirectSoundSecondaryBuffer8(5 - 1) {}
             Me.DoorSound = New DirectSoundSecondaryBuffer8(5 - 1) {}
@@ -33,6 +34,12 @@ Namespace th
             Me.C = New Single(6 - 1) {}
             Me.InitializeComponent()
             Me.isFirstPress = True
+        End Sub
+
+        Private Sub waitForSpaceOrEnter()
+            Do While Not (DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Return) Or DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space))
+                Application.DoEvents()
+            Loop
         End Sub
 
         Private Sub sayDepth()
@@ -123,7 +130,7 @@ Namespace th
         End Sub
 
         Private Function canTakeStep() As Boolean
-            If (Me.isFirstPress) Then
+            If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
                 Return True
             End If
             If Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
@@ -601,9 +608,9 @@ Label_05FF:
             End If
         End Sub
 
-        Private Sub ChangeSpeechRate()
+        Private Sub ChangeSpeechRate(a As SpeechRate)
             Dim flag As Boolean
-            If (Me.CurrentKey = &H25) Then
+            If a = SpeechRate.slower Then
                 Me.CurrentFreq = (Me.CurrentFreq - &H3E8)
                 If (Me.CurrentFreq <= &H5A3C) Then
                     Me.CurrentFreq = &H5A3C
@@ -617,7 +624,7 @@ Label_05FF:
                     Me.NLS((DXSound.string_0 & "\s_slower.wav"), flag)
                 End If
             End If
-            If (Me.CurrentKey = &H27) Then
+            If a = SpeechRate.quicker Then
                 Me.CurrentFreq = (Me.CurrentFreq + &H3E8)
                 If (Me.CurrentFreq >= &H1831C) Then
                     Me.CurrentFreq = &H1831C
@@ -2197,52 +2204,37 @@ Label_0912:
 
         Private Function GenerateMenu(ByRef intro As String, ByRef menu_Renamed As String, ByRef Optional StartPos As Short = 0) As Short
             Dim hasSaid As Boolean = False
-            Dim firstMenuPress As Boolean = True
-            Dim flag As Boolean
             Me.IsInMenu = True
-            Me.CurrentKey = Keys.None
             Dim array As String() = Strings.Split(menu_Renamed, "|", -1, CompareMethod.Binary)
             Dim num2 As Short = CShort(Information.UBound(array, 1))
             Me.NStop = False
             If (intro <> "") Then
-                flag = True
-                Me.NLS((DXSound.string_0 & "\" & intro), flag)
+                Me.NLS((DXSound.string_0 & "\" & intro), True)
             End If
             Me.MenuPos = StartPos
             If (Me.MenuPos < 0) Then
                 Me.MenuPos = 0
             End If
-            Do While (Me.CurrentKey <> Keys.Enter)
-                If Me.isFirstPress Then
-                    CurrentKey = Keys.None
-                    firstMenuPress = True
+            Do While (Not DXInput.isFirstPress(SharpDX.DirectInput.Key.Return))
+                If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
+                    Me.MenuPos = CShort((Me.MenuPos - 1))
+                    hasSaid = False
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
+                    Me.MenuPos = CShort((Me.MenuPos + 1))
+                    hasSaid = False
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Home) Then
+                    Me.MenuPos = 0
+                    hasSaid = False
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.End) Then
+                    Me.MenuPos = num2
+                    hasSaid = False
                 End If
-                If firstMenuPress Then
-                    If ((Me.CurrentKey = Keys.Up) Or (Me.CurrentKey = Keys.Left)) Then
-                        Me.MenuPos = CShort((Me.MenuPos - 1))
-                        hasSaid = False
-                        firstMenuPress = False
-                    ElseIf ((Me.CurrentKey = Keys.Down) Or (Me.CurrentKey = Keys.Right)) Then
-                        Me.MenuPos = CShort((Me.MenuPos + 1))
-                        hasSaid = False
-                        firstMenuPress = False
-                    ElseIf (Me.CurrentKey = Keys.Home) Then
-                        Me.MenuPos = 0
-                        hasSaid = False
-                        firstMenuPress = False
-                    ElseIf (Me.CurrentKey = Keys.End) Then
-                        Me.MenuPos = num2
-                        hasSaid = False
-                        firstMenuPress = False
-                    End If
-                    If (Me.MenuPos < 0) Then
+                If (Me.MenuPos < 0) Then
                         Me.MenuPos = num2
                     End If
                     If (Me.MenuPos > num2) Then
                         Me.MenuPos = 0
                     End If
-                    CurrentKey = Keys.None
-                End If
                 If Not hasSaid Then
                     Me.NLS((DXSound.string_0 & "\" & array(Me.MenuPos)), False)
                     hasSaid = True
@@ -3091,7 +3083,7 @@ Label_0912:
             End If
         End Sub
 
-        Private Sub LookInDir(ByRef KeyCode As Long)
+        Private Sub LookInDir(a As WalkDirection)
             If keyDownDisabled() Then
                 Exit Sub
             End If
@@ -3114,7 +3106,7 @@ Label_0912:
                 gY = Me.py
             End If
             Me.NStop = False
-            If (KeyCode = Keys.Up) Then
+            If a = WalkDirection.north Then
                 Do While (num5 < 20)
                     num5 = CShort((num5 + 1))
                     If (CShort((gY + num5)) > Me.y) Then
@@ -3160,7 +3152,7 @@ Label_0912:
                 Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
                 flag = True
             End If
-            If (KeyCode = Keys.Down) Then
+            If a = WalkDirection.south Then
                 Do While (num5 < 20)
                     num5 = CShort((num5 + 1))
                     If (CShort((gY - num5)) < 1) Then
@@ -3206,7 +3198,7 @@ Label_0912:
                 Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
                 flag = True
             End If
-            If (KeyCode = Keys.Left) Then
+            If a = WalkDirection.west Then
                 Do While (num5 < 20)
                     num5 = CShort((num5 + 1))
                     If (CShort((gX - num5)) < 1) Then
@@ -3252,7 +3244,7 @@ Label_0912:
                 Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {0}, Nothing))), flag2)
                 flag = True
             End If
-            If (KeyCode = Keys.Right) Then
+            If a = WalkDirection.east Then
                 Do While (num5 < 20)
                     num5 = CShort((num5 + 1))
                     If (CShort((gX + num5)) > Me.x) Then
@@ -3327,182 +3319,182 @@ Label_0912:
             Me.ShutDown()
         End Sub
 
-        Private Sub mainFRM_KeyDown(ByVal sender As Object, ByVal e As KeyEventArgs)
-            If (Me.pendingKeyUp) Then ' If key up fired before keydown finished
-                Me.isFirstPress = True
-                Me.pendingKeyUp = False
-            End If
-            Dim num8 As Integer
-            Dim modifiers As Long = CLng(e.Modifiers)
-            Dim keyCode As Long = CLng(e.KeyCode)
+        Private Sub performActions()
             Try
                 Me.inKeyDown = True
-                Dim points As Long
+                Dim Points As Long
                 Dim num7 As Integer = 2
-                Me.CurrentKey = keyCode
-                Me.CurrentModifier = modifiers
-                If (Me.isFirstPress) Then
-                    NStop = True
-                    If (Me.HasDoneInit) Then
-                        If (e.Shift) Then
-                            Select Case keyCode
-                                Case Keys.Left, Keys.Right, Keys.Up, Keys.Down
-                                    LookInDir(keyCode)
-                                    Exit Sub
-                                Case Keys.Enter
-                                    LockUnlockDoor()
-                                    Exit Sub
-                                Case Keys.PageUp
-                                    changeMusicVolume(VolumeAction.mute)
-                                    Exit Sub
-                                Case Keys.PageDown
-                                    changeMusicVolume(VolumeAction.unmute)
-                                    Exit Sub
-                            End Select
-                        Else ' If not shift. These keys can be pressed with either the shift key held or released.
-                            Select Case keyCode
-                                Case Keys.Enter
-                                    OpenOrCloseDoor()
-                                    Exit Sub
-                            End Select
+                If (Me.HasDoneInit) Then
+                    If (DXInput.IsShift()) Then
+                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Then
+                            LookInDir(WalkDirection.north)
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Then
+                            LookInDir(WalkDirection.south)
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
+                            LookInDir(WalkDirection.east)
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
+                            LookInDir(WalkDirection.west)
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Return) Then
+                            LockUnlockDoor()
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.PageUp) Then
+                            changeMusicVolume(VolumeAction.mute)
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.PageDown) Then
+                            changeMusicVolume(VolumeAction.unmute)
+                            Exit Sub
                         End If
-                        If (e.Control) Then ' If ctrl
-                            Select Case keyCode
-                                Case Keys.S
-                                    Me.file_save_click()
-                                    Exit Sub
-                                Case Keys.L
-                                    Me.file_load_click()
-                                    Exit Sub
-                                Case Keys.Left
-                                    Me.ChangeSpeechRate()
-                                    Exit Sub
-                                Case Keys.Right
-                                    Me.ChangeSpeechRate()
-                                    Exit Sub
-                            End Select
-                            If Not Me.NStop Then
-                                Me.NStop = True
-                                Me.NNumber.Stop()
-                                Exit Sub
-                            End If
-                        Else ' if not ctrl, for keys that can be pressed with both ctrl and without
-                            Select Case keyCode
-                                Case Keys.S
-                                    Me.Stats()
-                                    Exit Sub
-                            End Select
-                        End If ' if ctrl
-                        ' Here, the keys will register no matter which modifiers are held because there is no modifier conflict
-                        Select Case keyCode
-                            Case Keys.Escape
-                                Me.MainMenu(True)
-                                Exit Sub
-                            Case Keys.F
-                                pauseOrUnpauseGame()
-                                Exit Sub
-                            Case Keys.D1
-                                Me.SwitchToWeapon(0)
-                                Exit Sub
-                            Case Keys.D2
-                                Me.SwitchToWeapon(1)
-                                Exit Sub
-                            Case Keys.D3
-                                Me.SwitchToWeapon(2)
-                                Exit Sub
-                            Case Keys.D4
-                                Me.SwitchToWeapon(3)
-                                Exit Sub
-                            Case Keys.D5
-                                Me.SwitchToWeapon(4)
-                                Exit Sub
-                            Case Keys.D6
-                                Me.SwitchToWeapon(5)
-                                Exit Sub
-                            Case Keys.D7
-                                Me.SwitchToWeapon(6)
-                                Exit Sub
-                            Case Keys.Z
-                                If keyDownDisabled() Then
-                                    Exit Sub
-                                End If
-                                Me.VoiceNumber(CLng(Math.Round(CDbl(THConstVars.Difficulty))))
-                                Me.NumWait()
-                                Exit Sub
-                            Case Keys.L
-                                SayLocation()
-                                Exit Sub
-                            Case Keys.I
-                                Me.SayInventory()
-                                Exit Sub
-                            Case Keys.V
-                                Me.SayHasVisited()
-                                Exit Sub
-                            Case Keys.A
-                                Me.ReportAmunition(False)
-                                Exit Sub
-                            Case Keys.B
-                                Me.BuyAmunition()
-                                Exit Sub
-                            Case Keys.T
-                                Me.position()
-                                Exit Sub
-                            Case Keys.P
-                                If keyDownDisabled() Then
-                                    Exit Sub
-                                End If
-                                If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
-                                    Me.ControlPanelWork(True)
-                                Else
-                                    Me.NStop = False
-                                    Me.NNumber.Stop()
-                                    Me.VoiceNumber(Me.Points)
-                                    Me.NStop = True
-                                End If
-                                Exit Sub
-                            Case Keys.H
-                                sayHealth()
-                                Exit Sub
-                            Case Keys.C
-                                sayNumAlert()
-                                Exit Sub
-                            Case Keys.D
-                                sayDepth()
-                                Exit Sub
-                            Case Keys.R
-                                Me.ReturnToStartingPoint()
-                                Exit Sub
-                        End Select
-                    End If ' If hasDoneInit
-                End If ' If firstPress
-                If Me.HasDoneInit Then
-                    Select Case keyCode
-                        Case Keys.PageUp
-                            changeMusicVolume(VolumeAction.down)
-                            Exit Select
-                        Case Keys.PageDown
-                            changeMusicVolume(VolumeAction.up)
-                            Exit Select
-                    End Select
-                    If Not THConstVars.CannotDoKeydown Then
-                        If Me.IsControling Then
-                            If Not keyDownDisabled() Then
-                                Me.challs(CInt(Me.WControl)).ControlChall(modifiers, keyCode)
-                            End If
-                        Else
-                                Me.MovePlayer(modifiers, keyCode)
+                        If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space) Then
+                            swim(SwimDirection.south)
+                            Exit Sub
                         End If
-                        If Not e.Shift And keyCode = Keys.Space Then
+                    Else ' If not shift. These keys can be pressed with either the shift key held or released.
+                        If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space) Then
+                            swim(SwimDirection.north)
                             Me.UseWeapon()
+                            Exit Sub
+                        End If
+                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.Return) Then
+                            OpenOrCloseDoor()
+                            Exit Sub
+                        End If
+                        If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.PageUp) Then
+                            changeMusicVolume(VolumeAction.down)
+                            Exit Sub
+                        ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.PageDown) Then
+                            changeMusicVolume(VolumeAction.up)
+                            Exit Sub
                         End If
                     End If
-                End If
+                    If DXInput.IsControl() Then
+                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.S) Then
+                            Me.file_save_click()
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.L) Then
+                            Me.file_load_click()
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
+                            Me.ChangeSpeechRate(SpeechRate.slower)
+                            Exit Sub
+                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
+                            Me.ChangeSpeechRate(SpeechRate.quicker)
+                            Exit Sub
+                        End If
+                        If Not Me.NStop Then
+                            Me.NStop = True
+                            Me.NNumber.Stop()
+                            Exit Sub
+                        End If
+                    Else ' if not ctrl, for keys that can be pressed with both ctrl and without
+                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.S) Then
+                            Me.Stats()
+                            Exit Sub
+                        End If
+                    End If ' if ctrl
+                    ' Here, the keys will register no matter which modifiers are held because there is no modifier conflict
+                    If DXInput.isFirstPress(SharpDX.DirectInput.Key.Escape) Then
+                        Me.MainMenu(True)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.F) Then
+                        pauseOrUnpauseGame()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D1) Then
+                        Me.SwitchToWeapon(0)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D2) Then
+                        Me.SwitchToWeapon(1)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D3) Then
+                        Me.SwitchToWeapon(2)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D4) Then
+                        Me.SwitchToWeapon(3)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D5) Then
+                        Me.SwitchToWeapon(4)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D6) Then
+                        Me.SwitchToWeapon(5)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D7) Then
+                        Me.SwitchToWeapon(6)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Z) Then
+                        If keyDownDisabled() Then
+                            Exit Sub
+                        End If
+                        Me.VoiceNumber(CLng(Math.Round(CDbl(THConstVars.Difficulty))))
+                        Me.NumWait()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.L) Then
+                        SayLocation()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.I) Then
+                        Me.SayInventory()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.V) Then
+                        Me.SayHasVisited()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.A) Then
+                        Me.ReportAmunition(False)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.B) Then
+                        Me.BuyAmunition()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.T) Then
+                        Me.position()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.P) Then
+                        If keyDownDisabled() Then
+                            Exit Sub
+                        End If
+                        If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
+                            Me.ControlPanelWork(True)
+                        Else
+                            Me.NStop = False
+                            Me.NNumber.Stop()
+                            Me.VoiceNumber(Me.Points)
+                            Me.NStop = True
+                        End If
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.H) Then
+                        sayHealth()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.C) Then
+                        sayNumAlert()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D) Then
+                        sayDepth()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.R) Then
+                        Me.ReturnToStartingPoint()
+                        Exit Sub
+                    End If
+                    If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Left) Then
+                        swim(SwimDirection.west)
+                        missileCommand(MissileAction.turnLeft)
+                        MovePlayer(WalkDirection.west)
+                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Right) Then
+                        swim(SwimDirection.east)
+                        missileCommand(MissileAction.turnRight)
+                        MovePlayer(WalkDirection.east)
+                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Up) Then
+                        swim(SwimDirection.up)
+                        missileCommand(MissileAction.speedUp)
+                        MovePlayer(WalkDirection.north)
+                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Down) Then
+                        swim(SwimDirection.down)
+                        missileCommand(MissileAction.slowDown)
+                        MovePlayer(WalkDirection.south)
+                    End If
+                End If ' if has done init
             Catch obj1 As Exception
                 THConstVars.handleException(obj1)
             Finally ' So that we can prematurely terminate this subroutine but inKeyDown will still go to off.
-                If (keyCode <> Keys.ShiftKey And keyCode <> Keys.Alt And keyCode <> Keys.ControlKey) Then ' Don't count it as a first press if we're only holding a modifier
-                    Me.isFirstPress = False
-                End If
                 Me.inKeyDown = False
             End Try
         End Sub
@@ -3553,9 +3545,11 @@ Label_0912:
                 Dim y As Short = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
+                DXInput.DInputInit(Me.Handle)
+
                 DXSound.PlaySound(Me.BPCLogoSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
                 Me.IntroSound = modDirectShow.LoadMP3((DXSound.SoundPath & "\trailers\storyline.mp3"))
-                Do While (((Me.BPCLogoSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) And (Me.CurrentKey <> 13)) And (Me.CurrentKey <> &H20))
+                Do While Me.BPCLogoSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING And Not (DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Return) Or DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space))
                     Application.DoEvents()
                 Loop
                 Me.BPCLogoSound.Stop()
@@ -3619,10 +3613,7 @@ Label_0912:
                 Me.ClickSound.Stop()
                 waitTillDone = False
                 Me.NLS((DXSound.string_0 & "\spaceenter.wav"), waitTillDone)
-                Me.CurrentKey = 0
-                Do While ((Me.CurrentKey <> &H20) And (Me.CurrentKey <> 13))
-                    Application.DoEvents()
-                Loop
+                waitForSpaceOrEnter()
                 Me.IntroSound.Stop()
                 Me.IntroSound = Nothing
                 waitTillDone = False
@@ -3634,15 +3625,10 @@ Label_0912:
                 Me.NLS((DXSound.string_0 & "\intro.wav"), waitTillDone)
                 Interaction.MsgBox(prompt, MsgBoxStyle.ApplicationModal, "Welcome!")
                 Me.NNumber.Stop()
-                Me.CurrentKey = 0
-                Me.CurrentModifier = 0
                 If Not Me.IsFirstTimeLoading Then
                     modDirectShow.imediaControl_0 = modDirectShow.LoadMP3((DXSound.SoundPath & "\r18.mp3"))
                     modDirectShow.PlayMP3()
-
-                    Do While Not ((Me.CurrentKey <> 0) Or (Me.CurrentModifier <> 0))
-                        Application.DoEvents()
-                    Loop
+                    waitForSpaceOrEnter()
                     modDirectShow.StopMP3()
                     Me.IsFirstTimeLoading = True
                 End If
@@ -4001,152 +3987,142 @@ Label_060A:
             DXSound.PlaySound(Me.NNumber, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
         End Sub
 
-        Private Sub MovePlayer(ByRef KeyCode As Long, ByRef Shift As Long)
+        Private Function isBlocked(x As Integer, y As Integer) As Boolean
+            If x < 1 Or x > Me.x Or y < 1 Or y > Me.y Then
+                Me.NLS((DXSound.string_0 & "\ncannot.wav"), False)
+                Me.NStop = True
+                Return True
+            ElseIf Me.GetBlock(x, y) Then
+                DXSound.PlaySound(Me.WallCrashSound, True, False, False, 0, 0, "", False)
+                Return True
+            End If
+            Me.CGrid(x, y) = 1.0!
+            Return False
+        End Function
+
+        Private Sub missileCommand(m As MissileAction)
             If keyDownDisabled() Then
                 Exit Sub
             End If
-            Dim num4 As Integer
-            Dim num3 As Integer = 2
-            If Not ((KeyCode = &H10000) And (Not Shift = &H20)) Then
-                Dim flag As Boolean
-                Dim str As String
-                Dim flag2 As Boolean
-                Me.TX = Me.px
-                Me.TY = Me.py
-                If ((Shift = &H26) Or ((Not KeyCode = &H10000) And (Shift = &H20))) Then
-                    If (Me.IsInWater And Not Me.IsResting) Then
-                        If (Shift = &H20) Then
-                            Me.SubPY = CShort((Me.SubPY + 1))
-                            If (Me.SubPY > 5.0!) Then
-                                Me.py = CShort((Me.py + 1))
-                                Me.SubPY = 0
-                            End If
-                            Me.DidNotSwim = 0
-                            flag = True
-                        Else
-                            Me.DepthDecrease()
-                        End If
-                    ElseIf ((Not Shift = &H20) AndAlso Not Me.IsResting) Then
-                        If Me.IsDoingGMissile Then
-                            str = "u"
-                            Me.GChangeSpeed(str)
-                        ElseIf (canTakeStep()) Then
-                            Me.py = CShort((Me.py + 1))
-                        End If
-                        flag = True
-                    End If
-                End If
-                If (Shift = 40) Then
-                    If Me.IsInWater Then
-                        Me.DepthIncrease()
-                    Else
-                        If Me.IsDoingGMissile Then
-                            str = "d"
-                            Me.GChangeSpeed(str)
-                        ElseIf (canTakeStep()) Then
-                            Me.py = CShort((Me.py - 1))
-                        End If
-                        flag = True
-                    End If
-                End If
-                If ((Shift = &H25) AndAlso Not Me.IsResting) Then
-                    If Me.IsInWater Then
-                        Me.SubPX = CShort((Me.SubPX - 1))
-                        If (Me.SubPX < 0) Then
-                            Me.SubPX = 5
-                            Me.px = CShort((Me.px - 1))
-                        End If
-                    ElseIf Me.IsDoingGMissile Then
-                        str = "l"
-                        Me.TurnGMissile(str)
-                    ElseIf (canTakeStep()) Then
-                        Me.px = CShort((Me.px - 1))
-                    End If
-                    Me.DidNotSwim = 0
-                    flag = True
-                End If
-                If ((Shift = &H27) AndAlso Not Me.IsResting) Then
-                    If Me.IsInWater Then
-                        Me.SubPX = CShort((Me.SubPX + 1))
-                        If (Me.SubPX > 5.0!) Then
-                            Me.SubPX = 0
-                            Me.px = CShort((Me.px + 1))
-                        End If
-                    ElseIf Me.IsDoingGMissile Then
-                        str = "r"
-                        Me.TurnGMissile(str)
-                    ElseIf (canTakeStep()) Then
-                        Me.px = CShort((Me.px + 1))
-                    End If
-                    Me.DidNotSwim = 0
-                    flag = True
-                End If
-                If (((KeyCode = &H10000) And (Shift = &H20)) AndAlso (Me.IsInWater And Not Me.IsResting)) Then
-                    Me.SubPY = CShort((Me.SubPY - 1))
-                    If (Me.SubPY < 0) Then
-                        Me.SubPY = 5
-                        Me.py = CShort((Me.py - 1))
-                    End If
-                    Me.DidNotSwim = 0
-                    flag = True
-                End If
-                If ((((Me.px < 1) Or (Me.px > Me.x)) Or (Me.py < 1)) Or (Me.py > Me.y)) Then
-                    flag2 = False
-                    Me.NLS((DXSound.string_0 & "\ncannot.wav"), flag2)
-                    Me.NStop = True
-                    Me.px = Me.TX
-                    Me.py = Me.TY
-                Else
-                    Dim flag3 As Boolean
-                    Dim flag4 As Boolean
-                    Dim num As Short
-                    Dim num2 As Short
-                    Dim flag5 As Boolean
-                    If Me.GetBlock(Me.px, Me.py) Then
-                        Me.px = Me.TX
-                        Me.py = Me.TY
-                        flag2 = True
-                        flag3 = False
-                        flag4 = False
-                        num = 0
-                        num2 = 0
-                        str = ""
-                        flag5 = False
-                        DXSound.PlaySound(Me.WallCrashSound, flag2, flag3, flag4, num, num2, str, flag5)
-                    ElseIf flag Then
-                        Me.CGrid(Me.TX, Me.TY) = 1.0!
-                        If Me.IsInWater Then
-                            If ((((Shift = &H25) Or (Shift = &H27)) Or (Shift = &H20)) Or ((KeyCode = &H10000) And (Shift = &H20))) Then
-                                flag5 = True
-                                flag4 = False
-                                flag3 = False
-                                num2 = 0
-                                num = 0
-                                str = ""
-                                flag2 = False
-                                DXSound.PlaySound(Me.SwimSound, flag5, flag4, flag3, num2, num, str, flag2)
-                            End If
-                        ElseIf Not Me.IsDoingGMissile And canTakeStep() Then
-                            flag5 = True
-                            flag4 = False
-                            flag3 = False
-                            num2 = 0
-                            num = 0
-                            str = ""
-                            flag2 = False
-                            If (Me.whichFootstep = 0) Then
-                                DXSound.PlaySound(Me.Footstep1Sound, flag5, flag4, flag3, num2, num, str, flag2)
-                            Else
-                                DXSound.PlaySound(Me.Footstep2Sound, flag5, flag4, flag3, num2, num, str, flag2)
-                            End If
-                            Me.whichFootstep = (whichFootstep + 1) Mod maxFootsteps
-                            If Not Me.IsDoingGMissile Then
-                                Me.Determine()
-                            End If
-                        End If
-                    End If
-                End If
+            If Not IsDoingGMissile Then
+                Exit Sub
             End If
+            Dim g As Integer = GFront
+            Dim s As Integer = GSpeed
+            Select Case m
+                Case MissileAction.turnRight
+                    GFront = (GFront + 90) Mod 360
+                    Exit Select
+                Case MissileAction.turnLeft
+                    GFront -= 90
+                    If GFront < 0 Then GFront = 0
+                    Exit Select
+                Case MissileAction.speedUp
+                    GSpeed += 1
+                    If GSpeed > 10 Then GSpeed = 10
+                    Exit Select
+                Case MissileAction.slowDown
+                    GSpeed -= 1
+                    If GSpeed < 0 Then GSpeed = 0
+            End Select
+            If g <> GFront Then
+                Dim dir As String = ""
+                If GFront = 0 Then dir = "north"
+                If GFront = 0 Then dir = "east"
+                If GFront = 180 Then GFront = "south"
+                If GFront = 270 Then GFront = "west"
+                NStop = False
+                Me.NLS((DXSound.string_0 & "\n" & dir & ".wav"), False)
+                NStop = True
+            End If
+            If s <> GSpeed Then
+                Me.VoiceNumber(GSpeed)
+            End If
+        End Sub
+
+        Private Sub swim(d As SwimDirection)
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            If Not IsInWater Then
+                Exit Sub
+            End If
+            Dim tx As Integer = Me.px
+            Dim ty As Integer = Me.py
+            Select Case d
+                Case SwimDirection.up
+                    WDepth -= 1
+                    If WDepth > 0 Then WDepth = 0
+                    Exit Select
+                Case SwimDirection.down
+                    WDepth += 1
+                    If WDepth > 15 Then WDepth = 15
+                    Exit Select
+                Case SwimDirection.north
+                    If WDepth = 0 Then Exit Sub
+                    Me.py = CShort((Me.py + 1))
+                    Exit Select
+                Case SwimDirection.south
+                    If WDepth = 0 Then Exit Sub
+                    Me.py = CShort((Me.py - 1))
+                    Exit Select
+                Case SwimDirection.east
+                    If WDepth = 0 Then Exit Sub
+                    Me.px = CShort((Me.px + 1))
+                    Exit Select
+                Case SwimDirection.west
+                    If WDepth = 0 Then Exit Sub
+                    Me.px = CShort((Me.px - 1))
+                    Exit Select
+            End Select
+            If isBlocked(Me.px, Me.py) Then
+                Me.px = tx
+                Me.py = ty
+            End If
+            If px <> tx Or py <> ty Then DXSound.PlaySound(SwimSound, True, False, False, 0, 0, "", False)
+            Determine()
+            Me.DidNotSwim = 0
+        End Sub
+
+        Private Sub MovePlayer(w As WalkDirection)
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
+            If IsInWater Or IsDoingGMissile Then
+                Exit Sub
+            End If
+            If Not canTakeStep() Then
+                Exit Sub
+            End If
+            Dim tx As Integer = px
+            Dim ty As Integer = py
+            Select Case w
+                Case WalkDirection.north
+                    py += 1
+                    Exit Select
+                Case WalkDirection.south
+                    py -= 1
+                    Exit Select
+                Case WalkDirection.east
+                    px += 1
+                    Exit Select
+                Case WalkDirection.west
+                    px -= 1
+                    Exit Select
+            End Select
+            If isBlocked(px, py) Then
+                px = tx
+                py = ty
+            End If
+            If px <> tx Or py <> ty Then
+                If (Me.whichFootstep = 0) Then
+                    DXSound.PlaySound(Me.Footstep1Sound, True, False, False, 0, 0, "", False)
+                Else
+                    DXSound.PlaySound(Me.Footstep2Sound, True, False, False, 0, 0, "", False)
+                End If
+                Me.whichFootstep = (whichFootstep + 1) Mod maxFootsteps
+            End If
+            Determine()
         End Sub
 
         Public Sub MuteSounds()
@@ -4180,8 +4156,13 @@ Label_060A:
         End Sub
 
         Private Sub NumWait()
+            Dim enteredWhilePressingKey As Boolean = DXInput.isKeyHeldDown()
             Do While (Me.NNumber.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                If Me.NStop Then
+                If enteredWhilePressingKey Then
+                    enteredWhilePressingKey = DXInput.isKeyHeldDown()
+                End If
+                If Not enteredWhilePressingKey And DXInput.isKeyHeldDown() Then
+                    Me.NStop = True
                     Exit Do
                 End If
                 Application.DoEvents()
@@ -5143,6 +5124,7 @@ Label_060A:
             Try
                 Dim num As Short
                 While (True)
+                    performActions()
                     If ((Not ((THConstVars.CannotDoKeydown And Not Me.IsLaunchingControl) And Not Me.IsLaunchingNeedle) AndAlso Not Me.IsInPauseState) AndAlso Me.NStop) Then
                         Me.OMove_Tick()
                     End If
@@ -5599,6 +5581,9 @@ Label_060A:
         End Sub
 
         Private Sub UseWeapon()
+            If keyDownDisabled() Then
+                Exit Sub
+            End If
             If Me.IsInWater And Me.WDepth > 0 Then
                 Exit Sub
             End If
@@ -6115,8 +6100,6 @@ Label_060A:
         Private short_0 As Short
         Private SubPX As Short
         Private SubPY As Short
-        Private CurrentKey As Long
-        Private CurrentModifier As Long
         Private TX As Short
         Private TY As Short
         Public HasKilledBrutus As Boolean
@@ -6203,7 +6186,6 @@ Label_060A:
         Private whichFootstep As Integer
         Private maxFootsteps As Integer = 2
         Private frameTime As Integer = 10 ' Number of ms per frame
-        Private isFirstPress As Boolean = True
         Private pendingKeyUp As Boolean ' In case keyUp fires before keyDown completes
         Private inKeyDown As Boolean
         Friend WithEvents ProgressBar1 As ProgressBar
@@ -6213,12 +6195,41 @@ Label_060A:
         Private lastProgress As Integer
         Private totalSize As Integer = 99047691
         Private reflectorTime As Integer
+        ' The directions the player can swim in
+        Enum SwimDirection
+            north
+            south
+            east
+            west
+            up
+            down
+        End Enum
+        ' All the durections the player can move in
+        Enum WalkDirection
+            north
+            south
+            east
+            west
+        End Enum
         ' All the things we can do with the background music
         Enum VolumeAction
             up
             down
             mute
             unmute
+        End Enum
+        ' Everything we can do with a remote controlled missile
+        Enum MissileAction
+            turnLeft
+            turnRight
+            speedUp
+            slowDown
+        End Enum
+        ' How speech rate can be changed
+        Enum SpeechRate
+            quicker
+            slower
+            normal
         End Enum
     End Class
 End Namespace

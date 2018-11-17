@@ -38,8 +38,15 @@
     <EmbeddedResource Include="th\mainFRM.resx">
       <DependentUpon>mainFRM.vb</DependentUpon>
     </EmbeddedResource>
+    <Reference Include="BPCSharedComponent, Version=2.0.0.23882, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>dlls\BPCSharedComponent.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Interop.DxVBLibA" />
+    <Reference Include="SharpDX.DirectInput, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>packages\SharpDX.DirectInput.4.1.0\lib\net45\SharpDX.DirectInput.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System" />
     <Reference Include="Interop.QuartzTypeLib" />
@@ -66,5 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

@@ -168,8 +168,8 @@ Label_00DD:
                 Dim str4 As String = ""
 Label_00E8:
                 num10 = 13
-                Dim num7 As Short = CShort(lpcbData)
-                Dim start As Short = 1
+                Dim num7 As Integer = (lpcbData)
+                Dim start As Integer = 1
 Label_00F3:
                 If (start > num7) Then
                     GoTo Label_014F
@@ -188,7 +188,7 @@ Label_011F:
                 GoTo Label_013E
 Label_0133:
                 num10 = &H13
-                start = CShort((start + 1))
+                start = ((start + 1))
                 GoTo Label_00F3
 Label_013E:
                 num10 = &H12
@@ -678,12 +678,12 @@ Label_00EF:
         Public Const STANDARD_RIGHTS_ALL As Integer = &H1F0000
         Public Const STANDARD_RIGHTS_READ As Integer = &H20000
         Public Const STANDARD_RIGHTS_WRITE As Integer = &H20000
-        Public Const KEY_QUERY_VALUE As Short = 1
-        Public Const KEY_SET_VALUE As Short = 2
-        Public Const KEY_CREATE_SUB_KEY As Short = 4
-        Public Const KEY_ENUMERATE_SUB_KEYS As Short = 8
-        Public Const KEY_NOTIFY As Short = &H10
-        Public Const KEY_CREATE_LINK As Short = &H20
+        Public Const KEY_QUERY_VALUE As Integer = 1
+        Public Const KEY_SET_VALUE As Integer = 2
+        Public Const KEY_CREATE_SUB_KEY As Integer = 4
+        Public Const KEY_ENUMERATE_SUB_KEYS As Integer = 8
+        Public Const KEY_NOTIFY As Integer = &H10
+        Public Const KEY_CREATE_LINK As Integer = &H20
         Public Const KEY_ALL_ACCESS As Boolean = True
         Public Const KEY_READ As Boolean = True
         Public Const KEY_EXECUTE As Boolean = True
@@ -703,17 +703,17 @@ Label_00EF:
         Public Const HKEY_PERFORMANCE_DATA As Integer = -2147483644
         Public Const HKEY_CURRENT_CONFIG As Integer = -2147483643
         Public Const HKEY_DYN_DATA As Integer = -2147483642
-        Private Const ERROR_NONE As Short = 0
-        Private Const ERROR_BADDB As Short = 1
-        Private Const ERROR_BADKEY As Short = 2
-        Private Const ERROR_CANTOPEN As Short = 3
-        Private Const ERROR_CANTREAD As Short = 4
-        Private Const ERROR_CANTWRITE As Short = 5
-        Private Const ERROR_OUTOFMEMORY As Short = 6
-        Private Const ERROR_INVALID_PARAMETER As Short = 7
-        Private Const ERROR_ACCESS_DENIED As Short = 8
-        Private Const ERROR_INVALID_PARAMETERS As Short = &H57
-        Private Const ERROR_NO_MORE_ITEMS As Short = &H103
+        Private Const ERROR_NONE As Integer = 0
+        Private Const ERROR_BADDB As Integer = 1
+        Private Const ERROR_BADKEY As Integer = 2
+        Private Const ERROR_CANTOPEN As Integer = 3
+        Private Const ERROR_CANTREAD As Integer = 4
+        Private Const ERROR_CANTWRITE As Integer = 5
+        Private Const ERROR_OUTOFMEMORY As Integer = 6
+        Private Const ERROR_INVALID_PARAMETER As Integer = 7
+        Private Const ERROR_ACCESS_DENIED As Integer = 8
+        Private Const ERROR_INVALID_PARAMETERS As Integer = &H57
+        Private Const ERROR_NO_MORE_ITEMS As Integer = &H103
 
         ' Nested Types
         Public Enum InTypes

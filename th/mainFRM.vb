@@ -33,7 +33,22 @@ Namespace th
             Me.Weapons = New String(8 - 1) {}
             Me.C = New Single(6 - 1) {}
             Me.InitializeComponent()
-            Me.isFirstPress = True
+        End Sub
+
+        ' Used to hard-disable or re-enable the game loop.
+        ' This is necessary when requesting input because the acquired keyboard object will throw when the input box pops up, causing the game to hang.
+        ' It will also prevent the game from treating keys in this box as game actions.
+        Private Sub disableGameLoop()
+            Timer1.Enabled = False
+        End Sub
+
+        Private Sub enableGameLoop()
+            Timer1.Enabled = True
+        End Sub
+
+        Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+            System.Diagnostics.Debug.WriteLine("timer: tick")
+            updateFrame()
         End Sub
 
         Private Sub waitForSpaceOrEnter()
@@ -126,11 +141,11 @@ Namespace th
                 Me.FinalDuelSound.SetVolume(Me.BackgroundSound.GetVolume)
             End If
             Interaction.SaveSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(Me.BackgroundSound.GetVolume))
-            Me.V = CShort(Me.BackgroundSound.GetVolume)
+            Me.V = (Me.BackgroundSound.GetVolume)
         End Sub
 
         Private Function canTakeStep() As Boolean
-            If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
+            If Not movedInLastTick Then
                 Return True
             End If
             If Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
@@ -139,7 +154,18 @@ Namespace th
             Return False
         End Function
 
-        Public Sub AllThingReplace(ByRef X As Short, ByRef Y As Short, ByRef Thing As Short)
+        Private Function canSwim(flagToCheck As Boolean) As Boolean
+            ' If flagToCheck is false, this command has been issued for the first time and we can go ahead and execute it.
+            If Not flagToCheck Then
+                Return True
+            End If
+            If Not SwimSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING And Not WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Then
+                Return True
+            End If
+            Return False
+        End Function
+
+        Public Sub AllThingReplace(ByRef X As Integer, ByRef Y As Integer, ByRef Thing As Integer)
             Me.ThingReplace(X, Y, Thing)
             Me.BThingReplace(X, Y, Thing)
         End Sub
@@ -147,14 +173,15 @@ Namespace th
         Private Sub Bomb()
             If (Me.bombs > 0) Then
                 If Not Me.UnlimitedBullets Then
-                    Me.bombs = CShort((Me.bombs - 1))
+                    Me.bombs = ((Me.bombs - 1))
                 End If
                 Me.DisNeedle = 1
+                needleTracker = 0
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.NeedleLaunchSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -163,14 +190,14 @@ Namespace th
             End If
         End Sub
 
-        Public Sub BThingReplace(ByRef X As Short, ByRef Y As Short, ByRef Thing As Short)
+        Public Sub BThingReplace(ByRef X As Integer, ByRef Y As Integer, ByRef Thing As Integer)
             Me.BGrid(X, Y) = Thing
         End Sub
 
         Private Sub BuildWalls()
-            Dim num As Short
-            Dim num2 As Short
-            Dim x As Short = Me.x
+            Dim num As Integer
+            Dim num2 As Integer
+            Dim x As Integer = Me.x
             num = 1
             Dim iTemp As Integer
             For iTemp = 131 To 399
@@ -180,33 +207,33 @@ Namespace th
 
             System.Diagnostics.Debug.WriteLine("in buildwalls")
             Do While (num <= x)
-                Me.grid(num, 1) = Me.Wall
-                Me.grid(num, CInt(Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 4)))))) = 0
-                Me.grid(num, CInt(Math.Round(CDbl((Conversion.Int(CDbl((CDbl(Me.y) / 4))) + 1))))) = Me.Wall
-                Application.DoEvents
-                num = CShort((num + 1))
+                Me.Grid(num, 1) = Me.Wall
+                Me.Grid(num, CInt(Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 4)))))) = 0
+                Me.Grid(num, CInt(Math.Round(CDbl((Conversion.Int(CDbl((CDbl(Me.y) / 4))) + 1))))) = Me.Wall
+                Application.DoEvents()
+                num = ((num + 1))
             Loop
-            Dim num4 As Short = Me.x
+            Dim num4 As Integer = Me.x
             num = 1
             Do While (num <= num4)
                 System.Diagnostics.Debug.WriteLine("Integer second loop")
                 Me.Grid(num, Me.y) = Me.Wall
                 Application.DoEvents()
-                num = CShort((num + 1))
+                num = ((num + 1))
             Loop
             num = 1
             Do
-                Me.grid(num, &H69) = Me.Wall
-                Application.DoEvents
-                num = CShort((num + 1))
+                Me.Grid(num, &H69) = Me.Wall
+                Application.DoEvents()
+                num = ((num + 1))
             Loop While (num <= 50)
             System.Diagnostics.Debug.WriteLine("after third loop")
-            Me.grid(30, &H65) = Me.ClosedDoor
-            Me.grid(2, &H69) = Me.ClosedDoor
-            Me.grid(50, &H66) = Me.Wall
-            Me.grid(50, &H67) = Me.Wall
-            Me.grid(50, &H68) = Me.Wall
-            Me.grid(&H2F, &H69) = Me.ClosedDoor
+            Me.Grid(30, &H65) = Me.ClosedDoor
+            Me.Grid(2, &H69) = Me.ClosedDoor
+            Me.Grid(50, &H66) = Me.Wall
+            Me.Grid(50, &H67) = Me.Wall
+            Me.Grid(50, &H68) = Me.Wall
+            Me.Grid(&H2F, &H69) = Me.ClosedDoor
             num = &H69
             Do While True
                 System.Diagnostics.Debug.WriteLine("Planting wall at 5," & num)
@@ -215,11 +242,11 @@ Namespace th
                     num2 = 1
                     Do
                         Me.Grid(num2, num) = Me.Wall
-                        num2 = CShort((num2 + 1))
+                        num2 = ((num2 + 1))
                     Loop While (num2 <= 5)
                 End If
                 Application.DoEvents()
-                num = CShort((num + 1))
+                num = ((num + 1))
                 If (num > 180) Then
                     Me.Grid(5, &H86) = Me.ClosedDoor
                     Me.Grid(5, &HB2) = Me.ClosedDoor
@@ -228,7 +255,7 @@ Namespace th
                         Me.Grid(num, &HB0) = Me.Wall
                         Me.Grid(num, 180) = Me.Wall
                         Application.DoEvents()
-                        num = CShort((num + 1))
+                        num = ((num + 1))
                     Loop While (num <= &H2D)
                     System.Diagnostics.Debug.WriteLine("After 180 loop")
                     num = &H69
@@ -237,14 +264,14 @@ Namespace th
             Loop
 Label_0269:
             System.Diagnostics.Debug.WriteLine("label Label_0269")
-            Me.grid(&H2D, num) = Me.Wall
-            Me.grid(&H30, num) = Me.Wall
+            Me.Grid(&H2D, num) = Me.Wall
+            Me.Grid(&H30, num) = Me.Wall
             If (num = 180) Then
-                Me.grid(&H2E, num) = Me.Wall
-                Me.grid(&H2F, num) = Me.Wall
+                Me.Grid(&H2E, num) = Me.Wall
+                Me.Grid(&H2F, num) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 180) Then
                 System.Diagnostics.Debug.WriteLine("num > 180")
                 Me.Grid(&H2D, &H86) = Me.ClosedDoor
@@ -255,20 +282,20 @@ Label_0269:
                     Me.Grid(num, &H83) = Me.Wall
                     Me.Grid(num, &H87) = Me.Wall
                     Application.DoEvents()
-                    num = CShort((num + 1))
+                    num = ((num + 1))
                 Loop While (num <= &H2D)
                 num = &H87
                 Do
                     Me.Grid(20, num) = Me.Wall
                     Me.Grid(&H18, num) = Me.Wall
                     Application.DoEvents()
-                    num = CShort((num + 1))
+                    num = ((num + 1))
                 Loop While (num <= &HB0)
                 num = &H15
                 Do
                     Me.Grid(num, &HB0) = Me.PassageMarker
                     Me.Grid(num, &H87) = Me.PassageMarker
-                    num = CShort((num + 1))
+                    num = ((num + 1))
                 Loop While (num <= &H17)
                 num = &H31
                 System.Diagnostics.Debug.WriteLine("Done num > 180 at label Label_0269")
@@ -278,17 +305,17 @@ Label_0269:
             End If
 Label_03DE:
             System.Diagnostics.Debug.WriteLine("Label_03DE")
-            Me.grid(num, &H80) = Me.Wall
-            Me.grid(num, &H84) = Me.Wall
+            Me.Grid(num, &H80) = Me.Wall
+            Me.Grid(num, &H84) = Me.Wall
             If (num = 130) Then
                 num2 = &H80
                 Do
-                    Me.grid(num, num2) = Me.Wall
-                    num2 = CShort((num2 + 1))
+                    Me.Grid(num, num2) = Me.Wall
+                    num2 = ((num2 + 1))
                 Loop While (num2 <= &H84)
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 130) Then
                 System.Diagnostics.Debug.WriteLine("num > 130")
                 num = &H84
@@ -300,238 +327,238 @@ Label_03DE:
                 If (num = &H84) Then
                     num2 = &H7F
                     Do
-                        Me.grid(num2, num) = Me.PassageMarker
-                        num2 = CShort((num2 + 1))
+                        Me.Grid(num2, num) = Me.PassageMarker
+                        num2 = ((num2 + 1))
                     Loop While (num2 <= &H81)
                 End If
-                Me.grid(&H7E, num) = Me.Wall
-                Me.grid(130, num) = Me.Wall
+                Me.Grid(&H7E, num) = Me.Wall
+                Me.Grid(130, num) = Me.Wall
                 If (num = &HAC) Then
                     num2 = &H7E
                     Do
-                        Me.grid(num2, num) = Me.Wall
-                        num2 = CShort((num2 + 1))
+                        Me.Grid(num2, num) = Me.Wall
+                        num2 = ((num2 + 1))
                     Loop While (num2 <= 130)
                 End If
-                Application.DoEvents
-                num = CShort((num + 1))
+                Application.DoEvents()
+                num = ((num + 1))
                 System.Diagnostics.Debug.WriteLine("Made it to If (num > &HAC) Then, with num = " & num)
                 If (num > &HAC) Then
                     Me.Grid(130, 170) = Me.ClosedDoor
                     num = 130
                     Me.Grid(130, (num - 1)) = Me.Wall
-                    Me.grid(&H83, (num - 1)) = Me.Wall
-                        Me.grid(&H84, (num - 1)) = Me.Wall
-                        Me.grid(130, num) = Me.ClosedDoor
+                    Me.Grid(&H83, (num - 1)) = Me.Wall
+                    Me.Grid(&H84, (num - 1)) = Me.Wall
+                    Me.Grid(130, num) = Me.ClosedDoor
                     Exit Do
                 End If
             Loop
             System.Diagnostics.Debug.WriteLine("After outer loop")
 Label_05FF:
-            Me.grid(num, &HA8) = Me.Wall
-            Me.grid(num, &HAC) = Me.Wall
+            Me.Grid(num, &HA8) = Me.Wall
+            Me.Grid(num, &HAC) = Me.Wall
             If (num = 190) Then
                 num2 = &HA9
                 Do
-                    Me.grid(num, num2) = Me.Wall
-                    num2 = CShort((num2 + 1))
+                    Me.Grid(num, num2) = Me.Wall
+                    num2 = ((num2 + 1))
                 Loop While (num2 <= &HAB)
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 190) Then
-                Me.grid(&H84, &HA9) = Me.PassageMarker
-                Me.grid(&H84, 170) = Me.PassageMarker
-                Me.grid(&H84, &HAB) = Me.PassageMarker
-                Me.grid(&H83, &HAC) = Me.PassageMarker
-                Me.grid(&H83, &HA8) = Me.PassageMarker
+                Me.Grid(&H84, &HA9) = Me.PassageMarker
+                Me.Grid(&H84, 170) = Me.PassageMarker
+                Me.Grid(&H84, &HAB) = Me.PassageMarker
+                Me.Grid(&H83, &HAC) = Me.PassageMarker
+                Me.Grid(&H83, &HA8) = Me.PassageMarker
                 num = 130
             Else
-                goto Label_05FF
+                GoTo Label_05FF
             End If
-        Label_074E:
+Label_074E:
             If (num <> &H83) Then
-                Me.grid(num, 180) = Me.Wall
+                Me.Grid(num, 180) = Me.Wall
             End If
-            Me.grid(num, &HB6) = Me.Wall
+            Me.Grid(num, &HB6) = Me.Wall
             Select Case num
                 Case 130
-                    Me.grid(num, &HB5) = Me.Wall
+                    Me.Grid(num, &HB5) = Me.Wall
                     Exit Select
                 Case 200
-                    Me.grid(num, &HB5) = Me.Wall
+                    Me.Grid(num, &HB5) = Me.Wall
                     Exit Select
             End Select
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 200) Then
-                Me.grid(170, &HB6) = Me.ClosedDoor
+                Me.Grid(170, &HB6) = Me.ClosedDoor
                 num = &HB6
             Else
-                goto Label_074E
+                GoTo Label_074E
             End If
-        Label_07AB:
-            Me.grid(&HA9, num) = Me.Wall
-            Me.grid(&HAB, num) = Me.Wall
+Label_07AB:
+            Me.Grid(&HA9, num) = Me.Wall
+            Me.Grid(&HAB, num) = Me.Wall
             If (num = 230) Then
-                Me.grid(170, num) = Me.Wall
+                Me.Grid(170, num) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 230) Then
-                Me.grid(&HAB, 200) = Me.ClosedDoor
+                Me.Grid(&HAB, 200) = Me.ClosedDoor
                 num = &HAB
             Else
-                goto Label_07AB
+                GoTo Label_07AB
             End If
-        Label_0833:
-            Me.grid(num, &HC7) = Me.Wall
-            Me.grid(num, &HC9) = Me.Wall
+Label_0833:
+            Me.Grid(num, &HC7) = Me.Wall
+            Me.Grid(num, &HC9) = Me.Wall
             If (num = 220) Then
-                Me.grid(num, 200) = Me.Wall
+                Me.Grid(num, 200) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 220) Then
-                Me.grid(&HD7, &HC7) = Me.ClosedDoor
+                Me.Grid(&HD7, &HC7) = Me.ClosedDoor
                 num = &HA8
             Else
-                goto Label_0833
+                GoTo Label_0833
             End If
-        Label_08D2:
-            Me.grid(&HD6, num) = Me.Wall
-            Me.grid(&HD9, num) = Me.Wall
+Label_08D2:
+            Me.Grid(&HD6, num) = Me.Wall
+            Me.Grid(&HD9, num) = Me.Wall
             If (num = &HA8) Then
-                Me.grid(&HD7, num) = Me.Wall
-                Me.grid(&HD8, num) = Me.Wall
+                Me.Grid(&HD7, num) = Me.Wall
+                Me.Grid(&HD8, num) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > &HC7) Then
-                Me.grid(&HD6, 170) = Me.ClosedDoor
+                Me.Grid(&HD6, 170) = Me.ClosedDoor
                 num = 190
                 Do
-                    Me.grid(num, &HA8) = Me.Wall
-                    Me.grid(num, &HAC) = Me.Wall
-                    Application.DoEvents
-                    num = CShort((num + 1))
+                    Me.Grid(num, &HA8) = Me.Wall
+                    Me.Grid(num, &HAC) = Me.Wall
+                    Application.DoEvents()
+                    num = ((num + 1))
                 Loop While (num <= &HD6)
-                Me.grid(190, 170) = Me.ClosedDoor
-                Me.grid(&HD9, 170) = Me.ClosedDoor
+                Me.Grid(190, 170) = Me.ClosedDoor
+                Me.Grid(&HD9, 170) = Me.ClosedDoor
                 num = &HD9
             Else
-                goto Label_08D2
+                GoTo Label_08D2
             End If
-        Label_0A07:
-            Me.grid(num, &HA8) = Me.Wall
-            Me.grid(num, &HAC) = Me.Wall
+Label_0A07:
+            Me.Grid(num, &HA8) = Me.Wall
+            Me.Grid(num, &HAC) = Me.Wall
             If (num = 300) Then
-                Me.grid(num, &HA9) = Me.Wall
-                Me.grid(num, 170) = Me.Wall
-                Me.grid(num, &HAB) = Me.Wall
+                Me.Grid(num, &HA9) = Me.Wall
+                Me.Grid(num, 170) = Me.Wall
+                Me.Grid(num, &HAB) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 300) Then
-                Me.grid(&H83, 180) = Me.ClosedDoor
-                Me.grid(230, &HAC) = Me.LockedDoor
+                Me.Grid(&H83, 180) = Me.ClosedDoor
+                Me.Grid(230, &HAC) = Me.LockedDoor
                 num = &HAC
             Else
-                goto Label_0A07
+                GoTo Label_0A07
             End If
-        Label_0ABF:
-            Me.grid(220, num) = Me.Wall
-            Me.grid(270, num) = Me.Wall
+Label_0ABF:
+            Me.Grid(220, num) = Me.Wall
+            Me.Grid(270, num) = Me.Wall
             If (num = 230) Then
                 num2 = 220
                 Do
-                    Me.grid(num2, num) = Me.Wall
-                    num2 = CShort((num2 + 1))
+                    Me.Grid(num2, num) = Me.Wall
+                    num2 = ((num2 + 1))
                 Loop While (num2 <= 270)
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 230) Then
-                Me.grid(&HDD, &HAD) = Me.Reflector
-                Me.grid(&H10D, &HAD) = Me.Missile
-                Me.grid(&HDD, &HE5) = Me.Laser
-                Me.grid(&H10D, &HE5) = Me.controler
-                Me.grid(170, 230) = Me.ClosedDoor
+                Me.Grid(&HDD, &HAD) = Me.Reflector
+                Me.Grid(&H10D, &HAD) = Me.Missile
+                Me.Grid(&HDD, &HE5) = Me.Laser
+                Me.Grid(&H10D, &HE5) = Me.controler
+                Me.Grid(170, 230) = Me.ClosedDoor
                 num = 230
             Else
-                goto Label_0ABF
+                GoTo Label_0ABF
             End If
-        Label_0BB3:
-            Me.grid(&HA9, num) = Me.Wall
-            Me.grid(&HAB, num) = Me.Wall
+Label_0BB3:
+            Me.Grid(&HA9, num) = Me.Wall
+            Me.Grid(&HAB, num) = Me.Wall
             If (num = 330) Then
-                Me.grid(170, num) = Me.Wall
+                Me.Grid(170, num) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 330) Then
-                Me.grid(&HAB, 300) = Me.ClosedDoor
+                Me.Grid(&HAB, 300) = Me.ClosedDoor
                 num = &HAB
             Else
-                goto Label_0BB3
+                GoTo Label_0BB3
             End If
-        Label_0C6C:
-            Me.grid(num, &H12A) = Me.Wall
-            Me.grid(num, &H12E) = Me.Wall
+Label_0C6C:
+            Me.Grid(num, &H12A) = Me.Wall
+            Me.Grid(num, &H12E) = Me.Wall
             If (num = 400) Then
-                Me.grid(num, &H12B) = Me.Wall
-                Me.grid(num, 300) = Me.Wall
-                Me.grid(num, &H12D) = Me.Wall
+                Me.Grid(num, &H12B) = Me.Wall
+                Me.Grid(num, 300) = Me.Wall
+                Me.Grid(num, &H12D) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 400) Then
-                Me.grid(&HAB, 320) = Me.ClosedDoor
+                Me.Grid(&HAB, 320) = Me.ClosedDoor
                 num = &HAB
             Else
-                goto Label_0C6C
+                GoTo Label_0C6C
             End If
-        Label_0CFA:
-            Me.grid(num, &H13F) = Me.Wall
-            Me.grid(num, &H141) = Me.Wall
+Label_0CFA:
+            Me.Grid(num, &H13F) = Me.Wall
+            Me.Grid(num, &H141) = Me.Wall
             If (num = 400) Then
-                Me.grid(num, 320) = Me.Wall
+                Me.Grid(num, 320) = Me.Wall
             End If
-            Application.DoEvents
-            num = CShort((num + 1))
+            Application.DoEvents()
+            num = ((num + 1))
             If (num > 400) Then
-                Me.grid(330, &H141) = Me.LockedDoor
+                Me.Grid(330, &H141) = Me.LockedDoor
                 num = &H141
                 Do
-                    Me.grid(310, num) = Me.Wall
-                    Application.DoEvents
-                    num = CShort((num + 1))
+                    Me.Grid(310, num) = Me.Wall
+                    Application.DoEvents()
+                    num = ((num + 1))
                 Loop While (num <= 400)
                 num = 180
                 Do
-                    Me.grid(&H2A, num) = Me.Wall
-                    Me.grid(&H30, num) = Me.Wall
-                    Application.DoEvents
-                    num = CShort((num + 1))
+                    Me.Grid(&H2A, num) = Me.Wall
+                    Me.Grid(&H30, num) = Me.Wall
+                    Application.DoEvents()
+                    num = ((num + 1))
                 Loop While (num <= 190)
                 num = &H2A
                 Do
-                    Me.grid(num, 180) = Me.Wall
-                    Me.grid(num, 190) = Me.Wall
-                    Application.DoEvents
-                    num = CShort((num + 1))
+                    Me.Grid(num, 180) = Me.Wall
+                    Me.Grid(num, 190) = Me.Wall
+                    Application.DoEvents()
+                    num = ((num + 1))
                 Loop While (num <= &H30)
-                Me.grid(&H2E, 180) = Me.LockedDoor
-                Dim y As Short = Me.y
+                Me.Grid(&H2E, 180) = Me.LockedDoor
+                Dim y As Integer = Me.y
                 num = 1
                 Do While (num <= y)
-                    Me.grid(1, num) = Me.Wall
-                    Me.grid(Me.x, num) = Me.Wall
-                    Application.DoEvents
-                    num = CShort((num + 1))
+                    Me.Grid(1, num) = Me.Wall
+                    Me.Grid(Me.x, num) = Me.Wall
+                    Application.DoEvents()
+                    num = ((num + 1))
                 Loop
             Else
-                goto Label_0CFA
+                GoTo Label_0CFA
             End If
         End Sub
 
@@ -539,73 +566,78 @@ Label_05FF:
             If keyDownDisabled() Then
                 Exit Sub
             End If
-            If (Me.Weapons(Me.WPos) <> "control") Then
-                Me.NStop = False
-                Dim nWait As Boolean = False
-                Me.NLS((DXSound.string_0 & "\nbuyamunition1.wav"), nWait)
-                Dim inputStr As String = Interaction.InputBox("Amount:", "Buy Amunition", "", -1, -1)
-                If (inputStr = "") Then
-                    Me.NStop = True
-                Else
-                    Dim num2 As Long
-                    Dim num As Short = CShort(Math.Round(Conversion.Val(inputStr)))
-                    If ((num * 5) > Me.Points) Then
-                        nWait = True
-                        Me.NLS((DXSound.string_0 & "\nbuyamunition2.wav"), nWait)
-                        If Me.NStop Then
-                            Return
-                        End If
-                        num2 = num
-                        Me.VoiceNumber(num2)
-                        num = CShort(num2)
-                        Me.NumWait()
-
-                        If Me.NStop Then
-                            Return
-                        End If
-                        nWait = False
-                        Me.NLS((DXSound.string_0 & "\nbuyamunition3.wav"), nWait)
+            Try
+                If (Me.Weapons(Me.WPos) <> "control") Then
+                    disableGameLoop()
+                    Me.NStop = False
+                    Dim nWait As Boolean = False
+                    Me.NLS((DXSound.string_0 & "\nbuyamunition1.wav"), nWait)
+                    Dim inputStr As String = Interaction.InputBox("Amount:", "Buy Amunition", "", -1, -1)
+                    If (inputStr = "") Then
+                        Me.NStop = True
                     Else
-                        Me.Points = (Me.Points - (num * 5))
-                        Select Case Strings.LCase(Me.Weapons(Me.WPos))
-                            Case "gun"
-                                Me.Bullets = CShort((Me.Bullets + (num * 10)))
-                                Exit Select
-                            Case "sword"
-                                Me.Swrd = CShort((Me.Swrd + num))
-                                Exit Select
-                            Case "bombs"
-                                Me.bombs = CShort((Me.bombs + num))
-                                Exit Select
-                            Case "laser"
-                                Me.ALaser = CShort((Me.ALaser + num))
-                                Exit Select
-                            Case "gmissile"
-                                Me.short_2 = CShort((Me.short_2 + num))
-                                Exit Select
-                            Case "reflector"
-                                Me.short_3 = CShort((Me.short_3 + num))
-                                Exit Select
-                        End Select
-                        nWait = True
-                        Me.NLS((DXSound.string_0 & "\nbuyamunition4.wav"), nWait)
-                        If Me.NStop Then
-                            Return
-                        End If
-                        num2 = num
-                        Me.VoiceNumber(num2)
-                        num = CShort(num2)
-                        Me.NumWait()
+                        Dim num2 As Long
+                        Dim num As Integer = (Math.Round(Conversion.Val(inputStr)))
+                        If ((num * 5) > Me.Points) Then
+                            nWait = True
+                            Me.NLS((DXSound.string_0 & "\nbuyamunition2.wav"), nWait)
+                            If Me.NStop Then
+                                Return
+                            End If
+                            num2 = num
+                            Me.VoiceNumber(num2)
+                            num = (num2)
+                            Me.NumWait()
 
-                        If Me.NStop Then
-                            Return
+                            If Me.NStop Then
+                                Return
+                            End If
+                            nWait = False
+                            Me.NLS((DXSound.string_0 & "\nbuyamunition3.wav"), nWait)
+                        Else
+                            Me.Points = (Me.Points - (num * 5))
+                            Select Case Strings.LCase(Me.Weapons(Me.WPos))
+                                Case "gun"
+                                    Me.Bullets = ((Me.Bullets + (num * 10)))
+                                    Exit Select
+                                Case "sword"
+                                    Me.Swrd = ((Me.Swrd + num))
+                                    Exit Select
+                                Case "bombs"
+                                    Me.bombs = ((Me.bombs + num))
+                                    Exit Select
+                                Case "laser"
+                                    Me.ALaser = ((Me.ALaser + num))
+                                    Exit Select
+                                Case "gmissile"
+                                    Me.short_2 = ((Me.short_2 + num))
+                                    Exit Select
+                                Case "reflector"
+                                    Me.short_3 = ((Me.short_3 + num))
+                                    Exit Select
+                            End Select
+                            nWait = True
+                            Me.NLS((DXSound.string_0 & "\nbuyamunition4.wav"), nWait)
+                            If Me.NStop Then
+                                Return
+                            End If
+                            num2 = num
+                            Me.VoiceNumber(num2)
+                            num = (num2)
+                            Me.NumWait()
+
+                            If Me.NStop Then
+                                Return
+                            End If
+                            nWait = False
+                            Me.NLS((DXSound.string_0 & "\nbuyamunition5.wav"), nWait)
                         End If
-                        nWait = False
-                        Me.NLS((DXSound.string_0 & "\nbuyamunition5.wav"), nWait)
+                        Me.NStop = True
                     End If
-                    Me.NStop = True
                 End If
-            End If
+            Finally
+                enableGameLoop()
+            End Try
         End Sub
 
         Private Sub ChangeSpeechRate(a As SpeechRate)
@@ -646,23 +678,25 @@ Label_05FF:
             Dim str As String
             Dim flag4 As Boolean
             If (Me.h < 1) Then
+                disableGameLoop()
                 THConstVars.CannotDoKeydown = True
-                Me.MuteSounds
+                Me.MuteSounds()
+
                 If Not dPlayDie Then
                     Dim bCloseFirst As Boolean = True
                     Dim bLoopSound As Boolean = False
                     Dim performEffects As Boolean = False
-                    Dim x As Short = 0
-                    Dim y As Short = 0
+                    Dim x As Integer = 0
+                    Dim y As Integer = 0
                     str = ""
                     flag4 = False
                     DXSound.PlaySound(Me.CharDieSound, bCloseFirst, bLoopSound, performEffects, x, y, str, flag4)
                     Do While (Me.CharDieSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                        Application.DoEvents
+                        Application.DoEvents()
                     Loop
                     If Me.IsFightingLast Then
                         If ((Me.HasKilledBrutus And Me.HasKilledBrutus2) And Me.IsFightingLast) Then
-                            Me.BombAlarmSound.Stop
+                            Me.BombAlarmSound.Stop()
                             flag4 = True
                             performEffects = False
                             bLoopSound = False
@@ -672,7 +706,7 @@ Label_05FF:
                             bCloseFirst = False
                             DXSound.PlaySound(Me.directSoundSecondaryBuffer8_6, flag4, performEffects, bLoopSound, y, x, str, bCloseFirst)
                             Do While (Me.directSoundSecondaryBuffer8_6.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                                Application.DoEvents
+                                Application.DoEvents()
                             Loop
                         ElseIf Me.IsFightingLast Then
                             flag4 = True
@@ -684,7 +718,7 @@ Label_05FF:
                             bCloseFirst = False
                             DXSound.PlaySound(Me.directSoundSecondaryBuffer8_7, flag4, performEffects, bLoopSound, y, x, str, bCloseFirst)
                             Do While (Me.directSoundSecondaryBuffer8_7.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                                Application.DoEvents
+                                Application.DoEvents()
                             Loop
                         End If
                     End If
@@ -692,15 +726,16 @@ Label_05FF:
                     flag4 = True
                     DXSound.Radio(str, flag4)
                     If Me.IsFightingLast Then
-                        Me.FinalDuelSound.Stop
+                        Me.FinalDuelSound.Stop()
                     End If
-                    Me.DuelSound.Stop
+                    Me.DuelSound.Stop()
                 End If
                 If ((Me.HasKilledBrutus And Me.HasKilledBrutus2) And Me.IsFightingLast) Then
-                    Me.BombAlarmSound.Stop
-                    Me.TargetSound.Stop
+                    Me.BombAlarmSound.Stop()
+                    Me.TargetSound.Stop()
+
                     Do While (Me.BigBlastSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                        Application.DoEvents
+                        Application.DoEvents()
                     Loop
                 End If
                 THConstVars.CannotDoKeydown = False
@@ -721,8 +756,8 @@ Label_05FF:
             Dim flag3 As Boolean
             Dim flag4 As Boolean
             Dim flag5 As Boolean
-            Dim num2 As Short
-            Dim num3 As Short
+            Dim num2 As Integer
+            Dim num3 As Integer
             Dim str3 As String
             Dim flag6 As Boolean
             If Me.HasShutDownCard Then
@@ -753,7 +788,7 @@ Label_05FF:
                 Me.directSoundSecondaryBuffer8_7 = DXSound.LoadSound((DXSound.SoundPath & "\brutus4.wav"))
                 Me.BigBlastSound = DXSound.LoadSound((DXSound.SoundPath & "\bigblast.wav"))
                 Do While (Me.TeleportSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                    Application.DoEvents
+                    Application.DoEvents()
                 Loop
                 Me.px = 10
                 Me.py = 110
@@ -766,10 +801,10 @@ Label_05FF:
                 flag3 = False
                 DXSound.PlaySound(Me.BLastFightBeginSound, flag6, flag5, flag4, num3, num2, str3, flag3)
                 Do While (Me.BLastFightBeginSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                    Application.DoEvents
+                    Application.DoEvents()
                 Loop
-                Me.challs(1).TurnIntoMaster
-                Me.StartMusic
+                Me.challs(1).TurnIntoMaster()
+                Me.StartMusic()
                 str3 = "r6.wav"
                 flag6 = True
                 DXSound.Radio(str3, flag6)
@@ -792,7 +827,7 @@ Label_05FF:
                 Me.NLS((DXSound.string_0 & "\npanel2.wav"), flag6)
                 Dim str2 As String = Interaction.InputBox("You may begin typing into the panel. Press Escape if you wish not to enter any sequences into the panel.", "Control Panel Keypad", "", -1, -1)
                 If (str2 = "") Then
-                    Me.NNumber.Stop
+                    Me.NNumber.Stop()
                 Else
                     flag = True
                     If (Strings.LCase(str2) = Strings.LCase("kill all! die!")) Then
@@ -810,7 +845,7 @@ Label_05FF:
                         flag6 = True
                         DXSound.Radio(str3, flag6)
                         THConstVars.CannotDoKeydown = False
-                        goto Label_02E2
+                        GoTo Label_02E2
                     End If
                     flag6 = True
                     flag5 = False
@@ -823,7 +858,7 @@ Label_05FF:
                 End If
                 Return
             End If
-        Label_02E2:
+Label_02E2:
             If DoCheats Then
                 If (Me.IsFull And Me.WorkedPanel) Then
                     Dim flag2 As Boolean
@@ -831,7 +866,7 @@ Label_05FF:
                     Me.NLS((DXSound.string_0 & "\npanel3.wav"), flag6)
                     Dim str As String = Interaction.InputBox("Cheat:", "Enter Cheat", "", -1, -1)
                     If (str = "") Then
-                        Me.NNumber.Stop
+                        Me.NNumber.Stop()
                         Return
                     End If
                     flag = True
@@ -857,7 +892,7 @@ Label_05FF:
                             Exit Select
                         Case "unlimit my health now!"
                             Me.UnlimitedHealth = True
-                            Me.h = CShort((Me.h + 200))
+                            Me.h = ((Me.h + 200))
                             flag2 = True
                             Exit Select
                         Case "unlimit my bullets now!"
@@ -897,7 +932,7 @@ Label_05FF:
                         DXSound.PlaySound(Me.AccessDeniedSound, flag6, flag5, flag4, num3, num2, str3, flag3)
                         Return
                     End If
-                    Me.NNumber.Stop
+                    Me.NNumber.Stop()
                     flag6 = True
                     flag5 = False
                     flag4 = False
@@ -918,7 +953,7 @@ Label_05FF:
                     Return
                 End If
             End If
-            If (flag AndAlso ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!)) Then
+            If (flag AndAlso ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!)) Then
                 Me.TeleportsAreClosed = True
                 flag6 = True
                 flag5 = False
@@ -930,25 +965,25 @@ Label_05FF:
                 DXSound.PlaySound(Me.AlarmSound, flag6, flag5, flag4, num3, num2, str3, flag3)
                 Me.DetectRange = 3
                 Me.HowMany = 15
-                Dim num4 As Short = CShort(Information.UBound(Me.challs, 1))
-                Dim i As Short = 1
+                Dim num4 As Integer = (Information.UBound(Me.challs, 1))
+                Dim i As Integer = 1
                 Do While (i <= num4)
                     Me.GoFight(i)
-                    i = CShort((i + 1))
+                    i = ((i + 1))
                 Loop
                 Me.HowManyNum = 0
             End If
         End Sub
 
         Private Sub CountdownMachine()
-            If (Me.ASubs(4) >= 10) Then
-                Me.ASubs(4) = 0
+            If (machineTracker * frameTime >= 1000) Then
+                machineTracker = 0
                 If Me.IsWaitingForMachine Then
                     Dim flag As Boolean
                     Dim flag2 As Boolean
                     Dim flag3 As Boolean
-                    Dim num As Short
-                    Dim num2 As Short
+                    Dim num As Integer
+                    Dim num2 As Integer
                     Dim str As String
                     Dim flag4 As Boolean
                     If (Me.CMachine <= 0) Then
@@ -961,13 +996,13 @@ Label_05FF:
                         str = ""
                         flag4 = False
                         DXSound.PlaySound(Me.MachineTurnOffSound, flag, flag2, flag3, num, num2, str, flag4)
-                        Me.MachineSound.Stop
+                        Me.MachineSound.Stop()
                         str = "r9.wav"
                         flag4 = False
                         DXSound.Radio(str, flag4)
                         Me.IsWaitingForMachine = False
                     Else
-                        Me.CMachine = CShort((Me.CMachine - 1))
+                        Me.CMachine = ((Me.CMachine - 1))
                         flag4 = True
                         flag3 = False
                         flag2 = False
@@ -979,24 +1014,24 @@ Label_05FF:
                     End If
                 End If
             Else
-                Me.ASubs(4) = CShort((Me.ASubs(4) + 1))
+                machineTracker += 1
             End If
         End Sub
 
         Private Sub DepthDecrease()
             If (Me.WDepth > 0) Then
-                Me.WDepth = CShort((Me.WDepth - 1))
+                Me.WDepth = ((Me.WDepth - 1))
             End If
-            If (Me.WDepth = 0) Then
+            If (Not IsResting And Me.WDepth = 0) Then
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.BreathSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
-                Me.WaterSound.Stop
+                Me.WaterSound.Stop()
                 Me.IsResting = True
                 Me.DidNotSwim = 0
             End If
@@ -1004,18 +1039,18 @@ Label_05FF:
 
         Private Sub DepthIncrease()
             Me.IsResting = False
-            If (Me.WDepth < 30) Then
-                Me.WDepth = CShort((Me.WDepth + 1))
+            If (Me.WDepth < maxDepth) Then
+                Me.WDepth = ((Me.WDepth + 1))
             End If
             If (Me.WDepth = 1) Then
-                Me.BreathSound.Stop
-                Dim z As Short = 0
+                Me.BreathSound.Stop()
+                Dim z As Integer = 0
                 DXSound.smethod_1(Me.JumpInWaterSound, True, False, Me.px, Me.py, z)
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = True
                 Dim performEffects As Boolean = False
                 z = 0
-                Dim y As Short = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.WaterSound, bCloseFirst, bLoopSound, performEffects, z, y, dVolume, waitTillDone)
@@ -1027,11 +1062,11 @@ Label_05FF:
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             Dim str As String
             Dim flag4 As Boolean
-            If ((Me.grid(Me.px, Me.py) <> Me.Water) AndAlso Me.IsInWater) Then
+            If ((Me.Grid(Me.px, Me.py) <> Me.Water) AndAlso Me.IsInWater) Then
                 Me.IsInWater = False
                 Me.SubPX = 0
                 Me.SubPY = 0
@@ -1043,14 +1078,14 @@ Label_05FF:
                 str = ""
                 flag4 = False
                 DXSound.PlaySound(Me.BreathSound, flag, flag2, flag3, num, num2, str, flag4)
-                Me.WaterSound.Stop
+                Me.WaterSound.Stop()
                 Me.WDepth = 0
                 Me.DidNotSwim = 0
                 Me.IsResting = False
                 Me.h = Me.WH
                 Me.JustCameFromWater = True
             End If
-            Dim num4 As Short = CShort(Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.grid(Me.px, Me.py))))))
+            Dim num4 As Integer = (Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.Grid(Me.px, Me.py))))))
             If (num4 = Me.Treasure) Then
                 If Me.HasKilledBrutus Then
                     THConstVars.CannotDoKeydown = True
@@ -1063,7 +1098,7 @@ Label_05FF:
                     flag = False
                     DXSound.PlaySound(Me.VaultUpSound, flag4, flag3, flag2, num2, num, str, flag)
                     Do While (Me.VaultUpSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                        Application.DoEvents
+                        Application.DoEvents()
                     Loop
                     flag4 = True
                     flag3 = False
@@ -1094,7 +1129,7 @@ Label_05FF:
                         Me.KillBrutusSound = DXSound.LoadSound((DXSound.SoundPath & "\brutusdietalk.wav"))
                         Me.directSoundSecondaryBuffer8_7 = DXSound.LoadSound((DXSound.SoundPath & "\brutus4.wav"))
                         Do While (Me.TeleportSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                            Application.DoEvents
+                            Application.DoEvents()
                         Loop
                         Me.px = 10
                         Me.py = 110
@@ -1107,7 +1142,7 @@ Label_05FF:
                         flag = False
                         DXSound.PlaySound(Me.LastFightBeginSound, flag4, flag3, flag2, num2, num, str, flag)
                         Do While (Me.LastFightBeginSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                            Application.DoEvents
+                            Application.DoEvents()
                         Loop
                         flag4 = True
                         flag3 = False
@@ -1118,10 +1153,10 @@ Label_05FF:
                         flag = False
                         DXSound.PlaySound(Me.TalkToBrutusSound, flag4, flag3, flag2, num2, num, str, flag)
                         Do While (Me.TalkToBrutusSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                            Application.DoEvents
+                            Application.DoEvents()
                         Loop
-                        Me.challs(1).TurnIntoMaster
-                        Me.StartMusic
+                        Me.challs(1).TurnIntoMaster()
+                        Me.StartMusic()
                         str = "r7.wav"
                         flag4 = True
                         DXSound.Radio(str, flag4)
@@ -1162,18 +1197,18 @@ Label_05FF:
             Else
                 Select Case num4
                     Case 1
-                        Me.snake
-                        goto Label_0B5F
+                        Me.snake()
+                        Exit Sub
                     Case 2
-                        Me.Sword
-                        goto Label_0B5F
+                        Me.Sword()
+                        Exit Sub
                     Case 3
-                        Me.Bullets = CShort((Me.Bullets + 10))
-                        Me.grid(Me.px, Me.py) = 0
-                        goto Label_0B5F
+                        Me.Bullets = ((Me.Bullets + 10))
+                        Me.Grid(Me.px, Me.py) = 0
+                        Exit Sub
                     Case 4
-                        Me.h = CShort((Me.h + 5))
-                        Me.grid(Me.px, Me.py) = 0
+                        Me.h = ((Me.h + 5))
+                        Me.Grid(Me.px, Me.py) = 0
                         flag4 = True
                         flag3 = False
                         flag2 = False
@@ -1182,7 +1217,7 @@ Label_05FF:
                         str = ""
                         flag = False
                         DXSound.PlaySound(Me.PickUpHealthSound, flag4, flag3, flag2, num2, num, str, flag)
-                        goto Label_0B5F
+                        Exit Sub
                     Case 5
                         If Not Me.DisableTeleports Then
                             If Not Me.TeleportsAreClosed Then
@@ -1197,28 +1232,28 @@ Label_05FF:
                                 flag = False
                                 DXSound.PlaySound(Me.TeleportSound, flag4, flag3, flag2, num2, num, str, flag)
                                 Do While (Me.TeleportSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                                    Application.DoEvents
+                                    Application.DoEvents()
                                 Loop
-                                Me.px = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
-                                Me.py = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
+                                Me.px = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
+                                Me.py = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
                                 Do While Not flag5
                                     If (((((Me.px > 1) And (Me.py > 1)) And (Me.px < (Me.x - 1))) And (Me.py < (Me.y - 1))) And (Me.py > Conversion.Int(CDbl((CDbl(Me.y) / 10))))) Then
-                                        If ((((Me.grid(Me.px, Me.py) <> Me.Wall) And (Me.grid(Me.px, Me.py) <> Me.Water)) And (Me.grid(Me.px, Me.py) <> Me.Mine)) And (Me.grid(Me.px, Me.py) <> Me.MineGuard)) Then
+                                        If ((((Me.Grid(Me.px, Me.py) <> Me.Wall) And (Me.Grid(Me.px, Me.py) <> Me.Water)) And (Me.Grid(Me.px, Me.py) <> Me.Mine)) And (Me.Grid(Me.px, Me.py) <> Me.MineGuard)) Then
                                             flag5 = True
                                         Else
-                                            Me.px = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
-                                            Me.py = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
+                                            Me.px = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
+                                            Me.py = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
                                         End If
                                     Else
-                                        Me.px = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
-                                        Me.py = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
+                                        Me.px = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
+                                        Me.py = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
                                     End If
                                 Loop
                                 THConstVars.CannotDoKeydown = False
-                                Me.Determine
+                                Me.Determine()
                             ElseIf (Me.NumAlert = 0) Then
                                 Me.TeleportsAreClosed = False
-                                Me.Determine
+                                Me.Determine()
                             Else
                                 flag4 = True
                                 flag3 = False
@@ -1230,12 +1265,12 @@ Label_05FF:
                                 DXSound.PlaySound(Me.AccessDeniedSound, flag4, flag3, flag2, num2, num, str, flag)
                             End If
                         End If
-                        goto Label_0B5F
+                        Exit Sub
                 End Select
                 If (num4 = Me.Key) Then
                     If Me.WorkedPanel Then
                         Me.HasKey = True
-                        Me.grid(Me.px, Me.py) = 0
+                        Me.Grid(Me.px, Me.py) = 0
                         flag4 = True
                         flag3 = False
                         flag2 = False
@@ -1257,12 +1292,12 @@ Label_05FF:
                         flag = False
                         DXSound.PlaySound(Me.DisChestSound, flag4, flag3, flag2, num2, num, str, flag)
                         Me.HowMany = 15
-                        Dim num5 As Short = CShort(Information.UBound(Me.challs, 1))
-                        Dim i As Short = 1
+                        Dim num5 As Integer = (Information.UBound(Me.challs, 1))
+                        Dim i As Integer = 1
                         Do While (i <= num5)
                             Me.GoFight(i)
-                            Application.DoEvents
-                            i = CShort((i + 1))
+                            Application.DoEvents()
+                            i = ((i + 1))
                         Loop
                         Me.HowManyNum = 0
                     End If
@@ -1273,12 +1308,12 @@ Label_05FF:
                     num2 = 10
                     num = 0
                     Me.ReflectHit(num2, num)
-                    Me.grid(Me.px, Me.py) = Me.BGrid(Me.px, Me.py)
+                    Me.Grid(Me.px, Me.py) = Me.BGrid(Me.px, Me.py)
                 ElseIf (num4 = Me.Water) Then
                     If Not Me.IsFightingLast Then
                         If Not Me.IsInWater Then
                             Me.IsInWater = True
-                            Me.BreathSound.Stop
+                            Me.BreathSound.Stop()
                             num2 = 0
                             DXSound.smethod_1(Me.JumpInWaterSound, True, False, Me.px, Me.py, num2)
                             flag4 = True
@@ -1376,11 +1411,8 @@ Label_05FF:
                     DXSound.smethod_1(Me.GExplodeSound, True, False, Me.px, Me.py, num2)
                 End If
             End If
-        Label_0B5F:
-            flag4 = False
-            Me.CharDied(flag4)
             If Not Me.IsChall(Me.px, Me.py) Then
-                Me.BGrid(Me.px, Me.py) = Me.grid(Me.px, Me.py)
+                Me.BGrid(Me.px, Me.py) = Me.Grid(Me.px, Me.py)
             End If
         End Sub
 
@@ -1408,15 +1440,15 @@ Label_05FF:
         End Sub
 
         Private Sub DoIfEscapingFromBomb()
-            If (Me.ASubs(5) >= 10) Then
-                Me.ASubs(5) = 0
+            If (bombTracker * frameTime >= 1000) Then
+                bombTracker = 0
                 If Me.IsEscapingFromBomb Then
-                    Me.EBomb = CShort((Me.EBomb - 1))
+                    Me.EBomb = ((Me.EBomb - 1))
                     Dim bCloseFirst As Boolean = True
                     Dim bLoopSound As Boolean = False
                     Dim performEffects As Boolean = False
-                    Dim x As Short = 0
-                    Dim y As Short = 0
+                    Dim x As Integer = 0
+                    Dim y As Integer = 0
                     Dim dVolume As String = ""
                     Dim waitTillDone As Boolean = False
                     DXSound.PlaySound(Me.BombBeepSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -1441,169 +1473,43 @@ Label_05FF:
                         DXSound.PlaySound(Me.BigBlastSound, waitTillDone, performEffects, bLoopSound, y, x, dVolume, bCloseFirst)
                         Me.MuteSounds()
                         Me.h = 0
-                        waitTillDone = True
-                        Me.CharDied(waitTillDone)
                     End If
                 End If
             Else
-                Me.ASubs(5) = CShort((Me.ASubs(5) + 1))
+                bombTracker += 1
             End If
         End Sub
 
         Private Sub DoIfInWater()
-            If (Me.ASubs(1) >= 10) Then
-                Me.ASubs(1) = 0
-                If Me.IsInWater Then
+            If IsInWater Then
+                If waterTracker * frameTime >= 1000 Then
+                    waterTracker = 0
                     If Not Me.IsResting Then
-                        Me.DidNotSwim = CShort((Me.DidNotSwim + 1))
+                        Me.DidNotSwim = ((Me.DidNotSwim + 1))
                         If (Me.DidNotSwim >= 2) Then
                             Me.DepthIncrease()
                         End If
-                    End If
-                    If Not Me.IsResting Then
-                        Dim num As Short
-                        If (Me.WDepth <= &H19) Then
-                            num = 10
-                            Me.SubHealth(num)
+                        If (Me.WDepth < 10) Then
+                            Me.SubHealth(10)
                         Else
-                            num = 20
-                            Me.SubHealth(num)
+                            Me.SubHealth(20)
                         End If
-                    ElseIf (Me.h < Me.WH) Then
-                        Me.h = CShort((Me.h + 3))
-                    Else
-                        Me.h = Me.WH
+                    ElseIf (Me.h < Me.WH) Then ' If resting
+                        Me.h = ((Me.h + 3))
                     End If
-                    Dim dPlayDie As Boolean = False
-                    Me.CharDied(dPlayDie)
+                Else ' if waterTracker < tick
+                    waterTracker += 1
                 End If
-            Else
-                Me.ASubs(1) = CShort((Me.ASubs(1) + 1))
             End If
         End Sub
 
         Private Sub EMove_Tick()
-            Dim num5 As Integer
-            Try
-                Dim num6 As Integer
-Label_0001:
-                ProjectData.ClearProjectError()
-                Dim num4 As Integer = 2
-Label_0009:
-                num6 = 2
-                If (Me.CA <> 1) Then
-                    GoTo Label_0047
-                End If
-Label_0015:
-                num6 = 3
-                Dim bCloseFirst As Boolean = True
-                Dim bLoopSound As Boolean = False
-                Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
-                Dim dVolume As String = ""
-                Dim waitTillDone As Boolean = False
-                DXSound.PlaySound(Me.directSoundSecondaryBuffer8_2, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
-Label_0047:
-                num6 = 5
-                If Me.IsInPauseState Then
-                    GoTo Label_01A9
-                End If
-Label_0057:
-                num6 = 8
-                If Not Me.NStop Then
-                    GoTo Label_01A9
-                End If
-Label_0067:
-                num6 = 11
-                If ((THConstVars.CannotDoKeydown And Not Me.IsLaunchingControl) And Not Me.IsLaunchingNeedle) Then
-                    GoTo Label_01A9
-                End If
-Label_008B:
-                num6 = 14
-                Dim index As Short = 1
-                GoTo Label_00B6
-Label_0093:
-                num6 = &H11
-                Me.challs(index).Activate()
-Label_00A4:
-                num6 = &H12
-                index = CShort((index + 1))
-Label_00AD:
-                num6 = &H13
-                Application.DoEvents()
-Label_00B6:
-                num6 = &H10
-                If (index <= Me.ChallAmount) Then
-                    GoTo Label_0093
-                End If
-                GoTo Label_01A9
-Label_00C8:
-                num5 = 0
-                Select Case (num5 + 1)
-                    Case 1
-                        GoTo Label_0001
-                    Case 2
-                        GoTo Label_0009
-                    Case 3
-                        GoTo Label_0015
-                    Case 4, 5
-                        GoTo Label_0047
-                    Case 6, 9, 12, &H15, &H18
-                        GoTo Label_01A9
-                    Case 7, 8
-                        GoTo Label_0057
-                    Case 10, 11
-                        GoTo Label_0067
-                    Case 13, 14
-                        GoTo Label_008B
-                    Case 15, &H10, 20
-                        GoTo Label_00B6
-                    Case &H11
-                        GoTo Label_0093
-                    Case &H12
-                        GoTo Label_00A4
-                    Case &H13
-                        GoTo Label_00AD
-                    Case &H16
-                        GoTo Label_0149
-                    Case &H17
-                        Exit Select
-                    Case Else
-                        GoTo Label_019E
-                End Select
-Label_013A:
-                num6 = &H17
-                ProjectData.ClearProjectError()
-
-                If (num5 <> 0) Then
-                    GoTo Label_00C8
-                End If
-                Throw ProjectData.CreateProjectError(-2146828268)
-Label_0149:
-                num6 = &H16
-                THConstVars.HandleError()
-                GoTo Label_013A
-Label_0163:
-                num5 = num6
-                Select Case num4
-                    Case 0
-                        GoTo Label_019E
-                    Case 1
-                        GoTo Label_00C8
-                    Case 2
-                        GoTo Label_0149
-                End Select
-            Catch obj1 As Exception
-                ProjectData.SetProjectError(DirectCast(obj1, Exception))
-                GoTo Label_0163
-            End Try
-Label_019E:
-            Throw ProjectData.CreateProjectError(-2146828237)
-Label_01A9:
-            If (num5 <> 0) Then
-                ProjectData.ClearProjectError()
+            If Not HasDoneInit Then
+                Exit Sub
             End If
+            For i As Integer = 1 To Me.ChallAmount
+                Me.challs(i).Activate()
+            Next i
         End Sub
 
         Private Sub EnableInFull()
@@ -1614,8 +1520,8 @@ Label_01A9:
         Private Sub EndControl()
             If Me.IsControling Then
                 Dim wControl As Integer
-                If (Me.ASubs(7) >= 10) Then
-                    Me.ASubs(7) = 0
+                If (controlTracker * frameTime >= 1000) Then
+                    controlTracker = 0
                     If ((Me.SControl >= 60) Or (Me.challs(CInt(Me.WControl)).A <= 0)) Then
                         Me.IsControling = False
                         Me.SControl = 0
@@ -1624,22 +1530,22 @@ Label_01A9:
                             Me.challs(CInt(Me.WControl)).A = 0
                         Else
                             wControl = CInt(Me.WControl)
-                            Me.challs(wControl).A = CShort((Me.challs(wControl).A - 5))
+                            Me.challs(wControl).A = ((Me.challs(wControl).A - 5))
                         End If
                         Me.WControl = 0
                     Else
-                        Me.SControl = CShort((Me.SControl + 1))
+                        Me.SControl = ((Me.SControl + 1))
                     End If
                 Else
                     wControl = 7
-                    Me.ASubs(7) = CShort((Me.ASubs(7) + 1))
+                    controlTracker += 1
                 End If
             End If
         End Sub
 
         Private Sub EndReflector()
             If Me.DoingReflector Then
-                If (Me.reflectorTime * Me.frameTime >= 30000) Then
+                If (Me.reflectorTime * frameTime >= 30000) Then
                     Me.DoingReflector = False
                     Me.ReflectorSound.Stop()
                 Else
@@ -1653,23 +1559,24 @@ Label_01A9:
             Me.NNumber.Stop()
             Dim nWait As Boolean = False
             Me.NLS((DXSound.string_0 & "\exiting1.wav"), nWait)
-            Dim num As Short = CShort(Interaction.MsgBox("Are you sure you want to exit Treasure Hunt?", (MsgBoxStyle.Question Or MsgBoxStyle.YesNo), "Question"))
+            Dim num As Integer = (Interaction.MsgBox("Are you sure you want to exit Treasure Hunt?", (MsgBoxStyle.Question Or MsgBoxStyle.YesNo), "Question"))
             If (num = 6) Then
                 Me.ShutDown()
             End If
         End Sub
 
         Private Sub file_load_click()
-            Dim num20 As Integer
             Try
+                disableGameLoop()
+                System.Diagnostics.Debug.WriteLine("Entered load")
+                Dim num20 As Integer
                 Dim flag As Boolean
                 Dim flag2 As Boolean
                 Dim flag3 As Boolean
-                Dim num2 As Short
-                Dim num3 As Short
+                Dim num2 As Integer
+                Dim num3 As Integer
                 Dim str As String
                 Dim flag4 As Boolean
-                ProjectData.ClearProjectError()
                 Dim num As Integer = 2
                 Me.FileName = ""
                 If (Not Me.IsFull Or Me.IsFightingLast) Then
@@ -1684,12 +1591,15 @@ Label_01A9:
                 Else
                     Me.NNumber.Stop()
                     flag4 = False
+                    ' NStop = False
                     Me.NLS((DXSound.string_0 & "\nloadgame1.wav"), flag4)
-                    Me.FileName = Interaction.InputBox("Slot (1-3):", "Load Game", "", -1, -1)
+                    System.Diagnostics.Debug.WriteLine("in load Passed nls")
+                    Me.FileName = InputBox("Slot (1-3):", "Load Game", "", -1, -1)
+                    System.Diagnostics.Debug.WriteLine("load: inputbox returned")
                     If (Me.FileName <> "") Then
                         If ((Conversion.Val(Me.FileName) > 0) And (Conversion.Val(Me.FileName) < 4)) Then
-                            Dim num5 As Short
-                            Dim num7 As Short
+                            Dim num5 As Integer
+                            Dim num7 As Integer
                             FileSystem.FileOpen(1, (Addendums.FilePath & "\thsave" & Me.FileName & ".ths"), OpenMode.Input, OpenAccess.Default, OpenShare.Default, -1)
                             Me.NNumber.Stop()
                             flag4 = True
@@ -1712,17 +1622,17 @@ Label_01A9:
                             Do While (Me.directSoundSecondaryBuffer8_0.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
                             Loop
                             FileSystem.Input(1, Me.IsFirstTimeLoading)
-                            Dim x As Short = Me.x
+                            Dim x As Integer = Me.x
                             num5 = 1
                             Do While (num5 <= x)
-                                Dim y As Short = Me.y
+                                Dim y As Integer = Me.y
                                 num7 = 1
                                 Do While (num7 <= y)
                                     FileSystem.Input(1, Me.CGrid(num5, num7))
                                     Application.DoEvents()
-                                    num7 = CShort((num7 + 1))
+                                    num7 = ((num7 + 1))
                                 Loop
-                                num5 = CShort((num5 + 1))
+                                num5 = ((num5 + 1))
                             Loop
                             FileSystem.Input(1, Me.IsControling)
                             FileSystem.Input(1, Me.SControl)
@@ -1790,22 +1700,22 @@ Label_01A9:
                             FileSystem.Input(1, Me.HasKilledBrutus2)
                             FileSystem.Input(1, Me.SGen)
                             FileSystem.Input(1, THConstVars.Difficulty)
-                            Dim num8 As Short = CShort(Information.UBound(Me.Weapons, 1))
+                            Dim num8 As Integer = (Information.UBound(Me.Weapons, 1))
                             num5 = 0
                             Do While (num5 <= num8)
                                 FileSystem.Input(1, Me.Weapons(num5))
-                                num5 = CShort((num5 + 1))
+                                num5 = ((num5 + 1))
                             Loop
                             Me.challs = New chall((Me.ChallAmount + 1) - 1) {}
-                            Dim challAmount As Short = Me.ChallAmount
+                            Dim challAmount As Integer = Me.ChallAmount
                             num5 = 1
                             Do While (num5 <= challAmount)
-                                Dim num10 As Short
+                                Dim num10 As Integer
                                 Dim flag5 As Boolean
-                                Dim num11 As Short
-                                Dim num12 As Short
-                                Dim num13 As Short
-                                Dim num14 As Short
+                                Dim num11 As Integer
+                                Dim num12 As Integer
+                                Dim num13 As Integer
+                                Dim num14 As Integer
                                 Dim flag6 As Boolean
                                 Dim flag7 As Boolean
                                 Dim flag8 As Boolean
@@ -1833,36 +1743,36 @@ Label_01A9:
                                 Me.challs(num5).HasFoundOnce = flag9
                                 Me.challs(num5).IsBeingControled = flag10
                                 Me.challs(num5).IsPoisoned = flag11
-                                Me.challs(num5).NumOfNeedles = CShort(-(flag12 > False))
+                                Me.challs(num5).NumOfNeedles = (-(flag12 > False))
                                 If flag7 Then
                                     Me.challs(num5).TurnIntoMaster()
                                     Me.challs(num5).A = num10
                                 End If
                                 Application.DoEvents()
-                                num5 = CShort((num5 + 1))
+                                num5 = ((num5 + 1))
                             Loop
-                            Dim num15 As Short = Me.x
+                            Dim num15 As Integer = Me.x
                             num5 = 1
                             Do While (num5 <= num15)
-                                Dim y As Short = Me.y
+                                Dim y As Integer = Me.y
                                 num7 = 1
                                 Do While (num7 <= y)
                                     FileSystem.Input(1, Me.Grid(num5, num7))
                                     Application.DoEvents()
-                                    num7 = CShort((num7 + 1))
+                                    num7 = ((num7 + 1))
                                 Loop
-                                num5 = CShort((num5 + 1))
+                                num5 = ((num5 + 1))
                             Loop
-                            Dim num17 As Short = Me.x
+                            Dim num17 As Integer = Me.x
                             num5 = 1
                             Do While (num5 <= num17)
-                                Dim y As Short = Me.y
+                                Dim y As Integer = Me.y
                                 num7 = 1
                                 Do While (num7 <= y)
                                     Me.BGrid(num5, num7) = Me.Grid(num5, num7)
-                                    num7 = CShort((num7 + 1))
+                                    num7 = ((num7 + 1))
                                 Loop
-                                num5 = CShort((num5 + 1))
+                                num5 = ((num5 + 1))
                             Loop
                             FileSystem.Reset()
 
@@ -1901,160 +1811,131 @@ Label_01A9:
                         Me.NNumber.Stop()
                     End If
                 End If
-                GoTo Label_0912
-Label_081E:
                 Me.NStop = False
                 Me.FileName = ""
                 Me.NNumber.Stop()
                 Me.ClickSound.Stop()
+            Finally
                 FileSystem.Reset()
-
-                Select Case Information.Err.Number
-                    Case &H35
-                        flag4 = True
-                        Me.NLS((DXSound.string_0 & "\nnottothatslot.wav"), flag4)
-                        GoTo Label_0912
-                    Case 13
-                        flag4 = True
-                        Me.NLS((DXSound.string_0 & "\ncompat.wav"), flag4)
-                        GoTo Label_0912
-                    Case 6
-                        flag4 = True
-                        Me.NLS((DXSound.string_0 & "\ncompat.wav"), flag4)
-                        GoTo Label_0912
-                    Case Else
-                        THConstVars.HandleError()
-                        GoTo Label_0912
-                End Select
-Label_08CF:
-                num20 = -1
-                Select Case num
-                    Case 0, 1
-                        GoTo Label_0907
-                    Case 2
-                        GoTo Label_081E
-                End Select
-            Catch obj1 As Exception
-                ProjectData.SetProjectError(DirectCast(obj1, Exception))
-                GoTo Label_08CF
+                enableGameLoop()
             End Try
-Label_0907:
-            Throw ProjectData.CreateProjectError(-2146828237)
-Label_0912:
-            If (num20 <> 0) Then
-                ProjectData.ClearProjectError()
-            End If
         End Sub
 
         Private Sub file_save_click()
-            Dim flag As Boolean
-            Dim flag2 As Boolean
-            Dim flag3 As Boolean
-            Dim num3 As Short
-            Dim num4 As Short
-            Dim str As String
-            Dim flag4 As Boolean
-            Me.FileName = ""
-            If (Not Me.IsFull Or Me.IsFightingLast) Then
-                flag = True
-                flag2 = False
-                flag3 = False
-                num3 = 0
-                num4 = 0
-                str = ""
-                flag4 = False
-                DXSound.PlaySound(Me.AccessDeniedSound, flag, flag2, flag3, num3, num4, str, flag4)
-            Else
-                Me.NNumber.Stop()
-                Me.NStop = False
-                flag4 = False
-                Me.NLS((DXSound.string_0 & "\nsavegame1.wav"), flag4)
-                Me.FileName = Interaction.InputBox("slot (1-3):", "Save Game", "", -1, -1)
-                If (Me.FileName <> "") Then
-                    If ((Conversion.Val(Me.FileName) > 0) And (Conversion.Val(Me.FileName) < 4)) Then
-                        Dim num As Short
-                        Dim num2 As Short
-                        FileSystem.FileOpen(1, (Addendums.FilePath & "\thsave" & Me.FileName & ".ths"), OpenMode.Output, OpenAccess.Default, OpenShare.Default, -1)
-                        Me.NNumber.Stop()
-                        flag4 = False
-                        Me.NLS((DXSound.string_0 & "\nsavegame2.wav"), flag4)
-                        flag4 = True
-                        flag3 = True
-                        flag2 = False
-                        num4 = 0
-                        num3 = 0
-                        str = ""
-                        flag = False
-                        DXSound.PlaySound(Me.ClickSound, flag4, flag3, flag2, num4, num3, str, flag)
-                        THConstVars.CannotDoKeydown = True
-                        FileSystem.WriteLine(1, New Object() {Me.IsFirstTimeLoading})
-                        Dim x As Short = Me.x
-                        num = 1
-                        Do While (num <= x)
-                            Dim y As Short = Me.y
-                            num2 = 1
-                            Do While (num2 <= y)
-                                FileSystem.WriteLine(1, New Object() {Me.CGrid(num, num2)})
-                                Application.DoEvents()
-                                num2 = CShort((num2 + 1))
-                            Loop
-                            num = CShort((num + 1))
-                        Loop
-                        FileSystem.WriteLine(1, New Object() {Me.IsControling, Me.SControl, Me.WControl, Me.AControl})
-                        FileSystem.WriteLine(1, New Object() {Me.UnlimitedHealth, Me.UnlimitedBullets, Me.h, Me.x, Me.y, Me.Swrd, Me.Bullets, Me.Accuracy, Me.WinX, Me.WinY, Me.px, Me.py, Me.ch, Me.HasKey, Me.WorkedPanel, Me.Points, Me.bombs, Me.KeyX, Me.KeyY, Me.PanelX, Me.PanelY, Me.IsFightingLast, Me.HasKilledBrutus})
-                        FileSystem.WriteLine(1, New Object() {Me.WH, Me.MineX, Me.MineY, Me.BlewUpMineControl, Me.ALaser, Me.short_2, Me.short_3, Me.IsDoingGMissile, Me.GSpeed, Me.GFront, Me.IsInWater, Me.WDepth, Me.SubPX, Me.SubPY, Me.DoingReflector, Me.GX, Me.GY, Me.RCount})
-                        FileSystem.WriteLine(1, New Object() {Me.IsWaitingForMachine, Me.CMachine, Me.HasShutDownCard, Me.DisableTeleports, Me.NumAlert, Me.ChallNum, Me.ChallAmount, Me.WPos, Me.HasTurnedOffMachine, Me.HasBlownUpMachine, Me.MachineX, Me.MachineY, Me.ExitX, Me.ExitY, Me.EBomb, Me.IsEscapingFromBomb})
-                        FileSystem.WriteLine(1, New Object() {Me.HasMainKey, Me.HasKilledMouse, Me.HasKilledBrutus2, Me.SGen, THConstVars.Difficulty})
-                        Dim num7 As Short = CShort(Information.UBound(Me.Weapons, 1))
-                        num = 0
-                        Do While (num <= num7)
-                            FileSystem.WriteLine(1, New Object() {Me.Weapons(num)})
-                            num = CShort((num + 1))
-                        Loop
-                        Dim num8 As Short = CShort(Information.UBound(Me.challs, 1))
-                        num = 1
-                        Do While (num <= num8)
-                            FileSystem.WriteLine(1, New Object() {Me.challs(num).A, Me.challs(num).IsFighting, Me.challs(num).x, Me.challs(num).y, Me.challs(num).CSeconds, Me.challs(num).HSeconds, Me.challs(num).IsDeadValid, Me.challs(num).IsMaster, Me.challs(num).HasKey, Me.challs(num).HasFoundOnce, Me.challs(num).IsBeingControled, Me.challs(num).IsPoisoned, Me.challs(num).NumOfNeedles})
-                            Application.DoEvents()
-                            num = CShort((num + 1))
-                        Loop
-                        Dim num9 As Short = Me.x
-                        num = 1
-                        Do While (num <= num9)
-                            Dim y As Short = Me.y
-                            num2 = 1
-                            Do While (num2 <= y)
-                                FileSystem.WriteLine(1, New Object() {Me.BGrid(num, num2)})
-                                Application.DoEvents()
-                                num2 = CShort((num2 + 1))
-                            Loop
-                            num = CShort((num + 1))
-                        Loop
-                        FileSystem.FileClose(New Integer() {1})
-                        Me.NNumber.Stop()
-                        flag4 = False
-                        Me.NLS((DXSound.string_0 & "\nsavegame3.wav"), flag4)
-                        THConstVars.CannotDoKeydown = False
-                        Me.ClickSound.Stop()
-                        Me.NStop = True
-                    Else
-                        Me.NNumber.Stop()
-                        flag4 = False
-                        Me.NLS((DXSound.string_0 & "\nnotslot.wav"), flag4)
-                        Me.NStop = True
-                    End If
+            Try
+                disableGameLoop()
+                Dim flag As Boolean
+                Dim flag2 As Boolean
+                Dim flag3 As Boolean
+                Dim num3 As Integer
+                Dim num4 As Integer
+                Dim str As String
+                Dim flag4 As Boolean
+                Me.FileName = ""
+                If (Not Me.IsFull Or Me.IsFightingLast) Then
+                    flag = True
+                    flag2 = False
+                    flag3 = False
+                    num3 = 0
+                    num4 = 0
+                    str = ""
+                    flag4 = False
+                    DXSound.PlaySound(Me.AccessDeniedSound, flag, flag2, flag3, num3, num4, str, flag4)
                 Else
                     Me.NNumber.Stop()
-                    Me.NStop = True
+                    Me.NStop = False
+                    flag4 = False
+                    Me.NLS((DXSound.string_0 & "\nsavegame1.wav"), flag4)
+                    Me.FileName = Interaction.InputBox("slot (1-3):", "Save Game", "", -1, -1)
+                    If (Me.FileName <> "") Then
+                        If ((Conversion.Val(Me.FileName) > 0) And (Conversion.Val(Me.FileName) < 4)) Then
+                            Dim num As Integer
+                            Dim num2 As Integer
+                            FileSystem.FileOpen(1, (Addendums.FilePath & "\thsave" & Me.FileName & ".ths"), OpenMode.Output, OpenAccess.Default, OpenShare.Default, -1)
+                            Me.NNumber.Stop()
+                            flag4 = False
+                            Me.NLS((DXSound.string_0 & "\nsavegame2.wav"), flag4)
+                            flag4 = True
+                            flag3 = True
+                            flag2 = False
+                            num4 = 0
+                            num3 = 0
+                            str = ""
+                            flag = False
+                            DXSound.PlaySound(Me.ClickSound, flag4, flag3, flag2, num4, num3, str, flag)
+                            THConstVars.CannotDoKeydown = True
+                            FileSystem.WriteLine(1, New Object() {Me.IsFirstTimeLoading})
+                            Dim x As Integer = Me.x
+                            num = 1
+                            Do While (num <= x)
+                                Dim y As Integer = Me.y
+                                num2 = 1
+                                Do While (num2 <= y)
+                                    FileSystem.WriteLine(1, New Object() {Me.CGrid(num, num2)})
+                                    Application.DoEvents()
+                                    num2 = ((num2 + 1))
+                                Loop
+                                num = ((num + 1))
+                            Loop
+                            FileSystem.WriteLine(1, New Object() {Me.IsControling, Me.SControl, Me.WControl, Me.AControl})
+                            FileSystem.WriteLine(1, New Object() {Me.UnlimitedHealth, Me.UnlimitedBullets, Me.h, Me.x, Me.y, Me.Swrd, Me.Bullets, Me.Accuracy, Me.WinX, Me.WinY, Me.px, Me.py, Me.ch, Me.HasKey, Me.WorkedPanel, Me.Points, Me.bombs, Me.KeyX, Me.KeyY, Me.PanelX, Me.PanelY, Me.IsFightingLast, Me.HasKilledBrutus})
+                            FileSystem.WriteLine(1, New Object() {Me.WH, Me.MineX, Me.MineY, Me.BlewUpMineControl, Me.ALaser, Me.short_2, Me.short_3, Me.IsDoingGMissile, Me.GSpeed, Me.GFront, Me.IsInWater, Me.WDepth, Me.SubPX, Me.SubPY, Me.DoingReflector, Me.GX, Me.GY, Me.RCount})
+                            FileSystem.WriteLine(1, New Object() {Me.IsWaitingForMachine, Me.CMachine, Me.HasShutDownCard, Me.DisableTeleports, Me.NumAlert, Me.ChallNum, Me.ChallAmount, Me.WPos, Me.HasTurnedOffMachine, Me.HasBlownUpMachine, Me.MachineX, Me.MachineY, Me.ExitX, Me.ExitY, Me.EBomb, Me.IsEscapingFromBomb})
+                            FileSystem.WriteLine(1, New Object() {Me.HasMainKey, Me.HasKilledMouse, Me.HasKilledBrutus2, Me.SGen, THConstVars.Difficulty})
+                            Dim num7 As Integer = (Information.UBound(Me.Weapons, 1))
+                            num = 0
+                            Do While (num <= num7)
+                                FileSystem.WriteLine(1, New Object() {Me.Weapons(num)})
+                                num = ((num + 1))
+                            Loop
+                            Dim num8 As Integer = (Information.UBound(Me.challs, 1))
+                            num = 1
+                            Do While (num <= num8)
+                                FileSystem.WriteLine(1, New Object() {Me.challs(num).A, Me.challs(num).IsFighting, Me.challs(num).x, Me.challs(num).y, Me.challs(num).CSeconds, Me.challs(num).HSeconds, Me.challs(num).IsDeadValid, Me.challs(num).IsMaster, Me.challs(num).HasKey, Me.challs(num).HasFoundOnce, Me.challs(num).IsBeingControled, Me.challs(num).IsPoisoned, Me.challs(num).NumOfNeedles})
+                                Application.DoEvents()
+                                num = ((num + 1))
+                            Loop
+                            Dim num9 As Integer = Me.x
+                            num = 1
+                            Do While (num <= num9)
+                                Dim y As Integer = Me.y
+                                num2 = 1
+                                Do While (num2 <= y)
+                                    FileSystem.WriteLine(1, New Object() {Me.BGrid(num, num2)})
+                                    Application.DoEvents()
+                                    num2 = ((num2 + 1))
+                                Loop
+                                num = ((num + 1))
+                            Loop
+                            FileSystem.FileClose(New Integer() {1})
+                            Me.NNumber.Stop()
+                            flag4 = False
+                            Me.NLS((DXSound.string_0 & "\nsavegame3.wav"), flag4)
+                            THConstVars.CannotDoKeydown = False
+                            Me.ClickSound.Stop()
+                            Me.NStop = True
+                        Else
+                            Me.NNumber.Stop()
+                            flag4 = False
+                            Me.NLS((DXSound.string_0 & "\nnotslot.wav"), flag4)
+                            Me.NStop = True
+                        End If
+                    Else
+                        Me.NNumber.Stop()
+                        Me.NStop = True
+                    End If
                 End If
-            End If
+            Finally
+                FileSystem.Reset()
+                enableGameLoop()
+            End Try
         End Sub
 
         Private Sub FindPassage(ByRef Optional OnlyDoPassage As Boolean = False)
-            Dim x As Short
-            Dim y As Short
-            Dim num5 As Short
-            Dim num6 As Short
+            Dim x As Integer
+            Dim y As Integer
+            Dim num5 As Integer
+            Dim num6 As Integer
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
                 y = Me.challs(CInt(Me.WControl)).y
@@ -2072,52 +1953,52 @@ Label_0912:
             Dim doorSouth As Boolean = Me.GetDoorSouth
             Dim doorNorth As Boolean = Me.GetDoorNorth
             If passageCurrent Then
-                Dim cX As Short = CShort((x - 1))
-                Dim num4 As Short = CShort((x + 1))
+                Dim cX As Integer = ((x - 1))
+                Dim num4 As Integer = ((x + 1))
                 If (Not Me.GetBlock(cX, y) And Not Me.GetBlock(num4, y)) Then
-                    num5 = CShort((x - 1))
+                    num5 = ((x - 1))
                     num6 = 0
                     DXSound.smethod_1(Me.PassageSound(1), False, True, num5, y, num6)
-                    num6 = CShort((x + 1))
+                    num6 = ((x + 1))
                     num5 = 0
                     DXSound.smethod_1(Me.PassageSound(2), False, True, num6, y, num5)
                     Return
                 End If
-                num6 = CShort((y - 1))
-                num5 = CShort((y + 1))
+                num6 = ((y - 1))
+                num5 = ((y + 1))
                 If (Not Me.GetBlock(x, num6) And Not Me.GetBlock(x, num5)) Then
-                    num4 = CShort((y + 1))
+                    num4 = ((y + 1))
                     cX = 0
                     DXSound.smethod_1(Me.PassageSound(1), False, True, x, num4, cX)
-                    num6 = CShort((y - 1))
+                    num6 = ((y - 1))
                     num5 = 0
                     DXSound.smethod_1(Me.PassageSound(2), False, True, x, num6, num5)
                     Return
                 End If
             End If
             If passageWest Then
-                num6 = CShort((x - 1))
+                num6 = ((x - 1))
                 num5 = 0
                 DXSound.smethod_1(Me.PassageSound(1), False, True, num6, y, num5)
             Else
                 Me.PassageSound(1).Stop()
             End If
             If passageEast Then
-                num6 = CShort((x + 1))
+                num6 = ((x + 1))
                 num5 = 0
                 DXSound.smethod_1(Me.PassageSound(2), False, True, num6, y, num5)
             Else
                 Me.PassageSound(2).Stop()
             End If
             If passageSouth Then
-                num6 = CShort((y + 1))
+                num6 = ((y + 1))
                 num5 = 0
                 DXSound.smethod_1(Me.PassageSound(3), False, True, x, num6, num5)
             Else
                 Me.PassageSound(3).Stop()
             End If
             If passageNorth Then
-                num6 = CShort((y - 1))
+                num6 = ((y - 1))
                 num5 = 0
                 DXSound.smethod_1(Me.PassageSound(4), False, True, x, num6, num5)
             Else
@@ -2125,28 +2006,28 @@ Label_0912:
             End If
             If Not OnlyDoPassage Then
                 If doorWest Then
-                    num6 = CShort((x - 1))
+                    num6 = ((x - 1))
                     num5 = 0
                     DXSound.smethod_1(Me.DoorSound(1), False, True, num6, y, num5)
                 Else
                     Me.DoorSound(1).Stop()
                 End If
                 If doorEast Then
-                    num6 = CShort((x + 1))
+                    num6 = ((x + 1))
                     num5 = 0
                     DXSound.smethod_1(Me.DoorSound(2), False, True, num6, y, num5)
                 Else
                     Me.DoorSound(2).Stop()
                 End If
                 If doorSouth Then
-                    num6 = CShort((y + 1))
+                    num6 = ((y + 1))
                     num5 = 0
                     DXSound.smethod_1(Me.DoorSound(3), False, True, x, num6, num5)
                 Else
                     Me.DoorSound(3).Stop()
                 End If
                 If doorNorth Then
-                    num6 = CShort((y - 1))
+                    num6 = ((y - 1))
                     num5 = 0
                     DXSound.smethod_1(Me.DoorSound(4), False, True, x, num6, num5)
                 Else
@@ -2159,13 +2040,13 @@ Label_0912:
             If Not Me.IsDoingGMissile Then
                 If (Me.short_2 > 0) Then
                     If Not Me.UnlimitedBullets Then
-                        Me.short_2 = CShort((Me.short_2 - 1))
+                        Me.short_2 = ((Me.short_2 - 1))
                     End If
                     Dim bCloseFirst As Boolean = True
                     Dim bLoopSound As Boolean = False
                     Dim performEffects As Boolean = False
-                    Dim x As Short = 0
-                    Dim y As Short = 0
+                    Dim x As Integer = 0
+                    Dim y As Integer = 0
                     Dim dVolume As String = ""
                     Dim waitTillDone As Boolean = False
                     DXSound.PlaySound(Me.GLaunchSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -2186,27 +2067,27 @@ Label_0912:
                 If ((Me.GSpeed - 1) < 0) Then
                     Me.GSpeed = 0
                 Else
-                    Me.GSpeed = CShort((Me.GSpeed - 1))
+                    Me.GSpeed = ((Me.GSpeed - 1))
                 End If
             End If
             If (dir_Renamed = "d") Then
                 If ((Me.GSpeed + 1) > 10) Then
                     Me.GSpeed = 10
                 Else
-                    Me.GSpeed = CShort((Me.GSpeed + 1))
+                    Me.GSpeed = ((Me.GSpeed + 1))
                 End If
             End If
             Me.GCount = 0
             Dim gSpeed As Long = Me.GSpeed
             Me.VoiceNumber(gSpeed)
-            Me.GSpeed = CShort(gSpeed)
+            Me.GSpeed = (gSpeed)
         End Sub
 
-        Private Function GenerateMenu(ByRef intro As String, ByRef menu_Renamed As String, ByRef Optional StartPos As Short = 0) As Short
+        Private Function GenerateMenu(ByRef intro As String, ByRef menu_Renamed As String, ByRef Optional StartPos As Integer = 0) As Integer
             Dim hasSaid As Boolean = False
             Me.IsInMenu = True
             Dim array As String() = Strings.Split(menu_Renamed, "|", -1, CompareMethod.Binary)
-            Dim num2 As Short = CShort(Information.UBound(array, 1))
+            Dim num2 As Integer = (Information.UBound(array, 1))
             Me.NStop = False
             If (intro <> "") Then
                 Me.NLS((DXSound.string_0 & "\" & intro), True)
@@ -2217,10 +2098,10 @@ Label_0912:
             End If
             Do While (Not DXInput.isFirstPress(SharpDX.DirectInput.Key.Return))
                 If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
-                    Me.MenuPos = CShort((Me.MenuPos - 1))
+                    Me.MenuPos = ((Me.MenuPos - 1))
                     hasSaid = False
                 ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Or DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
-                    Me.MenuPos = CShort((Me.MenuPos + 1))
+                    Me.MenuPos = ((Me.MenuPos + 1))
                     hasSaid = False
                 ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Home) Then
                     Me.MenuPos = 0
@@ -2230,11 +2111,11 @@ Label_0912:
                     hasSaid = False
                 End If
                 If (Me.MenuPos < 0) Then
-                        Me.MenuPos = num2
-                    End If
-                    If (Me.MenuPos > num2) Then
-                        Me.MenuPos = 0
-                    End If
+                    Me.MenuPos = num2
+                End If
+                If (Me.MenuPos > num2) Then
+                    Me.MenuPos = 0
+                End If
                 If Not hasSaid Then
                     Me.NLS((DXSound.string_0 & "\" & array(Me.MenuPos)), False)
                     hasSaid = True
@@ -2243,48 +2124,43 @@ Label_0912:
             Loop
             Me.IsInMenu = False
             Me.NStop = True
-            Return CShort((Me.MenuPos + 1))
+            Return ((Me.MenuPos + 1))
         End Function
 
         Private Sub GenHealth()
-            If (Me.ASubs(2) < 10) Then
-                Me.ASubs(2) = CShort((Me.ASubs(2) + 1))
+            If (Me.SGen * frameTime < 60 * 10 * 1000) Then
+                Me.SGen = ((Me.SGen + 1))
             Else
-                Me.ASubs(2) = 0
-                If (Me.SGen < 600) Then
-                    Me.SGen = CShort((Me.SGen + 1))
-                Else
-                    Me.SGen = 0
-                    Dim num As Short = &H2B
-                    Do While True
-                        Dim num2 As Short = &HB5
-                        Do
-                            Me.Grid(num, num2) = 4
-                            Me.BGrid(num, num2) = 4
-                            num2 = CShort((num2 + 1))
-                        Loop While (num2 <= &HBD)
-                        num = CShort((num + 1))
-                        If (num > &H2F) Then
-                            Dim file As String = "r1.wav"
-                            Dim rWait As Boolean = False
-                            DXSound.Radio(file, rWait)
-                            Return
-                        End If
-                    Loop
-                End If
+                Me.SGen = 0
+                Dim num As Integer = &H2B
+                Do While True
+                    Dim num2 As Integer = &HB5
+                    Do
+                        Me.Grid(num, num2) = 4
+                        Me.BGrid(num, num2) = 4
+                        num2 = ((num2 + 1))
+                    Loop While (num2 <= &HBD)
+                    num = ((num + 1))
+                    If (num > &H2F) Then
+                        Dim file As String = "r1.wav"
+                        Dim rWait As Boolean = False
+                        DXSound.Radio(file, rWait)
+                        Return
+                    End If
+                Loop
             End If
         End Sub
 
-        Public Function GetBGrid(ByRef x As Short, ByRef y As Short) As Short
-            Return CShort(Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.BGrid(x, y))))))
+        Public Function GetBGrid(ByRef x As Integer, ByRef y As Integer) As Integer
+            Return (Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.BGrid(x, y))))))
         End Function
 
-        Private Function GetBlock(ByRef CX As Short, ByRef CY As Short) As Boolean
+        Private Function GetBlock(ByRef CX As Integer, ByRef CY As Integer) As Boolean
             Dim flag As Boolean
             If ((((CX < 1) Or (CX > Me.x)) Or (CY < 1)) Or (CY > Me.y)) Then
                 Return True
             End If
-            Dim num As Short = Me.BGrid(CX, CY)
+            Dim num As Integer = Me.BGrid(CX, CY)
             If Not (((num <> Me.Wall) And (num <> Me.ClosedDoor)) And (num <> Me.LockedDoor)) Then
                 flag = True
             End If
@@ -2295,32 +2171,32 @@ Label_0912:
             Return Me.challs(CInt(ID))
         End Function
 
-        Private Function GetChallBlock(ByRef CX As Short, ByRef CY As Short) As Boolean
+        Private Function GetChallBlock(ByRef CX As Integer, ByRef CY As Integer) As Boolean
             Dim flag As Boolean
             If ((((CX < 1) Or (CX > Me.x)) Or (CY < 1)) Or (CY > Me.y)) Then
                 Return True
             End If
-            Dim num As Short = Me.BGrid(CX, CY)
+            Dim num As Integer = Me.BGrid(CX, CY)
             If Not (((((num <> Me.Water) And (num <> Me.Wall)) And (num <> Me.ClosedDoor)) And (num <> Me.LockedDoor)) And (num <> Me.Mine)) Then
                 flag = True
             End If
             Return flag
         End Function
 
-        Private Function GetChallID(ByRef x As Short, ByRef y As Short) As Short
-            Dim num As Short
-            Dim challAmount As Short = Me.ChallAmount
-            Dim i As Short = 1
+        Private Function GetChallID(ByRef x As Integer, ByRef y As Integer) As Integer
+            Dim num As Integer
+            Dim challAmount As Integer = Me.ChallAmount
+            Dim i As Integer = 1
             Do While (i <= challAmount)
                 If ((Me.challs(i).x = x) And (Me.challs(i).y = y)) Then
                     Return i
                 End If
-                i = CShort((i + 1))
+                i = ((i + 1))
             Loop
             Return num
         End Function
 
-        Private Function GetDoor(ByRef x As Short, ByRef y As Short) As Boolean
+        Private Function GetDoor(ByRef x As Integer, ByRef y As Integer) As Boolean
             Dim flag As Boolean
             If ((Me.BGrid(x, y) = Me.ClosedDoor) Or (Me.BGrid(x, y) = Me.LockedDoor)) Then
                 flag = True
@@ -2328,7 +2204,7 @@ Label_0912:
             Return flag
         End Function
 
-        Private Function GetDoorBlock(ByRef x As Short, ByRef y As Short) As Boolean
+        Private Function GetDoorBlock(ByRef x As Integer, ByRef y As Integer) As Boolean
             Dim flag As Boolean
             If (Me.BGrid(x, y) = Me.Wall) Then
                 flag = True
@@ -2337,8 +2213,8 @@ Label_0912:
         End Function
 
         Private Function GetDoorEast() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2347,17 +2223,17 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((x + num3)) <= Me.x)
+            Dim num3 As Integer = 1
+            Do While (((x + num3)) <= Me.x)
                 If Me.GetDoorBlock(x, y) Then
                     Return flag
                 End If
-                x = CShort((x + num3))
+                x = ((x + num3))
                 If Me.GetDoor(x, y) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2366,8 +2242,8 @@ Label_0912:
         End Function
 
         Private Function GetDoorNorth() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2376,17 +2252,17 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((y - num3)) >= 1)
+            Dim num3 As Integer = 1
+            Do While (((y - num3)) >= 1)
                 If Me.GetDoorBlock(x, y) Then
                     Return flag
                 End If
-                y = CShort((y - num3))
+                y = ((y - num3))
                 If Me.GetDoor(x, y) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2395,8 +2271,8 @@ Label_0912:
         End Function
 
         Private Function GetDoorSouth() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2405,17 +2281,17 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((y + num3)) <= Me.y)
+            Dim num3 As Integer = 1
+            Do While (((y + num3)) <= Me.y)
                 If Me.GetDoorBlock(x, y) Then
                     Return flag
                 End If
-                y = CShort((y + num3))
+                y = ((y + num3))
                 If Me.GetDoor(x, y) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2424,8 +2300,8 @@ Label_0912:
         End Function
 
         Private Function GetDoorWest() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2434,17 +2310,17 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((x - num3)) >= 1)
+            Dim num3 As Integer = 1
+            Do While (((x - num3)) >= 1)
                 If Me.GetDoorBlock(x, y) Then
                     Return flag
                 End If
-                x = CShort((x - num3))
+                x = ((x - num3))
                 If Me.GetDoor(x, y) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2452,11 +2328,11 @@ Label_0912:
             Return flag
         End Function
 
-        Public Function GetGrid(ByRef x As Short, ByRef y As Short) As Short
-            Return CShort(Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.Grid(x, y))))))
+        Public Function GetGrid(ByRef x As Integer, ByRef y As Integer) As Integer
+            Return (Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.Grid(x, y))))))
         End Function
 
-        Private Function GetPassage(ByRef x As Short, ByRef y As Short) As Boolean
+        Private Function GetPassage(ByRef x As Integer, ByRef y As Integer) As Boolean
             Dim flag As Boolean
             If ((Me.BGrid(x, y) = Me.PassageMarker) Or (Me.BGrid(x, y) = Me.OpenDoor)) Then
                 flag = True
@@ -2472,8 +2348,8 @@ Label_0912:
         End Function
 
         Private Function GetPassageEast() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2482,18 +2358,18 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((x + num3)) <= Me.x)
-                Dim cX As Short = CShort((x + num3))
+            Dim num3 As Integer = 1
+            Do While (((x + num3)) <= Me.x)
+                Dim cX As Integer = ((x + num3))
                 If Me.GetBlock(cX, y) Then
                     Return flag
                 End If
-                cX = CShort((x + num3))
+                cX = ((x + num3))
                 If Me.GetPassage(cX, y) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2502,8 +2378,8 @@ Label_0912:
         End Function
 
         Private Function GetPassageNorth() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2512,18 +2388,18 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((y - num3)) >= 1)
-                Dim cY As Short = CShort((y - num3))
+            Dim num3 As Integer = 1
+            Do While (((y - num3)) >= 1)
+                Dim cY As Integer = ((y - num3))
                 If Me.GetBlock(x, cY) Then
                     Return flag
                 End If
-                cY = CShort((y - num3))
+                cY = ((y - num3))
                 If Me.GetPassage(x, cY) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2532,8 +2408,8 @@ Label_0912:
         End Function
 
         Private Function GetPassageSouth() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2542,18 +2418,18 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((y + num3)) <= Me.y)
-                Dim cY As Short = CShort((y + num3))
+            Dim num3 As Integer = 1
+            Do While (((y + num3)) <= Me.y)
+                Dim cY As Integer = ((y + num3))
                 If Me.GetBlock(x, cY) Then
                     Return flag
                 End If
-                cY = CShort((y + num3))
+                cY = ((y + num3))
                 If Me.GetPassage(x, cY) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2562,8 +2438,8 @@ Label_0912:
         End Function
 
         Private Function GetPassageWest() As Boolean
-            Dim x As Short
-            Dim y As Short
+            Dim x As Integer
+            Dim y As Integer
             Dim flag As Boolean
             If Me.IsControling Then
                 x = Me.challs(CInt(Me.WControl)).x
@@ -2572,18 +2448,18 @@ Label_0912:
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Short = 1
-            Do While (CShort((x - num3)) >= 1)
-                Dim cX As Short = CShort((x - num3))
+            Dim num3 As Integer = 1
+            Do While (((x - num3)) >= 1)
+                Dim cX As Integer = ((x - num3))
                 If Me.GetBlock(cX, y) Then
                     Return flag
                 End If
-                cX = CShort((x - num3))
+                cX = ((x - num3))
                 If Me.GetPassage(cX, y) Then
                     Return True
                 End If
                 Application.DoEvents()
-                num3 = CShort((num3 + 1))
+                num3 = ((num3 + 1))
                 If (num3 > 5) Then
                     Return flag
                 End If
@@ -2592,14 +2468,14 @@ Label_0912:
         End Function
 
         Public Sub GExplodeMissile()
-            Dim num2 As Short
+            Dim num2 As Integer
             Me.IsDoingGMissile = False
             If (Me.BGrid(Me.GX, Me.GY) = Me.Water) Then
                 num2 = 0
                 DXSound.smethod_1(Me.JumpInWaterSound, True, False, Me.GX, Me.GY, num2)
                 Me.Grid(Me.GX, Me.GY) = Me.Water
             Else
-                Dim num3 As Short
+                Dim num3 As Integer
                 num2 = 0
                 DXSound.smethod_1(Me.GExplodeSound, True, False, Me.GX, Me.GY, num2)
                 If (((Me.Grid(Me.GX, Me.GY) = Me.Wall) Or (Me.Grid(Me.GX, Me.GY) = Me.ClosedDoor)) Or (Me.Grid(Me.GX, Me.GY) = Me.LockedDoor)) Then
@@ -2609,70 +2485,70 @@ Label_0912:
                     Me.BGrid(Me.GX, Me.GY) = Me.PassageMarker
                 End If
                 If (Me.BGrid(Me.GX, Me.GY) <> Me.Machine) Then
-                    Dim num As Short = 0
+                    Dim num As Integer = 0
                     Do
-                        If (CShort((Me.GY + num)) <= Me.y) Then
-                            num2 = CShort((Me.GY + num))
+                        If (((Me.GY + num)) <= Me.y) Then
+                            num2 = ((Me.GY + num))
                             If Me.IsChall(Me.GX, num2) Then
                                 num3 = 50
-                                Me.HarmChall(num3, Me.GX, CShort((Me.GY + num)))
+                                Me.HarmChall(num3, Me.GX, ((Me.GY + num)))
                             End If
-                            num3 = CShort((Me.GY + num))
+                            num3 = ((Me.GY + num))
                             If Me.GetBlock(Me.GX, num3) Then
-                                num2 = CShort((Me.GY + num))
+                                num2 = ((Me.GY + num))
                                 Me.AllThingReplace(Me.GX, num2, Me.PassageMarker)
-                                num3 = CShort((Me.GY + num))
+                                num3 = ((Me.GY + num))
                                 num2 = 0
                                 DXSound.smethod_1(Me.DestroyWallSound, False, False, Me.GX, num3, num2)
                             End If
                         End If
-                        If (CShort((Me.GY - num)) >= 1) Then
-                            num3 = CShort((Me.GY - num))
+                        If (((Me.GY - num)) >= 1) Then
+                            num3 = ((Me.GY - num))
                             If Me.IsChall(Me.GX, num3) Then
                                 num2 = 50
-                                Me.HarmChall(num2, Me.GX, CShort((Me.GY - num)))
+                                Me.HarmChall(num2, Me.GX, ((Me.GY - num)))
                             End If
-                            num3 = CShort((Me.GY - num))
+                            num3 = ((Me.GY - num))
                             If Me.GetBlock(Me.GX, num3) Then
-                                num2 = CShort((Me.GY - num))
+                                num2 = ((Me.GY - num))
                                 Me.AllThingReplace(Me.GX, num2, Me.PassageMarker)
-                                num3 = CShort((Me.GY - num))
+                                num3 = ((Me.GY - num))
                                 num2 = 0
                                 DXSound.smethod_1(Me.DestroyWallSound, False, False, Me.GX, num3, num2)
                             End If
                         End If
-                        If (CShort((Me.GX + num)) <= Me.x) Then
-                            num3 = CShort((Me.GX + num))
+                        If (((Me.GX + num)) <= Me.x) Then
+                            num3 = ((Me.GX + num))
                             If Me.IsChall(num3, Me.GY) Then
                                 num2 = 50
-                                Me.HarmChall(num2, CShort((Me.GX + num)), Me.GY)
+                                Me.HarmChall(num2, ((Me.GX + num)), Me.GY)
                             End If
-                            num3 = CShort((Me.GX + num))
+                            num3 = ((Me.GX + num))
                             If Me.GetBlock(num3, Me.GY) Then
-                                num2 = CShort((Me.GX + num))
+                                num2 = ((Me.GX + num))
                                 Me.AllThingReplace(num2, Me.GY, Me.PassageMarker)
-                                num3 = CShort((Me.GX + num))
+                                num3 = ((Me.GX + num))
                                 num2 = 0
                                 DXSound.smethod_1(Me.DestroyWallSound, False, False, num3, Me.GY, num2)
                             End If
                         End If
-                        If (CShort((Me.GX - num)) >= 1) Then
-                            num3 = CShort((Me.GX - num))
+                        If (((Me.GX - num)) >= 1) Then
+                            num3 = ((Me.GX - num))
                             If Me.IsChall(num3, Me.GY) Then
                                 num2 = 50
-                                Me.HarmChall(num2, CShort((Me.GX - num)), Me.GY)
+                                Me.HarmChall(num2, ((Me.GX - num)), Me.GY)
                             End If
-                            num3 = CShort((Me.GX - num))
+                            num3 = ((Me.GX - num))
                             If Me.GetBlock(num3, Me.GY) Then
-                                num2 = CShort((Me.GX - num))
+                                num2 = ((Me.GX - num))
                                 Me.AllThingReplace(num2, Me.GY, Me.PassageMarker)
-                                num3 = CShort((Me.GX - num))
+                                num3 = ((Me.GX - num))
                                 num2 = 0
                                 DXSound.smethod_1(Me.DestroyWallSound, False, False, num3, Me.GY, num2)
                             End If
                         End If
                         Application.DoEvents()
-                        num = CShort((num + 1))
+                        num = ((num + 1))
                     Loop While (num <= 10)
                 End If
                 If ((Me.Grid(Me.GX, Me.GY) = Me.Machine) Or (Me.BGrid(Me.GX, Me.GY) = Me.Machine)) Then
@@ -2749,42 +2625,42 @@ Label_0912:
             End If
         End Sub
 
-        Public Sub GoFight(ByRef Optional i As Short = 0)
+        Public Sub GoFight(ByRef Optional i As Integer = 0)
             If ((Not i = 5) AndAlso ((Me.HowManyNum < Me.HowMany) AndAlso (Me.challs(i).A > 0))) Then
                 Dim flag As Boolean
-                Me.HowManyNum = CShort((Me.HowManyNum + 1))
-                Dim thing As Short = CShort(Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.BGrid(Me.challs(i).x, Me.challs(i).y))))))
+                Me.HowManyNum = ((Me.HowManyNum + 1))
+                Dim thing As Integer = (Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.BGrid(Me.challs(i).x, Me.challs(i).y))))))
                 Me.ThingReplace(Me.challs(i).x, Me.challs(i).y, thing)
                 Select Case (1.0! + Conversion.Int(CSng((4.0! * VBMath.Rnd))))
                     Case 1.0!
-                        thing = CShort((Me.px - 1))
+                        thing = ((Me.px - 1))
                         If Not Me.GetChallBlock(thing, Me.py) Then
-                            Me.challs(i).x = CShort((Me.px - 1))
+                            Me.challs(i).x = ((Me.px - 1))
                             Me.challs(i).y = Me.py
                             flag = True
                         End If
                         Exit Select
                     Case 2.0!
-                        thing = CShort((Me.px + 1))
+                        thing = ((Me.px + 1))
                         If Not Me.GetChallBlock(thing, Me.py) Then
-                            Me.challs(i).x = CShort((Me.px + 1))
+                            Me.challs(i).x = ((Me.px + 1))
                             Me.challs(i).y = Me.py
                             flag = True
                         End If
                         Exit Select
                     Case 3.0!
-                        thing = CShort((Me.py - 1))
+                        thing = ((Me.py - 1))
                         If Not Me.GetChallBlock(Me.px, thing) Then
                             Me.challs(i).x = Me.px
-                            Me.challs(i).y = CShort((Me.py - 1))
+                            Me.challs(i).y = ((Me.py - 1))
                             flag = True
                         End If
                         Exit Select
                     Case 4.0!
-                        thing = CShort((Me.py + 1))
+                        thing = ((Me.py + 1))
                         If Not Me.GetChallBlock(Me.px, thing) Then
                             Me.challs(i).x = Me.px
-                            Me.challs(i).y = CShort((Me.py + 1))
+                            Me.challs(i).y = ((Me.py + 1))
                             flag = True
                         End If
                         Exit Select
@@ -2797,13 +2673,13 @@ Label_0912:
             End If
         End Sub
 
-        Public Sub HarmChall(ByRef amount As Short, ByVal Optional x As Short = 0, ByVal Optional y As Short = 0)
+        Public Sub HarmChall(ByRef amount As Integer, ByVal Optional x As Integer = 0, ByVal Optional y As Integer = 0)
             If ((x = 0) And (y = 0)) Then
                 x = Me.px
                 y = Me.py
             End If
-            Dim challAmount As Short = Me.ChallAmount
-            Dim i As Short = 1
+            Dim challAmount As Integer = Me.ChallAmount
+            Dim i As Integer = 1
             Do While (i <= challAmount)
                 If (((Me.challs(i).x = x) And (Me.challs(i).y = y)) And (i <> Me.WControl)) Then
                     Me.challs(i).ChallHit(amount)
@@ -2811,18 +2687,18 @@ Label_0912:
                         Exit Do
                     End If
                 End If
-                i = CShort((i + 1))
+                i = ((i + 1))
             Loop
         End Sub
 
         Private Sub InitGame()
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             Dim bCloseFirst As Boolean = True
             Dim bLoopSound As Boolean = False
             Dim performEffects As Boolean = False
-            Dim x As Short = 0
-            Dim y As Short = 0
+            Dim x As Integer = 0
+            Dim y As Integer = 0
             Dim dVolume As String = ""
             Dim waitTillDone As Boolean = False
             DXSound.PlaySound(Me.directSoundSecondaryBuffer8_0, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -2836,31 +2712,31 @@ Label_0912:
             'Me.Grid = New Short((Me.x + 1) - 1, (Me.y + 1) - 1) {}
             'Me.BGrid = New Short((Me.x + 1) - 1, (Me.y + 1) - 1) {}
             'Me.CGrid = New Single((Me.x + 1) - 1, (Me.y + 1) - 1) {}
-            Dim num5 As Short = Me.x
+            Dim num5 As Integer = Me.x
             num = 1
             Do While (num <= num5)
-                Dim num6 As Short = CShort(Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 4)))))
+                Dim num6 As Integer = (Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 4)))))
                 num2 = 1
                 Do While (num2 <= num6)
                     System.Diagnostics.Debug.WriteLine("inputting " & num & " " & num2)
                     Me.Grid(num, num2) = Me.Mine
                     Application.DoEvents()
-                    num2 = CShort((num2 + 1))
+                    num2 = ((num2 + 1))
                 Loop
-                num = CShort((num + 1))
+                num = ((num + 1))
             Loop
-            Dim num7 As Short = Me.x
+            Dim num7 As Integer = Me.x
             num = 1
             Do While (num <= num7)
-                Dim num8 As Short = CShort(Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 10)))))
+                Dim num8 As Integer = (Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 10)))))
                 num2 = 1
                 Do While (num2 <= num8)
                     System.Diagnostics.Debug.WriteLine(num & "," & num2)
                     Me.Grid(num, num2) = 0
                     Application.DoEvents()
-                    num2 = CShort((num2 + 1))
+                    num2 = ((num2 + 1))
                 Loop
-                num = CShort((num + 1))
+                num = ((num + 1))
             Loop
             Me.Grid(5, 70) = Me.MineGuard
             Me.Grid(5, &H47) = Me.MineGuard
@@ -2877,23 +2753,23 @@ Label_0912:
             Me.WinX = 200
             Me.WinY = 70
             Me.Grid(Me.WinX, Me.WinY) = Me.Treasure
-            Me.KeyX = CShort(Math.Round(Conversion.Int(CDbl((CDbl(Me.x) / 3)))))
-            Me.KeyY = CShort(Math.Round(Conversion.Int(CDbl(((CDbl(Me.y) / 10) / 2)))))
+            Me.KeyX = (Math.Round(Conversion.Int(CDbl((CDbl(Me.x) / 3)))))
+            Me.KeyY = (Math.Round(Conversion.Int(CDbl(((CDbl(Me.y) / 10) / 2)))))
             Me.Grid(Me.KeyX, Me.KeyY) = Me.Key
-            Me.PanelX = CShort((Me.x - 1))
-            Me.PanelY = CShort((Me.y - 1))
+            Me.PanelX = ((Me.x - 1))
+            Me.PanelY = ((Me.y - 1))
             Me.Grid(Me.PanelX, Me.PanelY) = Me.ControlPanel
-            Dim num9 As Short = Me.x
+            Dim num9 As Integer = Me.x
             num = 1
             Do While (num <= num9)
-                Dim num10 As Short = Me.y
+                Dim num10 As Integer = Me.y
                 num2 = 1
                 Do While (num2 <= num10)
-                    Me.BGrid(num, num2) = CShort(Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.Grid(num, num2))))))
+                    Me.BGrid(num, num2) = (Math.Round(Conversion.Val(Conversions.ToString(CInt(Me.Grid(num, num2))))))
                     Application.DoEvents()
-                    num2 = CShort((num2 + 1))
+                    num2 = ((num2 + 1))
                 Loop
-                num = CShort((num + 1))
+                num = ((num + 1))
             Loop
             Me.px = 3
             Me.py = &H67
@@ -2908,7 +2784,9 @@ Label_0912:
 
         <DebuggerStepThrough>
         Private Sub InitializeComponent()
+            Me.components = New System.ComponentModel.Container()
             Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
+            Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
             Me.SuspendLayout()
             '
             'ProgressBar1
@@ -2918,6 +2796,11 @@ Label_0912:
             Me.ProgressBar1.Size = New System.Drawing.Size(611, 41)
             Me.ProgressBar1.TabIndex = 0
             Me.ProgressBar1.Visible = False
+            '
+            'Timer1
+            '
+            Me.Timer1.Enabled = False
+            Me.Timer1.Interval = frameTime
             '
             'mainFRM
             '
@@ -2936,13 +2819,13 @@ Label_0912:
         End Sub
 
         Private Sub InitVars()
-            Dim index As Short = 0
+            Dim index As Integer = 0
             Do
                 Me.Weapons(index) = ""
-                index = CShort((index + 1))
+                index = ((index + 1))
             Loop While (index <= 6)
             Dim wName As String = "gun"
-            Dim pos As Short = 0
+            Dim pos As Integer = 0
             Me.SetWeapon(wName, pos)
             wName = "sword"
             pos = 0
@@ -2986,9 +2869,9 @@ Label_0912:
             Me.WControl = 0
         End Sub
 
-        Public Function IsChall(ByRef x As Short, ByRef y As Short) As Boolean
+        Public Function IsChall(ByRef x As Integer, ByRef y As Integer) As Boolean
             Dim flag As Boolean
-            Dim num As Short = Me.Grid(x, y)
+            Dim num As Integer = Me.Grid(x, y)
             If ((((num = Me.challenger) Or (num = Me.Mouse)) Or (num = Me.JamesBrutus)) Or (num = Me.ChallWithKey)) Then
                 flag = True
             End If
@@ -3007,12 +2890,12 @@ Label_0912:
             Me.EmptySound = DXSound.LoadSound((DXSound.SoundPath & "\empty.wav"))
             Me.TargetSound = DXSound.LoadSound((DXSound.SoundPath & "\target.wav"))
             Me.RadioSound = DXSound.LoadSound((DXSound.SoundPath & "\r2.wav"))
-            Dim index As Short = 1
+            Dim index As Integer = 1
             Do
                 Me.PassageSound(index) = DXSound.smethod_0((DXSound.SoundPath & "\passageopening.wav"), 2.0!, 30)
                 Me.DoorSound(index) = DXSound.smethod_0((DXSound.SoundPath & "\door.wav"), 2.0!, 30)
                 Application.DoEvents()
-                index = CShort((index + 1))
+                index = ((index + 1))
             Loop While (index <= 4)
             Me.ControlLaunchSound = DXSound.LoadSound((DXSound.SoundPath & "\wcontrol.wav"))
             Me.ControlHitSound = DXSound.LoadSound((DXSound.SoundPath & "\wcontrolhit.wav"))
@@ -3064,21 +2947,21 @@ Label_0912:
             If keyDownDisabled() Then
                 Exit Sub
             End If
-            Dim num As Short
+            Dim num As Integer
             If ((Me.px - 1) > 0) Then
-                num = CShort((Me.px - 1))
+                num = ((Me.px - 1))
                 Me.LOUD(num, Me.py)
             End If
             If ((Me.px + 1) < Me.x) Then
-                num = CShort((Me.px + 1))
+                num = ((Me.px + 1))
                 Me.LOUD(num, Me.py)
             End If
             If ((Me.py - 1) > 0) Then
-                num = CShort((Me.py - 1))
+                num = ((Me.py - 1))
                 Me.LOUD(Me.px, num)
             End If
             If ((Me.py + 1) < Me.y) Then
-                num = CShort((Me.py + 1))
+                num = ((Me.py + 1))
                 Me.LOUD(Me.px, num)
             End If
         End Sub
@@ -3087,12 +2970,12 @@ Label_0912:
             If keyDownDisabled() Then
                 Exit Sub
             End If
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             Dim flag As Boolean
-            Dim gX As Short
-            Dim gY As Short
-            Dim num5 As Short
+            Dim gX As Integer
+            Dim gY As Integer
+            Dim num5 As Integer
             Dim flag2 As Boolean
             Dim num6 As Long
             If Me.IsDoingGMissile Then
@@ -3108,13 +2991,13 @@ Label_0912:
             Me.NStop = False
             If a = WalkDirection.north Then
                 Do While (num5 < 20)
-                    num5 = CShort((num5 + 1))
-                    If (CShort((gY + num5)) > Me.y) Then
+                    num5 = ((num5 + 1))
+                    If (((gY + num5)) > Me.y) Then
                         Me.NStop = True
                         Return
                     End If
-                    num = Me.Grid(gX, CShort((gY + num5)))
-                    num2 = Me.BGrid(gX, CShort((gY + num5)))
+                    num = Me.Grid(gX, ((gY + num5)))
+                    num2 = Me.BGrid(gX, ((gY + num5)))
                     If ((num > 0) And (num <> Me.PassageMarker)) Then
                         flag2 = True
                         Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
@@ -3133,7 +3016,7 @@ Label_0912:
                             End If
                             num6 = num5
                             Me.VoiceNumber(num6)
-                            num5 = CShort(num6)
+                            num5 = (num6)
                             If Not Me.NStop Then
                                 Me.NumWait()
 
@@ -3154,13 +3037,13 @@ Label_0912:
             End If
             If a = WalkDirection.south Then
                 Do While (num5 < 20)
-                    num5 = CShort((num5 + 1))
-                    If (CShort((gY - num5)) < 1) Then
+                    num5 = ((num5 + 1))
+                    If (((gY - num5)) < 1) Then
                         Me.NStop = True
                         Return
                     End If
-                    num = Me.Grid(gX, CShort((gY - num5)))
-                    num2 = Me.BGrid(gX, CShort((gY - num5)))
+                    num = Me.Grid(gX, ((gY - num5)))
+                    num2 = Me.BGrid(gX, ((gY - num5)))
                     If ((num > 0) And (num <> Me.PassageMarker)) Then
                         flag2 = True
                         Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
@@ -3179,7 +3062,7 @@ Label_0912:
                             End If
                             num6 = num5
                             Me.VoiceNumber(num6)
-                            num5 = CShort(num6)
+                            num5 = (num6)
                             If Not Me.NStop Then
                                 Me.NumWait()
 
@@ -3200,13 +3083,13 @@ Label_0912:
             End If
             If a = WalkDirection.west Then
                 Do While (num5 < 20)
-                    num5 = CShort((num5 + 1))
-                    If (CShort((gX - num5)) < 1) Then
+                    num5 = ((num5 + 1))
+                    If (((gX - num5)) < 1) Then
                         Me.NStop = True
                         Return
                     End If
-                    num = Me.Grid(CShort((gX - num5)), gY)
-                    num2 = Me.BGrid(CShort((gX - num5)), gY)
+                    num = Me.Grid(((gX - num5)), gY)
+                    num2 = Me.BGrid(((gX - num5)), gY)
                     If ((num > 0) And (num <> Me.PassageMarker)) Then
                         flag2 = True
                         Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
@@ -3225,7 +3108,7 @@ Label_0912:
                             End If
                             num6 = num5
                             Me.VoiceNumber(num6)
-                            num5 = CShort(num6)
+                            num5 = (num6)
                             If Not Me.NStop Then
                                 Me.NumWait()
 
@@ -3246,13 +3129,13 @@ Label_0912:
             End If
             If a = WalkDirection.east Then
                 Do While (num5 < 20)
-                    num5 = CShort((num5 + 1))
-                    If (CShort((gX + num5)) > Me.x) Then
+                    num5 = ((num5 + 1))
+                    If (((gX + num5)) > Me.x) Then
                         Me.NStop = True
                         Return
                     End If
-                    num = Me.Grid(CShort((gX + num5)), gY)
-                    num2 = Me.BGrid(CShort((gX + num5)), gY)
+                    num = Me.Grid(((gX + num5)), gY)
+                    num2 = Me.BGrid(((gX + num5)), gY)
                     If ((num > 0) And (num <> Me.PassageMarker)) Then
                         flag2 = True
                         Me.NLS(Conversions.ToString(Operators.ConcatenateObject((DXSound.string_0 & "\"), NewLateBinding.LateIndexGet(Me.stuff, New Object() {num}, Nothing))), flag2)
@@ -3271,7 +3154,7 @@ Label_0912:
                             End If
                             num6 = num5
                             Me.VoiceNumber(num6)
-                            num5 = CShort(num6)
+                            num5 = (num6)
                             If Not Me.NStop Then
                                 Me.NumWait()
 
@@ -3295,9 +3178,9 @@ Label_0912:
             End If
         End Sub
 
-        Private Sub LOUD(ByRef x As Short, ByRef y As Short)
+        Private Sub LOUD(ByRef x As Integer, ByRef y As Integer)
             If Me.HasMainKey Then
-                Dim num As Short
+                Dim num As Integer
                 If (Me.BGrid(x, y) = Me.ClosedDoor) Then
                     num = 0
                     DXSound.smethod_1(Me.LockDoorSound, True, False, x, y, num)
@@ -3320,197 +3203,196 @@ Label_0912:
         End Sub
 
         Private Sub performActions()
-            Try
-                Me.inKeyDown = True
-                Dim Points As Long
-                Dim num7 As Integer = 2
-                If (Me.HasDoneInit) Then
-                    If (DXInput.IsShift()) Then
-                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Then
-                            LookInDir(WalkDirection.north)
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Then
-                            LookInDir(WalkDirection.south)
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
-                            LookInDir(WalkDirection.east)
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
-                            LookInDir(WalkDirection.west)
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Return) Then
-                            LockUnlockDoor()
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.PageUp) Then
-                            changeMusicVolume(VolumeAction.mute)
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.PageDown) Then
-                            changeMusicVolume(VolumeAction.unmute)
-                            Exit Sub
-                        End If
-                        If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space) Then
-                            swim(SwimDirection.south)
-                            Exit Sub
-                        End If
-                    Else ' If not shift. These keys can be pressed with either the shift key held or released.
-                        If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space) Then
-                            swim(SwimDirection.north)
-                            Me.UseWeapon()
-                            Exit Sub
-                        End If
-                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.Return) Then
-                            OpenOrCloseDoor()
-                            Exit Sub
-                        End If
-                        If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.PageUp) Then
-                            changeMusicVolume(VolumeAction.down)
-                            Exit Sub
-                        ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.PageDown) Then
-                            changeMusicVolume(VolumeAction.up)
-                            Exit Sub
-                        End If
+            Dim Points As Long
+            Dim num7 As Integer = 2
+            If (Me.HasDoneInit) Then
+                If (DXInput.IsShift()) Then
+                    If DXInput.isFirstPress(SharpDX.DirectInput.Key.Up) Then
+                        LookInDir(WalkDirection.north)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Down) Then
+                        LookInDir(WalkDirection.south)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
+                        LookInDir(WalkDirection.east)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
+                        LookInDir(WalkDirection.west)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Return) Then
+                        LockUnlockDoor()
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.PageUp) Then
+                        changeMusicVolume(VolumeAction.mute)
+                        Exit Sub
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.PageDown) Then
+                        changeMusicVolume(VolumeAction.unmute)
+                        Exit Sub
                     End If
-                    If DXInput.IsControl() Then
-                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.S) Then
-                            Me.file_save_click()
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.L) Then
-                            Me.file_load_click()
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
-                            Me.ChangeSpeechRate(SpeechRate.slower)
-                            Exit Sub
-                        ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
-                            Me.ChangeSpeechRate(SpeechRate.quicker)
-                            Exit Sub
-                        End If
-                        If Not Me.NStop Then
-                            Me.NStop = True
-                            Me.NNumber.Stop()
-                            Exit Sub
-                        End If
-                    Else ' if not ctrl, for keys that can be pressed with both ctrl and without
-                        If DXInput.isFirstPress(SharpDX.DirectInput.Key.S) Then
-                            Me.Stats()
-                            Exit Sub
-                        End If
-                    End If ' if ctrl
-                    ' Here, the keys will register no matter which modifiers are held because there is no modifier conflict
-                    If DXInput.isFirstPress(SharpDX.DirectInput.Key.Escape) Then
-                        Me.MainMenu(True)
+                    If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space) Then
+                        swim(SwimDirection.south)
+                        pressedActionButtonInLastTick = True
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.F) Then
-                        pauseOrUnpauseGame()
+                    Else
+                        pressedActionButtonInLastTick = False
+                    End If
+                    Exit Sub
+                Else ' If not shift. These keys can be pressed with either the shift key held or released, but the shift action will take priority.
+                    If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Space) Then
+                        swim(SwimDirection.north)
+                        Me.UseWeapon()
+                        pressedActionButtonInLastTick = True
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D1) Then
-                        Me.SwitchToWeapon(0)
+                    Else
+                        pressedActionButtonInLastTick = False
+                    End If
+                    If DXInput.isFirstPress(SharpDX.DirectInput.Key.Return) Then
+                        OpenOrCloseDoor()
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D2) Then
-                        Me.SwitchToWeapon(1)
+                    End If
+                    If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.PageUp) Then
+                        changeMusicVolume(VolumeAction.down)
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D3) Then
-                        Me.SwitchToWeapon(2)
+                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.PageDown) Then
+                        changeMusicVolume(VolumeAction.up)
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D4) Then
-                        Me.SwitchToWeapon(3)
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D5) Then
-                        Me.SwitchToWeapon(4)
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D6) Then
-                        Me.SwitchToWeapon(5)
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D7) Then
-                        Me.SwitchToWeapon(6)
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Z) Then
-                        If keyDownDisabled() Then
-                            Exit Sub
-                        End If
-                        Me.VoiceNumber(CLng(Math.Round(CDbl(THConstVars.Difficulty))))
-                        Me.NumWait()
+                    End If
+                End If
+                If DXInput.IsControl() Then
+                    If DXInput.isFirstPress(SharpDX.DirectInput.Key.S) Then
+                        Me.file_save_click()
                         Exit Sub
                     ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.L) Then
-                        SayLocation()
+                        System.Diagnostics.Debug.WriteLine("load: Before loadclick")
+                        Me.file_load_click()
+                        System.Diagnostics.Debug.WriteLine("load: after loadclick")
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.I) Then
-                        Me.SayInventory()
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Left) Then
+                        Me.ChangeSpeechRate(SpeechRate.slower)
                         Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.V) Then
-                        Me.SayHasVisited()
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.A) Then
-                        Me.ReportAmunition(False)
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.B) Then
-                        Me.BuyAmunition()
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.T) Then
-                        Me.position()
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.P) Then
-                        If keyDownDisabled() Then
-                            Exit Sub
-                        End If
-                        If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
-                            Me.ControlPanelWork(True)
-                        Else
-                            Me.NStop = False
-                            Me.NNumber.Stop()
-                            Me.VoiceNumber(Me.Points)
-                            Me.NStop = True
-                        End If
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.H) Then
-                        sayHealth()
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.C) Then
-                        sayNumAlert()
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D) Then
-                        sayDepth()
-                        Exit Sub
-                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.R) Then
-                        Me.ReturnToStartingPoint()
+                    ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Right) Then
+                        Me.ChangeSpeechRate(SpeechRate.quicker)
                         Exit Sub
                     End If
-                    If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Left) Then
-                        swim(SwimDirection.west)
-                        missileCommand(MissileAction.turnLeft)
-                        MovePlayer(WalkDirection.west)
-                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Right) Then
-                        swim(SwimDirection.east)
-                        missileCommand(MissileAction.turnRight)
-                        MovePlayer(WalkDirection.east)
-                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Up) Then
-                        swim(SwimDirection.up)
-                        missileCommand(MissileAction.speedUp)
-                        MovePlayer(WalkDirection.north)
-                    ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Down) Then
-                        swim(SwimDirection.down)
-                        missileCommand(MissileAction.slowDown)
-                        MovePlayer(WalkDirection.south)
+                    If Not Me.NStop Then
+                        Me.NStop = True
+                        Me.NNumber.Stop()
                     End If
-                End If ' if has done init
-            Catch obj1 As Exception
-                THConstVars.handleException(obj1)
-            Finally ' So that we can prematurely terminate this subroutine but inKeyDown will still go to off.
-                Me.inKeyDown = False
-            End Try
-        End Sub
-
-        Private Sub mainFRM_KeyUp(ByVal sender As Object, ByVal e As KeyEventArgs)
-            If (Me.inKeyDown) Then
-                Me.pendingKeyUp = True
-            Else
-                Me.isFirstPress = True
-            End If
+                    Exit Sub
+                Else ' if not ctrl, for keys that can be pressed with both ctrl and without
+                    If DXInput.isFirstPress(SharpDX.DirectInput.Key.S) Then
+                        Me.Stats()
+                        Exit Sub
+                    End If
+                End If ' if ctrl
+                ' Here, the keys will register no matter which modifiers are held because there is no modifier conflict
+                If DXInput.isFirstPress(SharpDX.DirectInput.Key.Escape) Then
+                    Me.MainMenu(True)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.F) Then
+                    pauseOrUnpauseGame()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D1) Then
+                    Me.SwitchToWeapon(0)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D2) Then
+                    Me.SwitchToWeapon(1)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D3) Then
+                    Me.SwitchToWeapon(2)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D4) Then
+                    Me.SwitchToWeapon(3)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D5) Then
+                    Me.SwitchToWeapon(4)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D6) Then
+                    Me.SwitchToWeapon(5)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D7) Then
+                    Me.SwitchToWeapon(6)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.Z) Then
+                    If keyDownDisabled() Then
+                        Exit Sub
+                    End If
+                    Me.VoiceNumber(CLng(Math.Round(CDbl(THConstVars.Difficulty))))
+                    Me.NumWait()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.L) Then
+                    SayLocation()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.I) Then
+                    Me.SayInventory()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.V) Then
+                    Me.SayHasVisited()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.A) Then
+                    Me.ReportAmunition(False)
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.B) Then
+                    Me.BuyAmunition()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.T) Then
+                    Me.position()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.P) Then
+                    If keyDownDisabled() Then
+                        Exit Sub
+                    End If
+                    If (Me.BGrid(Me.px, Me.py) = Me.ControlPanel) Then
+                        Me.ControlPanelWork(True)
+                    Else
+                        Me.NStop = False
+                        Me.NNumber.Stop()
+                        Me.VoiceNumber(Me.Points)
+                        Me.NStop = True
+                    End If
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.H) Then
+                    sayHealth()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.C) Then
+                    sayNumAlert()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.D) Then
+                    sayDepth()
+                    Exit Sub
+                ElseIf DXInput.isFirstPress(SharpDX.DirectInput.Key.R) Then
+                    Me.ReturnToStartingPoint()
+                    Exit Sub
+                End If
+                If DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Left) Then
+                    swim(SwimDirection.west)
+                    missileCommand(MissileAction.turnLeft)
+                    MovePlayer(WalkDirection.west)
+                    movedInLastTick = True
+                ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Right) Then
+                    swim(SwimDirection.east)
+                    missileCommand(MissileAction.turnRight)
+                    MovePlayer(WalkDirection.east)
+                    movedInLastTick = True
+                ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Up) Then
+                    swim(SwimDirection.up)
+                    missileCommand(MissileAction.speedUp)
+                    MovePlayer(WalkDirection.north)
+                    movedInLastTick = True
+                ElseIf DXInput.isKeyHeldDown(SharpDX.DirectInput.Key.Down) Then
+                    swim(SwimDirection.down)
+                    missileCommand(MissileAction.slowDown)
+                    MovePlayer(WalkDirection.south)
+                    movedInLastTick = True
+                Else
+                    movedInLastTick = False
+                End If
+            End If ' if has done init
         End Sub
 
         Private Sub mainFRM_Load(ByVal sender As Object, ByVal e As EventArgs)
             Dim num5 As Integer
             Try
-                ProjectData.ClearProjectError()
                 Dim num4 As Integer = 2
                 Me.Show()
                 Me.BringToFront()
@@ -3521,8 +3403,7 @@ Label_0912:
                 FileSystem.Input(1, Me.AppVersion)
                 FileSystem.Reset()
                 Interaction.SaveSetting(Addendums.AppTitle, "Data", "Version", Me.AppVersion)
-                Me.V = Conversions.ToShort(Interaction.GetSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(-1600)))
-                Me.ASubs = New Short(10 - 1) {}
+                Me.V = Conversions.ToInteger(Interaction.GetSetting(Addendums.AppTitle, "Config", "Vol", Conversions.ToString(-1600)))
                 THF.F.Text = (Addendums.AppTitle & " version " & Me.AppVersion)
                 Me.DefCaption = Me.Text
                 Me.NStop = True
@@ -3541,8 +3422,8 @@ Label_0912:
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXInput.DInputInit(Me.Handle)
@@ -3578,30 +3459,30 @@ Label_0912:
                 Me.LoadAllSounds()
                 Dim prompt As String = String.Concat(New String() {"WELCOME! ", Addendums.AppTitle, " is written by Munawar Bijani; it has been ported to Windows by the work of Munawar Bijani and Ameer Armaly. Treasure Hunt version ", Me.AppVersion, ". ", Addendums.LegalCopyrights})
                 Me.IStuff = 5
-                Me.Treasure = CShort((Me.IStuff + 1))
-                Me.Wall = CShort((Me.IStuff + 2))
-                Me.Key = CShort((Me.IStuff + 3))
-                Me.ControlPanel = CShort((Me.IStuff + 4))
-                Me.challenger = CShort((Me.IStuff + 5))
-                Me.RBomb = CShort((Me.IStuff + 6))
-                Me.Water = CShort((Me.IStuff + 7))
-                Me.Laser = CShort((Me.IStuff + 8))
-                Me.Missile = CShort((Me.IStuff + 9))
-                Me.RMissile = CShort((Me.IStuff + 10))
-                Me.short_1 = CShort((Me.IStuff + 11))
-                Me.Mine = CShort((Me.IStuff + 12))
-                Me.MineControl = CShort((Me.IStuff + 13))
-                Me.MineGuard = CShort((Me.IStuff + 14))
-                Me.Reflector = CShort((Me.IStuff + 15))
-                Me.Machine = CShort((Me.IStuff + &H10))
-                Me.Mouse = CShort((Me.IStuff + &H11))
-                Me.PassageMarker = CShort((Me.IStuff + &H12))
-                Me.ClosedDoor = CShort((Me.IStuff + &H13))
-                Me.OpenDoor = CShort((Me.IStuff + 20))
-                Me.LockedDoor = CShort((Me.IStuff + &H15))
-                Me.ChallWithKey = CShort((Me.IStuff + &H16))
-                Me.JamesBrutus = CShort((Me.IStuff + &H17))
-                Me.controler = CShort((Me.IStuff + &H18))
+                Me.Treasure = ((Me.IStuff + 1))
+                Me.Wall = ((Me.IStuff + 2))
+                Me.Key = ((Me.IStuff + 3))
+                Me.ControlPanel = ((Me.IStuff + 4))
+                Me.challenger = ((Me.IStuff + 5))
+                Me.RBomb = ((Me.IStuff + 6))
+                Me.Water = ((Me.IStuff + 7))
+                Me.Laser = ((Me.IStuff + 8))
+                Me.Missile = ((Me.IStuff + 9))
+                Me.RMissile = ((Me.IStuff + 10))
+                Me.short_1 = ((Me.IStuff + 11))
+                Me.Mine = ((Me.IStuff + 12))
+                Me.MineControl = ((Me.IStuff + 13))
+                Me.MineGuard = ((Me.IStuff + 14))
+                Me.Reflector = ((Me.IStuff + 15))
+                Me.Machine = ((Me.IStuff + &H10))
+                Me.Mouse = ((Me.IStuff + &H11))
+                Me.PassageMarker = ((Me.IStuff + &H12))
+                Me.ClosedDoor = ((Me.IStuff + &H13))
+                Me.OpenDoor = ((Me.IStuff + 20))
+                Me.LockedDoor = ((Me.IStuff + &H15))
+                Me.ChallWithKey = ((Me.IStuff + &H16))
+                Me.JamesBrutus = ((Me.IStuff + &H17))
+                Me.controler = ((Me.IStuff + &H18))
                 Me.stuff = Strings.Split("nnothing.wav|nsnake.wav|nsword.wav|ncartrige.wav|nhealth.wav|nportal.wav|nvault.wav|nwall.wav|nchest.wav|npanel1.wav|nguard.wav|nbomb.wav|nwater.wav|nlaser.wav|nmissile.wav|nrmissile.wav|nglmissile.wav|nmine.wav|ncmine.wav|ngmine.wav|nreflector.wav|nmachine.wav|nmouse.wav|nnothing.wav|ncdoor.wav|nodoor.wav|ncldoor.wav|ngkey.wav|nbrutus.wav|ncontrol.wav", "|", -1, CompareMethod.Binary)
                 'Me.Grid = New Short((Me.x + 1) - 1, (Me.y + 1) - 1) {}
                 'Me.BGrid = New Short((Me.x + 1) - 1, (Me.y + 1) - 1) {}
@@ -3636,34 +3517,16 @@ Label_0912:
                 Me.StartMusic()
                 Me.UnmuteSounds()
                 Me.HasDoneInit = True
-                Me.StartTimer()
-                GoTo Label_06BF
-Label_0673:
-                THConstVars.HandleError()
-                GoTo Label_06BF
-Label_067A:
-                num5 = -1
-                Select Case num4
-                    Case 0, 1
-                        GoTo Label_06B4
-                    Case 2
-                        GoTo Label_0673
-                End Select
-            Catch obj1 As Exception
-                Throw obj1
-                'GoTo Label_067A
+            Catch err As Exception
+                THConstVars.handleException(err, Timer1)
             End Try
-Label_06B4:
-            Throw ProjectData.CreateProjectError(-2146828237)
-Label_06BF:
-            If (num5 <> 0) Then
-                ProjectData.ClearProjectError()
-            End If
         End Sub
 
         Private Sub MainMenu(ByRef Optional ResumeGame As Boolean = False)
+            System.Diagnostics.Debug.WriteLine("In mainmenu")
+            disableGameLoop()
             Dim str2 As String
-            Dim num4 As Short
+            Dim num4 As Integer
             Dim str3 As String
             Me.MuteSounds()
             THConstVars.CannotDoKeydown = True
@@ -3677,8 +3540,8 @@ Label_06BF:
             Dim bCloseFirst As Boolean = True
             Dim bLoopSound As Boolean = True
             Dim performEffects As Boolean = False
-            Dim x As Short = 0
-            Dim y As Short = 0
+            Dim x As Integer = 0
+            Dim y As Integer = 0
             Dim dVolume As String = ""
             Dim waitTillDone As Boolean = False
             DXSound.PlaySound(Me.MenuSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -3689,16 +3552,15 @@ Label_06BF:
             End If
             str2 = (str2 & "|menu_a2.wav|menu_a6.wav|menu_a3.wav|menu_a5.wav|menu_a4.wav")
             Do While (num4 <> 1)
-                Dim num5 As Short
-                Dim num6 As Short
-                Dim num7 As Short
-                Dim num8 As Short
+                Dim num5 As Integer
+                Dim num6 As Integer
+                Dim num7 As Integer
+                Dim num8 As Integer
                 dVolume = "menu.wav"
                 y = 0
                 Select Case Me.GenerateMenu(dVolume, str2, y)
                     Case 1
-                        num4 = 1
-                        GoTo Label_060A
+                        Exit Do
                     Case 2
                         If Not Me.IsFull Then
                             Exit Select
@@ -3706,16 +3568,15 @@ Label_06BF:
                         Me.file_load_click()
 
                         If (Me.FileName <> "") Then
-                            num4 = 1
                             ResumeGame = True
                             Me.MenuSound.Stop()
                             Me.MenuSound = Nothing
                             THConstVars.CannotDoKeydown = False
                             Me.IsInMenu = False
                             Me.HasDoneInit = True
-                            Me.StartTimer()
+                            Exit Do
                         End If
-                        GoTo Label_060A
+                        Exit Select
                     Case 3
                         If Not Me.IsFull Then
                             GoTo Label_01A7
@@ -3756,7 +3617,7 @@ Label_01A7:
 Label_01E2:
                 dVolume = ""
                 str3 = "menu_b1.wav|menu_b2.wav|menu_b3.wav|menu_b4.wav|menu_b5.wav|menu_b6.wav|menu_b7.wav|menu_b8.wav|menu_b9.wav|menu_b10.wav|menu_b11.wav|menu_b12.wav|menu_b13.wav|menu_return.wav "
-                y = CShort((num6 - 1))
+                y = ((num6 - 1))
                 Select Case Me.GenerateMenu(dVolume, str3, y)
                     Case 1
                         waitTillDone = True
@@ -3883,31 +3744,18 @@ Label_0505:
 Label_051A:
                 str3 = "menu.wav"
                 dVolume = "menu_c1.wav|menu_c2.wav|menu_c3.wav|menu_c4.wav|menu_return.wav"
-                y = CShort((num8 - 1))
+                y = ((num8 - 1))
                 Select Case Me.GenerateMenu(str3, dVolume, y)
                     Case 1
-                        Me.RegProg_help_click()
-                        GoTo Label_05F5
+                        Exit Select
                     Case 2
-                        If Me.IsFull Then
-                            Exit Select
-                        End If
-                        Me.RegProg_getid_click()
-                        GoTo Label_05F5
+                        Exit Select
                     Case 3
-                        If Me.IsFull Then
-                            GoTo Label_05BA
-                        End If
-                        Me.RegProg_reg_click()
-                        GoTo Label_05F5
+                        Exit Select
                     Case 4
-                        Me.RegProg_removereg_click()
-                        GoTo Label_05F5
-                    Case 5
-                        num7 = 1
-                        GoTo Label_05F5
+                        Exit Select
                     Case Else
-                        GoTo Label_05F5
+                        Exit Select
                 End Select
                 waitTillDone = True
                 performEffects = False
@@ -3974,14 +3822,15 @@ Label_060A:
             If Me.IsFightingLast Then
                 Me.FinalDuelSound.SetVolume(Me.V)
             End If
+            enableGameLoop()
         End Sub
 
         Private Sub method_0()
             Dim bCloseFirst As Boolean = True
             Dim bLoopSound As Boolean = False
             Dim performEffects As Boolean = False
-            Dim x As Short = 0
-            Dim y As Short = 0
+            Dim x As Integer = 0
+            Dim y As Integer = 0
             Dim dVolume As String = ""
             Dim waitTillDone As Boolean = False
             DXSound.PlaySound(Me.NNumber, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -4007,6 +3856,9 @@ Label_060A:
             If Not IsDoingGMissile Then
                 Exit Sub
             End If
+            If movedInLastTick Then
+                Exit Sub
+            End If
             Dim g As Integer = GFront
             Dim s As Integer = GSpeed
             Select Case m
@@ -4028,11 +3880,11 @@ Label_060A:
             If g <> GFront Then
                 Dim dir As String = ""
                 If GFront = 0 Then dir = "north"
-                If GFront = 0 Then dir = "east"
-                If GFront = 180 Then GFront = "south"
-                If GFront = 270 Then GFront = "west"
+                If GFront = 90 Then dir = "east"
+                If GFront = 180 Then dir = "south"
+                If GFront = 270 Then dir = "west"
                 NStop = False
-                Me.NLS((DXSound.string_0 & "\n" & dir & ".wav"), False)
+                Me.NLS((DXSound.string_0 & "\\n" & dir & ".wav"), False)
                 NStop = True
             End If
             If s <> GSpeed Then
@@ -4050,29 +3902,36 @@ Label_060A:
             Dim tx As Integer = Me.px
             Dim ty As Integer = Me.py
             Select Case d
+                ' For up and down, we don't want rapid-fire. If we use canSwim here, we will get rapid-fire since
+                ' the swimSound doesn't play
                 Case SwimDirection.up
-                    WDepth -= 1
-                    If WDepth > 0 Then WDepth = 0
+                    If movedInLastTick Then Exit Sub
+                    DepthDecrease()
                     Exit Select
                 Case SwimDirection.down
-                    WDepth += 1
-                    If WDepth > 15 Then WDepth = 15
+                    If movedInLastTick Then Exit Sub
+                    DepthIncrease()
                     Exit Select
                 Case SwimDirection.north
                     If WDepth = 0 Then Exit Sub
-                    Me.py = CShort((Me.py + 1))
+                    If Not canSwim(pressedActionButtonInLastTick) Then Exit Sub
+                    Me.py = ((Me.py + 1))
                     Exit Select
                 Case SwimDirection.south
                     If WDepth = 0 Then Exit Sub
-                    Me.py = CShort((Me.py - 1))
+                    If Not canSwim(pressedActionButtonInLastTick) Then Exit Sub
+                    Me.py = ((Me.py - 1))
                     Exit Select
                 Case SwimDirection.east
+                    ' For east and west, since these are done using arrow keys we change movedInLastTick instead of pressedActionButtonInLastTick
                     If WDepth = 0 Then Exit Sub
-                    Me.px = CShort((Me.px + 1))
+                    If Not canSwim(movedInLastTick) Then Exit Sub
+                    Me.px = ((Me.px + 1))
                     Exit Select
                 Case SwimDirection.west
                     If WDepth = 0 Then Exit Sub
-                    Me.px = CShort((Me.px - 1))
+                    If Not canSwim(movedInLastTick) Then Exit Sub
+                    Me.px = ((Me.px - 1))
                     Exit Select
             End Select
             If isBlocked(Me.px, Me.py) Then
@@ -4096,6 +3955,7 @@ Label_060A:
             End If
             Dim tx As Integer = px
             Dim ty As Integer = py
+            movedInLastTick = True
             Select Case w
                 Case WalkDirection.north
                     py += 1
@@ -4174,7 +4034,7 @@ Label_060A:
             Me.DoIfInWater()
             Me.RemoteControlMissile()
             Me.EndReflector()
-            Me.ToCloseToMachine()
+            Me.TooCloseToMachine()
             Me.DoIfEscapingFromBomb()
             Me.CountdownMachine()
             Me.GenHealth()
@@ -4187,8 +4047,8 @@ Label_060A:
             Me.StartMusic()
         End Sub
 
-        Private Sub OOCD(ByRef x As Short, ByRef y As Short)
-            Dim num As Short
+        Private Sub OOCD(ByRef x As Integer, ByRef y As Integer)
+            Dim num As Integer
             If (Me.BGrid(x, y) = Me.ClosedDoor) Then
                 num = 0
                 DXSound.smethod_1(Me.OpenDoorSound, True, False, x, y, num)
@@ -4199,7 +4059,7 @@ Label_060A:
                 Me.AllThingReplace(x, y, Me.ClosedDoor)
                 If ((x = Me.px) And (y = Me.py)) Then
                     num = 100
-                    Dim challID As Short = 0
+                    Dim challID As Integer = 0
                     Me.ReflectHit(num, challID)
                 End If
             End If
@@ -4209,22 +4069,22 @@ Label_060A:
             If keyDownDisabled() Then
                 Exit Sub
             End If
-            Dim num As Short
+            Dim num As Integer
             Me.OOCD(Me.px, Me.py)
             If ((Me.px - 1) > 0) Then
-                num = CShort((Me.px - 1))
+                num = ((Me.px - 1))
                 Me.OOCD(num, Me.py)
             End If
             If ((Me.px + 1) < Me.x) Then
-                num = CShort((Me.px + 1))
+                num = ((Me.px + 1))
                 Me.OOCD(num, Me.py)
             End If
             If ((Me.py - 1) > 0) Then
-                num = CShort((Me.py - 1))
+                num = ((Me.py - 1))
                 Me.OOCD(Me.px, num)
             End If
             If ((Me.py + 1) < Me.y) Then
-                num = CShort((Me.py + 1))
+                num = ((Me.py + 1))
                 Me.OOCD(Me.px, num)
             End If
         End Sub
@@ -4234,8 +4094,8 @@ Label_060A:
                 Exit Sub
             End If
             Dim str As String
-            Dim gX As Short
-            Dim gY As Short
+            Dim gX As Integer
+            Dim gY As Integer
             Dim flag As Boolean
             Me.NNumber.Stop()
             Me.NStop = False
@@ -4406,13 +4266,13 @@ Label_060A:
 
         Private Sub ProjectControl()
             If Me.IsLaunchingControl Then
-                If (Me.ASubs(8) >= 2) Then
-                    Me.ASubs(8) = 0
-                    If (CShort((Me.py + Me.DisControl)) > Me.y) Then
+                If (controlLaunchTracker * frameTime >= 200) Then
+                    controlLaunchTracker = 0
+                    If (((Me.py + Me.DisControl)) > Me.y) Then
                         THConstVars.CannotDoKeydown = False
                         Me.IsLaunchingControl = False
                     Else
-                        Dim cY As Short = CShort((Me.py + Me.DisControl))
+                        Dim cY As Integer = ((Me.py + Me.DisControl))
                         If Me.GetBlock(Me.px, cY) Then
                             THConstVars.CannotDoKeydown = False
                             Me.IsLaunchingControl = False
@@ -4420,11 +4280,11 @@ Label_060A:
                             THConstVars.CannotDoKeydown = False
                             Me.IsLaunchingControl = False
                         Else
-                            cY = CShort((Me.py + Me.DisControl))
+                            cY = ((Me.py + Me.DisControl))
                             If Me.IsChall(Me.px, cY) Then
                                 Me.IsLaunchingControl = False
                                 Me.IsControling = True
-                                cY = CShort((Me.py + Me.DisControl))
+                                cY = ((Me.py + Me.DisControl))
                                 Me.WControl = Me.GetChallID(Me.px, cY)
                                 Me.challs(CInt(Me.WControl)).GetReadyForControl()
                                 Me.ControlLaunchSound.Stop()
@@ -4432,18 +4292,18 @@ Label_060A:
                                 Dim bLoopSound As Boolean = False
                                 Dim performEffects As Boolean = False
                                 cY = 0
-                                Dim y As Short = 0
+                                Dim y As Integer = 0
                                 Dim dVolume As String = ""
                                 Dim waitTillDone As Boolean = False
                                 DXSound.PlaySound(Me.ControlHitSound, bCloseFirst, bLoopSound, performEffects, cY, y, dVolume, waitTillDone)
                                 THConstVars.CannotDoKeydown = False
                             Else
-                                Me.DisControl = CShort((Me.DisControl + 1))
+                                Me.DisControl = ((Me.DisControl + 1))
                             End If
                         End If
                     End If
                 Else
-                    Me.ASubs(8) = CShort((Me.ASubs(8) + 1))
+                    controlLaunchTracker += 1
                 End If
             End If
         End Sub
@@ -4451,72 +4311,68 @@ Label_060A:
         Private Sub ProjectNeedle()
             If Me.IsLaunchingNeedle Then
                 Dim num4 As Integer
-                If (Me.ASubs(9) >= 1) Then
-                    Me.ASubs(9) = 0
+                If (needleTracker * frameTime >= 100) Then
+                    needleTracker = 0
                     If (Me.DisNeedle > 10) Then
                         Me.IsLaunchingNeedle = False
                         THConstVars.CannotDoKeydown = False
                     Else
-                        Dim cY As Short = CShort((Me.py + Me.DisNeedle))
+                        Dim cY As Integer = ((Me.py + Me.DisNeedle))
                         If Me.GetBlock(Me.px, cY) Then
                             THConstVars.CannotDoKeydown = False
                             Me.IsLaunchingNeedle = False
                             Me.NeedleLaunchSound.Stop()
                         Else
-                            cY = CShort((Me.py + Me.DisNeedle))
+                            cY = ((Me.py + Me.DisNeedle))
                             If Me.IsChall(Me.px, cY) Then
-                                cY = CShort((Me.py + Me.DisNeedle))
-                                Dim challID As Short = Me.GetChallID(Me.px, cY)
+                                cY = ((Me.py + Me.DisNeedle))
+                                Dim challID As Integer = Me.GetChallID(Me.px, cY)
                                 Me.IsLaunchingNeedle = False
                                 Me.NeedleLaunchSound.Stop()
                                 Dim bCloseFirst As Boolean = True
                                 Dim bLoopSound As Boolean = False
                                 Dim performEffects As Boolean = False
                                 cY = 0
-                                Dim y As Short = 0
+                                Dim y As Integer = 0
                                 Dim dVolume As String = ""
                                 Dim waitTillDone As Boolean = False
                                 DXSound.PlaySound(Me.NeedleHitSound, bCloseFirst, bLoopSound, performEffects, cY, y, dVolume, waitTillDone)
                                 Me.challs(challID).IsPoisoned = True
                                 If Not Me.challs(challID).IsMaster Then
                                     num4 = challID
-                                    Me.challs(num4).NumOfNeedles = CShort((Me.challs(num4).NumOfNeedles + 1))
+                                    Me.challs(num4).NumOfNeedles = ((Me.challs(num4).NumOfNeedles + 1))
                                 Else
                                     Me.challs(challID).NumOfNeedles = 1
                                 End If
                                 y = 5
-                                Me.HarmChall(y, Me.px, CShort((Me.py + Me.DisNeedle)))
+                                Me.HarmChall(y, Me.px, ((Me.py + Me.DisNeedle)))
                                 THConstVars.CannotDoKeydown = False
                             Else
-                                Me.DisNeedle = CShort((Me.DisNeedle + 1))
+                                Me.DisNeedle = ((Me.DisNeedle + 1))
                             End If
                         End If
                     End If
                 Else
-                    num4 = 9
-                    Me.ASubs(9) = CShort((Me.ASubs(9) + 1))
+                    needleTracker += 1
                 End If
             End If
         End Sub
 
-        Public Sub ReflectHit(ByRef amount As Short, ByRef Optional ChallID As Short = 0)
-            Dim num2 As Short
+        Public Sub ReflectHit(ByRef amount As Integer, ByRef Optional ChallID As Integer = 0)
+            Dim num2 As Integer
             Dim flag4 As Boolean
             If Me.DoingReflector Then
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
+                Dim x As Integer = 0
                 num2 = 0
                 Dim dVolume As String = ""
                 flag4 = False
                 DXSound.PlaySound(Me.ShieldSound, bCloseFirst, bLoopSound, performEffects, x, num2, dVolume, flag4)
             Else
                 Me.SubHealth(amount)
-                If (Me.h <= 0) Then
-                    flag4 = False
-                    Me.CharDied(flag4)
-                Else
+                If Me.h > 0 Then
                     num2 = 0
                     DXSound.smethod_1(Me.CharHitSound, True, False, Me.px, Me.py, num2)
                 End If
@@ -4525,118 +4381,24 @@ Label_060A:
 
         Private Sub reg()
             Me.EnableInFull()
-            If 1 = 1 Then
-                Return
-            End If
-            Dim flag As Boolean
-            Me.NNumber.Stop()
-            Dim iD As String = ""
-            Dim productReg As String = THReg.GetProductReg(iD)
-            Dim str As String = Interaction.GetSetting(Addendums.AppTitle, "Config", "Reg", "")
-            If (str = "") Then
-                flag = False
-                Me.NLS((DXSound.string_0 & "\reg1.wav"), flag)
-                Interaction.MsgBox(("Welcome to " & Addendums.AppTitle & "! On the next screen you will be asked to enter your registration information. If you do not have a registration, you may leave the field blank to run a demo of the game."), MsgBoxStyle.Information, "Registration")
-                Me.NNumber.Stop()
-                flag = False
-                Me.NLS((DXSound.string_0 & "\reg3.wav"), flag)
-                str = Interaction.InputBox("Enter your registration code exactly as it was given to you.", "Registration", "", -1, -1)
-                If (str = "") Then
-                    Me.DisableInDemo()
-                    Me.NNumber.Stop()
-                    Return
-                End If
-                str = Strings.LCase(str)
-            End If
-            If (productReg = str) Then
-                Me.EnableInFull()
-
-                If (Interaction.GetSetting(Addendums.AppTitle, "Config", "Reg", "") = "") Then
-                    Me.NNumber.Stop()
-                    Interaction.SaveSetting(Addendums.AppTitle, "Config", "Reg", str)
-                    flag = False
-                    Me.NLS((DXSound.string_0 & "\reg5.wav"), flag)
-                    Interaction.MsgBox("Registration successful.", MsgBoxStyle.Information, "Registration")
-                End If
-            Else
-                Me.NNumber.Stop()
-                flag = False
-                Me.NLS((DXSound.string_0 & "\reg4.wav"), flag)
-                Me.DisableInDemo()
-                Interaction.MsgBox("Invalid registration; the game will continue to run in demo mode.", MsgBoxStyle.Information, "Registration")
-            End If
-        End Sub
-
-        Private Sub RegProg_getid_click()
-            Dim productID As String
-            Dim flag As Boolean
-            Me.NNumber.Stop()
-
-            If (Interaction.GetSetting(Addendums.AppTitle, "Config", "Username", "") = "") Then
-                flag = False
-                Me.NLS((DXSound.string_0 & "\mnureg2a.wav"), flag)
-                productID = Interaction.InputBox("Enter your name (first and last.) Do not worry about upper or lower-case.", "Registration", "", -1, -1)
-                If (productID = "") Then
-                    Me.RegSound.Stop()
-                    Return
-                End If
-                Interaction.SaveSetting(Addendums.AppTitle, "Config", "Username", Strings.LCase(productID))
-            End If
-            productID = THReg.GetProductID
-            Addendums.WriteToClipboard(productID)
-            Me.NNumber.Stop()
-            flag = False
-            Me.NLS((DXSound.string_0 & "\mnureg2b.wav"), flag)
-            Interaction.MsgBox(("Your product ID has been copied to the clipboard. The ID is " & productID & "."), MsgBoxStyle.Exclamation, "Registration")
-            Me.NNumber.Stop()
-        End Sub
-
-        Private Sub RegProg_help_click()
-            Me.NNumber.Stop()
-            Dim nWait As Boolean = False
-            Me.NLS((DXSound.string_0 & "\mnureg1.wav"), nWait)
-            Interaction.MsgBox(("To register " & Addendums.AppTitle & ", click Registration\get product ID... Here, enter your name, first and last. You will receive your product ID; this is the information you shall send to BPCPrograms SD whereupon you will receive your registration code."), MsgBoxStyle.Information, "Registration Help")
-            Me.NNumber.Stop()
-        End Sub
-
-        Private Sub RegProg_reg_click()
-            Me.reg()
-        End Sub
-
-        Private Sub RegProg_removereg_click()
-            Me.NNumber.Stop()
-            Dim nWait As Boolean = False
-            Me.NLS((DXSound.string_0 & "\mnureg4.wav"), nWait)
-            Dim num As Short = CShort(Interaction.MsgBox("Removing your registration will cause all features available only in the full version to be disabled. It is recommended you do not perform this step unless you have purchased a wrong key or problems with the registry and/or human tampering have caused an invalid registration to be checked on every execution of this game. If an upgrade of this game contains a change in the registration algorithm causing your current registration to be checked false, removing the registration data is the only way to repair this problem. Are you sure you want to remove your registration information?", (MsgBoxStyle.Question Or MsgBoxStyle.YesNo), "Remove Registration"))
-            If (num = 6) Then
-                If (Interaction.GetSetting(Addendums.AppTitle, "Config", "Username", "") <> "") Then
-                    Interaction.DeleteSetting(Addendums.AppTitle, "Config", "Username")
-                End If
-                If (Interaction.GetSetting(Addendums.AppTitle, "Config", "Reg", "") <> "") Then
-                    Interaction.DeleteSetting(Addendums.AppTitle, "Config", "Reg")
-                End If
-                Me.IsFull = False
-                Me.DisableInDemo()
-            End If
-            Me.NNumber.Stop()
         End Sub
 
         Private Sub RemoteControlMissile()
             If Me.IsDoingGMissile Then
-                If (Me.GCount >= (Me.GSpeed * 5)) Then
+                If (Me.GCount * frameTime >= (Me.GSpeed * 1000)) Then
                     Me.GCount = 0
                     Me.Grid(Me.GX, Me.GY) = Me.BGrid(Me.GX, Me.GY)
                     If (Me.GFront = 0) Then
-                        Me.GY = CShort((Me.GY + 1))
+                        Me.GY = ((Me.GY + 1))
                     End If
                     If (Me.GFront = 90) Then
-                        Me.GX = CShort((Me.GX + 1))
+                        Me.GX = ((Me.GX + 1))
                     End If
                     If (Me.GFront = 180) Then
-                        Me.GY = CShort((Me.GY - 1))
+                        Me.GY = ((Me.GY - 1))
                     End If
                     If (Me.GFront = 270) Then
-                        Me.GX = CShort((Me.GX - 1))
+                        Me.GX = ((Me.GX - 1))
                     End If
                     If ((((Me.GX < 1) Or (Me.GX > Me.x)) Or (Me.GY < 1)) Or (Me.GY > Me.y)) Then
                         Me.IsDoingGMissile = False
@@ -4644,7 +4406,7 @@ Label_060A:
                         Me.IsDoingGMissile = False
                         Me.GExplodeMissile()
                     Else
-                        Dim z As Short = 0
+                        Dim z As Integer = 0
                         DXSound.smethod_1(Me.directSoundSecondaryBuffer8_3, True, False, Me.GX, Me.GY, z)
                         If (Me.Grid(Me.GX, Me.GY) = Me.MineGuard) Then
                             Me.GExplodeMissile()
@@ -4656,20 +4418,20 @@ Label_060A:
                                 Me.BlewUpMineControl = True
                                 Me.Grid(Me.GX, Me.GY) = Me.Water
                                 Me.BGrid(Me.GX, Me.GY) = Me.Water
-                                Dim x As Short = Me.x
-                                Dim i As Short = 1
+                                Dim x As Integer = Me.x
+                                Dim i As Integer = 1
                                 Do While (i <= x)
-                                    Dim num4 As Short = CShort(Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 2)))))
-                                    Dim j As Short = 1
+                                    Dim num4 As Integer = (Math.Round(Conversion.Int(CDbl((CDbl(Me.y) / 2)))))
+                                    Dim j As Integer = 1
                                     Do While (j <= num4)
                                         If (((Me.BGrid(i, j) = Me.Mine) Or (Me.BGrid(i, j) = Me.MineGuard)) Or (Me.BGrid(i, j) = Me.MineControl)) Then
                                             Me.Grid(i, j) = Me.Water
                                             Me.BGrid(i, j) = Me.Water
                                         End If
                                         Application.DoEvents()
-                                        j = CShort((j + 1))
+                                        j = ((j + 1))
                                     Loop
-                                    i = CShort((i + 1))
+                                    i = ((i + 1))
                                 Loop
                                 str = "r4.wav"
                                 flag = False
@@ -4682,7 +4444,7 @@ Label_060A:
                                 Dim bLoopSound As Boolean = False
                                 Dim performEffects As Boolean = False
                                 z = 0
-                                Dim y As Short = 0
+                                Dim y As Integer = 0
                                 str = ""
                                 Dim waitTillDone As Boolean = False
                                 DXSound.PlaySound(Me.directSoundSecondaryBuffer8_4, flag, bLoopSound, performEffects, z, y, str, waitTillDone)
@@ -4690,7 +4452,7 @@ Label_060A:
                         End If
                     End If
                 Else
-                    Me.GCount = CShort((Me.GCount + 1))
+                    Me.GCount = ((Me.GCount + 1))
                 End If
             End If
         End Sub
@@ -4711,37 +4473,37 @@ Label_060A:
                     Case "gun"
                         bullets = Me.Bullets
                         Me.VoiceNumber(bullets)
-                        Me.Bullets = CShort(bullets)
+                        Me.Bullets = (bullets)
                         Exit Select
                     Case "sword"
                         bullets = Me.Swrd
                         Me.VoiceNumber(bullets)
-                        Me.Swrd = CShort(bullets)
+                        Me.Swrd = (bullets)
                         Exit Select
                     Case "bombs"
                         bullets = Me.bombs
                         Me.VoiceNumber(bullets)
-                        Me.bombs = CShort(bullets)
+                        Me.bombs = (bullets)
                         Exit Select
                     Case "laser"
                         bullets = Me.ALaser
                         Me.VoiceNumber(bullets)
-                        Me.ALaser = CShort(bullets)
+                        Me.ALaser = (bullets)
                         Exit Select
                     Case "gmissile"
                         bullets = Me.short_2
                         Me.VoiceNumber(bullets)
-                        Me.short_2 = CShort(bullets)
+                        Me.short_2 = (bullets)
                         Exit Select
                     Case "reflector"
                         bullets = Me.short_3
                         Me.VoiceNumber(bullets)
-                        Me.short_3 = CShort(bullets)
+                        Me.short_3 = (bullets)
                         Exit Select
                     Case "control"
                         bullets = Me.AControl
                         Me.VoiceNumber(bullets)
-                        Me.AControl = CShort(bullets)
+                        Me.AControl = (bullets)
                         Exit Select
                 End Select
             End If
@@ -4759,8 +4521,8 @@ Label_060A:
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.TeleportSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -4833,53 +4595,53 @@ Label_060A:
             Me.NStop = False
             Dim px As Long = Me.px
             Me.VoiceNumber(px)
-            Me.px = CShort(px)
+            Me.px = (px)
             If Not Me.NStop Then
                 Me.NumWait()
 
                 If Not Me.NStop Then
                     px = Me.py
                     Me.VoiceNumber(px)
-                    Me.py = CShort(px)
+                    Me.py = (px)
                     Me.NStop = True
                 End If
             End If
         End Sub
 
-        Private Function ScanForItem(ByRef Range As Short, ByRef thing As Short, ByRef Optional replaceIt As Short = 0) As Boolean
+        Private Function ScanForItem(ByRef Range As Integer, ByRef thing As Integer, ByRef Optional replaceIt As Integer = 0) As Boolean
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num2 As Short = Range
-            Dim i As Short = 0
+            Dim num2 As Integer = Range
+            Dim i As Integer = 0
             Do While (i <= num2)
-                If ((((CShort((Me.px - i)) >= 1) And (CShort((Me.px + i)) <= Me.x)) And (CShort((Me.py + i)) <= Me.y)) And (CShort((Me.py - i)) >= 1)) Then
-                    If (Me.Grid(CShort((Me.px + i)), Me.py) = thing) Then
+                If ((((((Me.px - i)) >= 1) And (((Me.px + i)) <= Me.x)) And (((Me.py + i)) <= Me.y)) And (((Me.py - i)) >= 1)) Then
+                    If (Me.Grid(((Me.px + i)), Me.py) = thing) Then
                         flag = True
                         If (Not replaceIt = 0) Then
-                            Me.Grid(CShort((Me.px + i)), Me.py) = replaceIt
+                            Me.Grid(((Me.px + i)), Me.py) = replaceIt
                         End If
                     End If
-                    If (Me.Grid(Me.px, CShort((Me.py + i))) = thing) Then
+                    If (Me.Grid(Me.px, ((Me.py + i))) = thing) Then
                         flag2 = True
                         If (Not replaceIt = 0) Then
-                            Me.Grid(Me.px, CShort((Me.py + i))) = replaceIt
+                            Me.Grid(Me.px, ((Me.py + i))) = replaceIt
                         End If
                     End If
-                    If (Me.Grid(CShort((Me.px - i)), Me.py) = thing) Then
+                    If (Me.Grid(((Me.px - i)), Me.py) = thing) Then
                         flag = True
                         If (Not replaceIt = 0) Then
-                            Me.Grid(CShort((Me.px - i)), Me.py) = replaceIt
+                            Me.Grid(((Me.px - i)), Me.py) = replaceIt
                         End If
                     End If
-                    If (Me.Grid(Me.px, CShort((Me.py - i))) = thing) Then
+                    If (Me.Grid(Me.px, ((Me.py - i))) = thing) Then
                         flag2 = True
                         If (Not replaceIt = 0) Then
-                            Me.Grid(Me.px, CShort((Me.py - i))) = replaceIt
+                            Me.Grid(Me.px, ((Me.py - i))) = replaceIt
                         End If
                     End If
                 End If
-                i = CShort((i + 1))
+                i = ((i + 1))
             Loop
             If (flag And flag2) Then
                 flag3 = True
@@ -4888,7 +4650,7 @@ Label_060A:
         End Function
 
         Private Sub SetC()
-            Dim num As Short
+            Dim num As Integer
             If Me.IsControling Then
                 num = 0
                 DXSound.SetCoordinates(Me.challs(CInt(Me.WControl)).x, Me.challs(CInt(Me.WControl)).y, num)
@@ -4901,23 +4663,23 @@ Label_060A:
 
         Private Sub SetChalls()
             Me.challs = New chall((Me.ChallAmount + 1) - 1) {}
-            Dim challAmount As Short = Me.ChallAmount
-            Dim i As Short = 1
+            Dim challAmount As Integer = Me.ChallAmount
+            Dim i As Integer = 1
             Do While (i <= challAmount)
                 Dim flag As Boolean
                 Me.challs(i) = New chall
                 Do While Not flag
-                    Dim px As Short = CShort(Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
-                    Dim py As Short = CShort(Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
+                    Dim px As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.x * VBMath.Rnd)))))))
+                    Dim py As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((Me.y * VBMath.Rnd)))))))
                     If ((((px < 3) Or (px > (Me.x - 2))) Or (py < 3)) Or (py > (Me.y - 2))) Then
                         flag = False
                     Else
-                        Dim num4 As Short = Me.BGrid(px, py)
+                        Dim num4 As Integer = Me.BGrid(px, py)
                         If (((((((num4 <> Me.ClosedDoor) And (num4 <> Me.OpenDoor)) And (num4 <> Me.LockedDoor)) And (num4 <> Me.Water)) And (num4 <> Me.Wall)) And (num4 <> Me.Mine)) And (num4 <> Me.MineGuard)) Then
                             flag = True
-                            Dim cHealth As Short = 50
-                            Dim s As Short = CShort(Math.Round(CDbl((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))))))
-                            Dim t As Short = CShort(Math.Round(CDbl((1.0! + Conversion.Int(CSng((3.0! * VBMath.Rnd)))))))
+                            Dim cHealth As Integer = 50
+                            Dim s As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))))))
+                            Dim t As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((3.0! * VBMath.Rnd)))))))
                             Dim dead As Boolean = False
                             Me.challs(i).init(px, py, i, cHealth, s, t, dead)
                         End If
@@ -4925,15 +4687,15 @@ Label_060A:
                 Loop
                 flag = False
                 Application.DoEvents()
-                i = CShort((i + 1))
+                i = ((i + 1))
             Loop
         End Sub
 
-        Private Sub SetWeapon(ByRef WName As String, ByRef Optional pos As Short = 0)
+        Private Sub SetWeapon(ByRef WName As String, ByRef Optional pos As Integer = 0)
             If (pos = 0) Then
-                Dim num As Short
+                Dim num As Integer
                 Do While (Me.Weapons(num) <> "")
-                    num = CShort((num + 1))
+                    num = ((num + 1))
                     If (Me.Weapons(num) = WName) Then
                         Return
                     End If
@@ -4948,8 +4710,8 @@ Label_060A:
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num2 As Short
-            Dim num3 As Short
+            Dim num2 As Integer
+            Dim num3 As Integer
             Dim str As String
             Dim flag4 As Boolean
             If (Me.Bullets <= 0) Then
@@ -4971,10 +4733,10 @@ Label_060A:
                 flag = False
                 DXSound.PlaySound(Me.GunSound, flag4, flag3, flag2, num3, num2, str, flag)
                 If Not Me.UnlimitedBullets Then
-                    Me.Bullets = CShort((Me.Bullets - 1))
+                    Me.Bullets = ((Me.Bullets - 1))
                 End If
                 If Me.IsChall(Me.px, Me.py) Then
-                    Dim amount As Short = CShort(Math.Round(CDbl((11.0! + Conversion.Int(CSng((5.0! * VBMath.Rnd)))))))
+                    Dim amount As Integer = (Math.Round(CDbl((11.0! + Conversion.Int(CSng((5.0! * VBMath.Rnd)))))))
                     Me.HarmChall(amount, 0, 0)
                 End If
             End If
@@ -4984,8 +4746,8 @@ Label_060A:
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num2 As Short
-            Dim num3 As Short
+            Dim num2 As Integer
+            Dim num3 As Integer
             Dim str As String
             Dim flag4 As Boolean
             If (Me.ALaser <= 0) Then
@@ -5007,10 +4769,10 @@ Label_060A:
                 flag = False
                 DXSound.PlaySound(Me.LaserGunSound, flag4, flag3, flag2, num3, num2, str, flag)
                 If Not Me.UnlimitedBullets Then
-                    Me.ALaser = CShort((Me.ALaser - 1))
+                    Me.ALaser = ((Me.ALaser - 1))
                 End If
                 If Me.IsChall(Me.px, Me.py) Then
-                    Dim amount As Short = CShort(Math.Round(CDbl((11.0! + Conversion.Int(CSng((100.0! * VBMath.Rnd)))))))
+                    Dim amount As Integer = (Math.Round(CDbl((11.0! + Conversion.Int(CSng((100.0! * VBMath.Rnd)))))))
                     Me.HarmChall(amount, 0, 0)
                 End If
             End If
@@ -5019,11 +4781,11 @@ Label_060A:
         Public Sub ShutDown()
             THConstVars.IsShuttingDown = True
             If Me.HasDoneInit Then
-                Dim challAmount As Short = Me.ChallAmount
-                Dim i As Short = 1
+                Dim challAmount As Integer = Me.ChallAmount
+                Dim i As Integer = 1
                 Do While (i <= challAmount)
                     Me.challs(i) = Nothing
-                    i = CShort((i + 1))
+                    i = ((i + 1))
                 Loop
                 DXSound.directSound3DListener8_0 = Nothing
                 DXSound.objDS = Nothing
@@ -5036,14 +4798,14 @@ Label_060A:
         Private Sub snake()
             If (Me.Swrd > 0) Then
                 If Not Me.UnlimitedBullets Then
-                    Me.Swrd = CShort((Me.Swrd - 1))
+                    Me.Swrd = ((Me.Swrd - 1))
                 End If
                 Me.Grid(Me.px, Me.py) = 1
             Else
-                Dim num As Short = CShort(Math.Round(CDbl((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))))))
+                Dim num As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))))))
                 If (num = 2) Then
-                    Dim amount As Short = 5
-                    Dim challID As Short = 0
+                    Dim amount As Integer = 5
+                    Dim challID As Integer = 0
                     Me.ReflectHit(amount, challID)
                 End If
             End If
@@ -5053,8 +4815,8 @@ Label_060A:
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             Dim str As String
             Dim flag4 As Boolean
             If ((Me.NumAlert > 0) And Not Me.IsFightingLast) Then
@@ -5115,50 +4877,50 @@ Label_060A:
                     DXSound.PlaySound(Me.FinalDuelSound, flag4, flag3, flag2, num2, num, str, flag)
                 End If
             ElseIf (Not Me.FinalDuelSound Is Nothing) Then
-                Me.FinalDuelSound.Stop
+                Me.FinalDuelSound.Stop()
                 Me.FinalDuelSound = Nothing
             End If
         End Sub
 
-        Private Sub StartTimer()
+        Private Sub updateFrame()
             Try
-                Dim num As Short
-                While (True)
-                    performActions()
-                    If ((Not ((THConstVars.CannotDoKeydown And Not Me.IsLaunchingControl) And Not Me.IsLaunchingNeedle) AndAlso Not Me.IsInPauseState) AndAlso Me.NStop) Then
-                        Me.OMove_Tick()
-                    End If
-                    THConstVars.MWait(10)
-                    num = CShort((num + 1))
-                    Select Case THConstVars.Difficulty
-                        Case 1.0!
-                            If (num >= 100) Then
-                                num = 0
-                                Me.EMove_Tick()
-                            End If
-                            Exit Select
-                        Case 2.0!
-                            If (num >= 60) Then
-                                num = 0
-                                Me.EMove_Tick()
-                            End If
-                            Exit Select
-                        Case 3.0!
-                            If (num >= 40) Then
-                                num = 0
-                                Me.EMove_Tick()
-                            End If
-                            Exit Select
-                        Case 4.0!
-                            If (num >= 10) Then
-                                num = 0
-                                EMove_Tick()
-                            End If
-                            Exit Select
-                    End Select
-                End While
+                System.Diagnostics.Debug.WriteLine("timer: before performaction")
+                performActions()
+                System.Diagnostics.Debug.WriteLine("timer: after performaction")
+                If ((Not ((THConstVars.CannotDoKeydown And Not Me.IsLaunchingControl) And Not Me.IsLaunchingNeedle) AndAlso Not Me.IsInPauseState)) Then
+                    System.Diagnostics.Debug.WriteLine("timer: ok to execute oMove_tick")
+                    Me.OMove_Tick()
+                End If
+                frameTracker += 1
+                Select Case THConstVars.Difficulty
+                    Case 1.0!
+                        If (frameTracker >= 100) Then
+                            frameTracker = 0
+                            Me.EMove_Tick()
+                        End If
+                        Exit Select
+                    Case 2.0!
+                        If (frameTracker >= 60) Then
+                            frameTracker = 0
+                            Me.EMove_Tick()
+                        End If
+                        Exit Select
+                    Case 3.0!
+                        If (frameTracker >= 40) Then
+                            frameTracker = 0
+                            Me.EMove_Tick()
+                        End If
+                        Exit Select
+                    Case 4.0!
+                        If (frameTracker >= 10) Then
+                            frameTracker = 0
+                            EMove_Tick()
+                        End If
+                        Exit Select
+                End Select
+                Me.CharDied(False) ' If char is dead, will play lose sound. Also responsible for low health notification
             Catch e As Exception
-                THConstVars.handleException(e)
+                THConstVars.handleException(e, Timer1)
             End Try
         End Sub
 
@@ -5181,7 +4943,7 @@ Label_060A:
                 Else
                     h = Me.h
                     Me.VoiceNumber(h)
-                    Me.h = CShort(h)
+                    Me.h = (h)
                     If Me.NStop Then
                         Return
                     End If
@@ -5192,15 +4954,18 @@ Label_060A:
                     h = Me.Points
                     Me.VoiceNumber(h)
                     Me.Points = CInt(h)
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Not Me.NStop Then
                         nWait = True
                         Me.NLS((DXSound.string_0 & "\nstatus3.wav"), nWait)
-                        Me.NumWait
+                        Me.NumWait()
+
                         If Not Me.NStop Then
                             nWait = True
                             Me.ReportAmunition(nWait)
-                            Me.NumWait
+                            Me.NumWait()
+
                             If Not Me.NStop Then
                                 nWait = True
                                 Me.NLS((DXSound.string_0 & "\nstatus4.wav"), nWait)
@@ -5211,7 +4976,8 @@ Label_060A:
                                         h = Me.ch
                                         Me.VoiceNumber(h)
                                         Me.ch = CInt(h)
-                                        Me.NumWait
+                                        Me.NumWait()
+
                                         If Not Me.NStop Then
                                             If (Me.ch = 1) Then
                                                 nWait = True
@@ -5221,7 +4987,7 @@ Label_060A:
                                                 Me.NLS((DXSound.string_0 & "\nstatus6s.wav"), nWait)
                                             End If
                                             If Not Me.NStop Then
-                                                Me.position
+                                                Me.position()
                                             End If
                                         End If
                                     End If
@@ -5234,19 +5000,20 @@ Label_060A:
         End Sub
 
         Private Sub StopMusic()
-            Me.DuelSound.Stop
-            Me.BackgroundSound.Stop
+            Me.DuelSound.Stop()
+            Me.BackgroundSound.Stop()
+
             If Me.IsFightingLast Then
-                Me.FinalDuelSound.Stop
+                Me.FinalDuelSound.Stop()
             End If
         End Sub
 
         Private Sub StopTimer()
         End Sub
 
-        Public Sub SubHealth(ByRef ASub As Short)
+        Public Sub SubHealth(ByRef ASub As Integer)
             If Not Me.UnlimitedHealth Then
-                Me.h = CShort((Me.h - ASub))
+                Me.h = ((Me.h - ASub))
             End If
         End Sub
 
@@ -5255,19 +5022,19 @@ Label_060A:
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.SwingSwordSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
                 If Me.IsChall(Me.px, Me.py) Then
-                    Dim num2 As Short = CShort(Math.Round(CDbl(VBMath.Rnd)))
+                    Dim num2 As Integer = (Math.Round(CDbl(VBMath.Rnd)))
                     If (num2 <= Me.Accuracy) Then
-                        Me.Accuracy = CShort(Math.Round(CDbl((Me.Accuracy + ((11.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) / 1000.0!)))))
-                        Dim amount As Short = CShort(Math.Round(CDbl(((11.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) * Me.Swrd))))
+                        Me.Accuracy = (Math.Round(CDbl((Me.Accuracy + ((11.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) / 1000.0!)))))
+                        Dim amount As Integer = (Math.Round(CDbl(((11.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) * Me.Swrd))))
                         THConstVars.CannotDoKeydown = True
                         Do While (Me.SwingSwordSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                            Application.DoEvents
+                            Application.DoEvents()
                         Loop
                         THConstVars.CannotDoKeydown = False
                         Me.HarmChall(amount, 0, 0)
@@ -5280,7 +5047,7 @@ Label_060A:
             Return THConstVars.CannotDoKeydown Or Me.IsInMenu
         End Function
 
-        Private Sub SwitchToWeapon(ByRef pos As Short)
+        Private Sub SwitchToWeapon(ByRef pos As Integer)
             If keyDownDisabled() Then
                 Exit Sub
             End If
@@ -5331,20 +5098,20 @@ Label_060A:
         End Sub
 
         Private Sub Sword()
-            Me.grid(Me.px, Me.py) = 1
-            Dim num As Short = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))))))
+            Me.Grid(Me.px, Me.py) = 1
+            Dim num As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))))))
             If (num = 1) Then
-                Me.h = CShort((Me.h + 5))
+                Me.h = ((Me.h + 5))
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.PickUpHealthSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
             Else
-                Me.Swrd = CShort((Me.Swrd + 1))
+                Me.Swrd = ((Me.Swrd + 1))
             End If
         End Sub
 
@@ -5359,30 +5126,30 @@ Label_060A:
                 Dim bCloseFirst As Boolean = False
                 Dim bLoopSound As Boolean = True
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.TargetSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
             Else
-                Me.TargetSound.Stop
+                Me.TargetSound.Stop()
             End If
         End Sub
 
-        Public Sub ThingReplace(ByRef x As Short, ByRef y As Short, ByRef thing As Short)
-            Me.grid(x, y) = thing
+        Public Sub ThingReplace(ByRef x As Integer, ByRef y As Integer, ByRef thing As Integer)
+            Me.Grid(x, y) = thing
         End Sub
 
-        Private Sub ToCloseToMachine()
-            If (Me.ASubs(6) >= 10) Then
-                Me.ASubs(6) = 0
+        Private Sub TooCloseToMachine()
+            If (tooCloseToMachineTracker * frameTime >= 1000) Then
+                tooCloseToMachineTracker = 0
                 If (Me.HasTurnedOffMachine AndAlso (((Me.MachineX + &H61) >= Me.px) And ((Me.MachineY + &H61) >= Me.py))) Then
                     THConstVars.CannotDoKeydown = True
                     Dim bCloseFirst As Boolean = True
                     Dim bLoopSound As Boolean = False
                     Dim performEffects As Boolean = False
-                    Dim x As Short = 0
-                    Dim y As Short = 0
+                    Dim x As Integer = 0
+                    Dim y As Integer = 0
                     Dim dVolume As String = ""
                     Dim waitTillDone As Boolean = False
                     DXSound.PlaySound(Me.AlarmSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -5396,13 +5163,11 @@ Label_060A:
                     DXSound.PlaySound(Me.BigBlastSound, waitTillDone, performEffects, bLoopSound, y, x, dVolume, bCloseFirst)
                     Me.h = 0
                     Do While (Me.BigBlastSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                        Application.DoEvents
+                        Application.DoEvents()
                     Loop
-                    waitTillDone = True
-                    Me.CharDied(waitTillDone)
                 End If
             Else
-                Me.ASubs(6) = CShort((Me.ASubs(6) + 1))
+                tooCloseToMachineTracker += 1
             End If
         End Sub
 
@@ -5443,19 +5208,20 @@ Label_060A:
 
         Private Sub TurnGMissile(ByRef dir_Renamed As String)
             Dim flag As Boolean
-            Me.NNumber.Stop
+            Me.NNumber.Stop()
+
             If (dir_Renamed = "l") Then
                 If ((Me.GFront - 90) < 0) Then
                     Me.GFront = 270
                 Else
-                    Me.GFront = CShort((Me.GFront - 90))
+                    Me.GFront = ((Me.GFront - 90))
                 End If
             End If
             If (dir_Renamed = "r") Then
                 If ((Me.GFront + 90) > 270) Then
                     Me.GFront = 0
                 Else
-                    Me.GFront = CShort((Me.GFront + 90))
+                    Me.GFront = ((Me.GFront + 90))
                 End If
             End If
             If (Me.GFront = 0) Then
@@ -5481,8 +5247,8 @@ Label_060A:
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             Dim str As String
             Dim flag4 As Boolean
             Me.WaterSound.SetVolume(0)
@@ -5496,7 +5262,7 @@ Label_060A:
                 flag4 = False
                 DXSound.PlaySound(Me.WaterSound, flag, flag2, flag3, num, num2, str, flag4)
             Else
-                Me.WaterSound.Stop
+                Me.WaterSound.Stop()
             End If
             Me.TargetSound.SetVolume(0)
             Me.MachineSound.SetVolume(0)
@@ -5510,7 +5276,7 @@ Label_060A:
                 flag = False
                 DXSound.PlaySound(Me.MachineSound, flag4, flag3, flag2, num2, num, str, flag)
             Else
-                Me.MachineSound.Stop
+                Me.MachineSound.Stop()
             End If
             Me.ReflectorSound.SetVolume(0)
             If Me.DoingReflector Then
@@ -5523,7 +5289,7 @@ Label_060A:
                 flag = False
                 DXSound.PlaySound(Me.ReflectorSound, flag4, flag3, flag2, num2, num, str, flag)
             Else
-                Me.ReflectorSound.Stop
+                Me.ReflectorSound.Stop()
             End If
         End Sub
 
@@ -5531,8 +5297,8 @@ Label_060A:
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             Dim str As String
             Dim flag4 As Boolean
             If Not Me.IsFull Then
@@ -5546,7 +5312,7 @@ Label_060A:
                 DXSound.PlaySound(Me.AccessDeniedSound, flag, flag2, flag3, num, num2, str, flag4)
             ElseIf ((Me.AControl > 0) AndAlso Not Me.IsLaunchingControl) Then
                 If Not Me.UnlimitedBullets Then
-                    Me.AControl = CShort((Me.AControl - 1))
+                    Me.AControl = ((Me.AControl - 1))
                 End If
                 Me.DisControl = 1
                 THConstVars.CannotDoKeydown = True
@@ -5565,15 +5331,15 @@ Label_060A:
         Private Sub UseReflector()
             If (Me.short_3 > 0) Then
                 If Not Me.UnlimitedBullets Then
-                    Me.short_3 = CShort((Me.short_3 - 1))
+                    Me.short_3 = ((Me.short_3 - 1))
                 End If
                 Me.reflectorTime = 0
                 Me.DoingReflector = True
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = True
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.ReflectorSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -5588,7 +5354,10 @@ Label_060A:
                 Exit Sub
             End If
             Dim w As String = Strings.LCase(Me.Weapons(Me.WPos))
-            If (fireRates(w) = 0 And Me.isFirstPress) Or ((DateTime.Now - fireDate).TotalMilliseconds() >= fireRates(w)) Then
+            ' If this is a fire-once weapon, and right now the player is not holding down the action button,
+            ' or this is a rapid-fire weapon.
+            If fireRates(w) = 0 And Not pressedActionButtonInLastTick Or fireRates(w) > 0 And (DateTime.Now - fireDate).TotalMilliseconds() >= fireRates(w) Then
+                pressedActionButtonInLastTick = True
                 Select Case w
                     Case "gun"
                         Me.shoot()
@@ -5620,7 +5389,8 @@ Label_060A:
             Dim nWait As Boolean = False
             Me.NLS((DXSound.NumPath & "\" & string_2 & ".wav"), nWait)
             If Not Me.NStop Then
-                Me.NumWait
+                Me.NumWait()
+
                 If Me.NStop Then
                 End If
             End If
@@ -5632,7 +5402,8 @@ Label_060A:
                 flag = False
                 Me.NLS((DXSound.NumPath & "\" & Conversions.ToString(Conversion.Val(CStr(string_2))) & ".wav"), flag)
                 If Not Me.NStop Then
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Not Me.NStop Then
                     End If
                 End If
@@ -5643,7 +5414,8 @@ Label_060A:
                     If Me.NStop Then
                         Return
                     End If
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Me.NStop Then
                         Return
                     End If
@@ -5652,7 +5424,8 @@ Label_060A:
                     flag = False
                     Me.NLS((DXSound.NumPath & "\" & Strings.Mid(string_2, 2, 1) & ".wav"), flag)
                     If Not Me.NStop Then
-                        Me.NumWait
+                        Me.NumWait()
+
                         If Me.NStop Then
                         End If
                     End If
@@ -5665,12 +5438,14 @@ Label_060A:
                 Dim nWait As Boolean = False
                 Me.NLS((DXSound.NumPath & "\" & Strings.Mid(string_2, 1, 1) & ".wav"), nWait)
                 If Not Me.NStop Then
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Not Me.NStop Then
                         nWait = False
                         Me.NLS((DXSound.NumPath & "\100.wav"), nWait)
                         If Not Me.NStop Then
-                            Me.NumWait
+                            Me.NumWait()
+
                             If Not Me.NStop Then
                                 Me.v2(Strings.Mid(string_2, 2, 2))
                             End If
@@ -5687,12 +5462,14 @@ Label_060A:
                 Dim nWait As Boolean = False
                 Me.NLS((DXSound.NumPath & "\" & Strings.Mid(string_2, 1, 1) & ".wav"), nWait)
                 If Not Me.NStop Then
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Not Me.NStop Then
                         nWait = False
                         Me.NLS((DXSound.NumPath & "\1000.wav"), nWait)
                         If Not Me.NStop Then
-                            Me.NumWait
+                            Me.NumWait()
+
                             If Not Me.NStop Then
                                 Me.v3(Strings.Mid(string_2, 2, 3))
                             End If
@@ -5710,7 +5487,8 @@ Label_060A:
                 Dim nWait As Boolean = False
                 Me.NLS((DXSound.NumPath & "\1000.wav"), nWait)
                 If Not Me.NStop Then
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Not Me.NStop Then
                         Me.v3(Strings.Mid(string_2, 3, 3))
                     End If
@@ -5721,7 +5499,8 @@ Label_060A:
         Private Sub v6(ByRef string_2 As String)
             Me.v3(Strings.Mid(string_2, 1, 3))
             If Not Me.NStop Then
-                Me.NumWait
+                Me.NumWait()
+
                 If Not Me.NStop Then
                     If (Strings.Mid(string_2, 1, 3) <> "000") Then
                         Dim nWait As Boolean = False
@@ -5730,7 +5509,8 @@ Label_060A:
                             Return
                         End If
                     End If
-                    Me.NumWait
+                    Me.NumWait()
+
                     If Not Me.NStop Then
                         Me.v3(Strings.Mid(string_2, 4, 3))
                     End If
@@ -5745,7 +5525,8 @@ Label_060A:
                 If Me.NStop Then
                     Return
                 End If
-                Me.NumWait
+                Me.NumWait()
+
                 If Me.NStop Then
                     Return
                 End If
@@ -5754,7 +5535,8 @@ Label_060A:
                 If Me.NStop Then
                     Return
                 End If
-                Me.NumWait
+                Me.NumWait()
+
                 If Me.NStop Then
                     Return
                 End If
@@ -5767,12 +5549,14 @@ Label_060A:
         Private Sub v8(ByRef string_2 As String)
             Me.v2(Strings.Mid(string_2, 1, 2))
             If Not Me.NStop Then
-                Me.NumWait
+                Me.NumWait()
+
                 If Not Me.NStop Then
                     Dim nWait As Boolean = False
                     Me.NLS((DXSound.NumPath & "\1000000.wav"), nWait)
                     If Not Me.NStop Then
-                        Me.NumWait
+                        Me.NumWait()
+
                         If Not Me.NStop Then
                             Me.v6(Strings.Mid(string_2, 3, 6))
                         End If
@@ -5784,12 +5568,14 @@ Label_060A:
         Private Sub v9(ByRef string_2 As String)
             Me.v3(Strings.Mid(string_2, 1, 3))
             If Not Me.NStop Then
-                Me.NumWait
+                Me.NumWait()
+
                 If Not Me.NStop Then
                     Dim nWait As Boolean = False
                     Me.NLS((DXSound.NumPath & "\1000000.wav"), nWait)
                     If Not Me.NStop Then
-                        Me.NumWait
+                        Me.NumWait()
+
                         If Not Me.NStop Then
                             Me.v6(Strings.Mid(string_2, 4, 6))
                         End If
@@ -5799,10 +5585,10 @@ Label_060A:
         End Sub
 
         Private Sub VoiceNumber(ByRef number As Long)
-            Me.NNumber.Stop
+            Me.NNumber.Stop()
             Dim str As String = Conversion.Str(CLng(number))
             str = Strings.Mid(str, 2, (Strings.Len(str) - 1))
-            Select Case CShort(Strings.Len(str))
+            Select Case (Strings.Len(str))
                 Case 1
                     Me.v1(str)
                     Exit Select
@@ -5838,26 +5624,26 @@ Label_060A:
                 Me.HasKilledMouse = True
             Else
                 THConstVars.CannotDoKeydown = True
-                Me.MuteSounds
+                Me.MuteSounds()
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.TeleportSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
                 Me.WonSound = modDirectShow.LoadMP3((DXSound.SoundPath & "\won.mp3"))
                 Do While (Me.TeleportSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                    Application.DoEvents
+                    Application.DoEvents()
                 Loop
-                Me.FinalDuelSound.Stop
+                Me.FinalDuelSound.Stop()
                 dVolume = "r11.wav"
                 waitTillDone = True
                 DXSound.Radio(dVolume, waitTillDone)
-                Me.WonSound.Run
+                Me.WonSound.Run()
                 Interaction.MsgBox("Congratulations, you win!", MsgBoxStyle.Exclamation, "End")
-                Me.ShutDown
+                Me.ShutDown()
             End If
         End Sub
 
@@ -5947,11 +5733,11 @@ Label_060A:
 
         ' Fields
         Private components As IContainer
-        Private Const SupplyRoomX As Short = &H2E
-        Private Const SupplyRoomY As Short = 180
-        Private Const LookRange As Short = 20
-        Private Const Subs As Short = 9
-        Private Const KeyTime As Single = 1!
+        Private Const SupplyRoomX As Integer = &H2E
+        Private Const SupplyRoomY As Integer = 180
+        Private Const LookRange As Integer = 20
+        Private Const Subs As Integer = 9
+        Private Const KeyTime As Single = 1.0!
         Private Const MGun As String = "gun"
         Private Const MSword As String = "sword"
         Private Const MBomb As String = "bombs"
@@ -5959,14 +5745,14 @@ Label_060A:
         Private Const string_0 As String = "gmissile"
         Private Const string_1 As String = "reflector"
         Private Const MControl As String = "control"
-        Private Const PRange As Short = 5
-        Private Const SubLength As Single = 5!
+        Private Const PRange As Integer = 5
+        Private Const SubLength As Single = 5.0!
         Private ClickSound As DirectSoundSecondaryBuffer8
         Private directSoundSecondaryBuffer8_0 As DirectSoundSecondaryBuffer8
         Private NLoadSuccessfulSound As DirectSoundSecondaryBuffer8
         Private NNumber As DirectSoundSecondaryBuffer8
         Private Const Def_Freq As Integer = &HAC44
-        Private Const Min_Freq As Short = &H5A3C
+        Private Const Min_Freq As Integer = &H5A3C
         Private Const Max_Freq As Integer = &H1831C
         Private Const Background_Def_Vol As Integer = -1600
         Private CurrentFreq As Integer
@@ -6041,93 +5827,93 @@ Label_060A:
         Private Footstep2Sound As DirectSoundSecondaryBuffer8
         Public CharDieSound As DirectSoundSecondaryBuffer8
         Private SwingSwordSound As DirectSoundSecondaryBuffer8
-        Public Treasure As Short
-        Public Wall As Short
-        Public Key As Short
-        Public ControlPanel As Short
-        Public h As Short
-        Public x As Short = 400
-        Public y As Short = 400
-        Private Grid(0 To Me.x, 0 To Me.y) As Short
-        Private BGrid(0 To Me.x + 1, 0 To Me.y + 1) As Short
+        Public Treasure As Integer
+        Public Wall As Integer
+        Public Key As Integer
+        Public ControlPanel As Integer
+        Public h As Integer
+        Public x As Integer = 400
+        Public y As Integer = 400
+        Private Grid(0 To Me.x, 0 To Me.y) As Integer
+        Private BGrid(0 To Me.x + 1, 0 To Me.y + 1) As Integer
         Private CGrid(0 To Me.x + 1, 0 To Me.y + 1) As Single
-        Private Swrd As Short
-        Private Bullets As Short
-        Private Accuracy As Short
-        Private IStuff As Short
+        Private Swrd As Integer
+        Private Bullets As Integer
+        Private Accuracy As Integer
+        Private IStuff As Integer
         Private stuff As String()
-        Private KeyX As Short
-        Private KeyY As Short
-        Private PanelX As Short
-        Private PanelY As Short
-        Private WinX As Short
-        Private WinY As Short
-        Public px As Short
-        Public py As Short
+        Private KeyX As Integer
+        Private KeyY As Integer
+        Private PanelX As Integer
+        Private PanelY As Integer
+        Private WinX As Integer
+        Private WinY As Integer
+        Public px As Integer
+        Public py As Integer
         Public ch As Integer
-        Private lvl As Short
+        Private lvl As Integer
         Private HasKey As Boolean
         Private WorkedPanel As Boolean
-        Private bombs As Short
+        Private bombs As Integer
         Public Points As Integer
         Private challs As chall()
         Public NumAlert As Integer
         Public ChallNum As Integer
-        Public challenger As Short
+        Public challenger As Integer
         Public isdone As Boolean
-        Public AllCurrentFights As Short
+        Public AllCurrentFights As Integer
         Public HasCalledMore As Boolean
         Private TeleportsAreClosed As Boolean
-        Public DetectRange As Short
+        Public DetectRange As Integer
         Public IsOnAlarm As Boolean
         Public UnlimitedHealth As Boolean
         Public UnlimitedBullets As Boolean
         Public AppVersion As String
-        Public HowMany As Short
-        Public HowManyNum As Short
+        Public HowMany As Integer
+        Public HowManyNum As Integer
         Public IsFightingLast As Boolean
-        Public RBomb As Short
+        Public RBomb As Integer
         Public IsFull As Boolean
         Private temp As Object
         Public IsInWater As Boolean
-        Public WH As Short
-        Public WDepth As Short
+        Public WH As Integer
+        Public WDepth As Integer
         Public IsResting As Boolean
-        Public DidNotSwim As Short
-        Public Water As Short
+        Public DidNotSwim As Integer
+        Public Water As Integer
         Private WarnedOfHealth As Boolean
         Private WTime As String
-        Private short_0 As Short
-        Private SubPX As Short
-        Private SubPY As Short
-        Private TX As Short
-        Private TY As Short
+        Private short_0 As Integer
+        Private SubPX As Integer
+        Private SubPY As Integer
+        Private TX As Integer
+        Private TY As Integer
         Public HasKilledBrutus As Boolean
         Private Weapons As String()
-        Private WPos As Short
-        Private Laser As Short
-        Private GFront As Short
-        Public GX As Short
-        Public GY As Short
+        Private WPos As Integer
+        Private Laser As Integer
+        Private GFront As Integer
+        Public GX As Integer
+        Public GY As Integer
         Private IsDoingGMissile As Boolean
-        Private Missile As Short
-        Public short_1 As Short
-        Public RMissile As Short
-        Private GSpeed As Short
-        Private GCount As Short
-        Public Mine As Short
-        Private MineControl As Short
-        Private MineGuard As Short
-        Private MineX As Short
-        Private MineY As Short
+        Private Missile As Integer
+        Public short_1 As Integer
+        Public RMissile As Integer
+        Private GSpeed As Integer
+        Private GCount As Integer
+        Public Mine As Integer
+        Private MineControl As Integer
+        Private MineGuard As Integer
+        Private MineX As Integer
+        Private MineY As Integer
         Private BlewUpMineControl As Boolean
         Private NStop As Boolean
-        Private ALaser As Short
-        Private short_2 As Short
-        Private Reflector As Short
-        Private short_3 As Short
+        Private ALaser As Integer
+        Private short_2 As Integer
+        Private Reflector As Integer
+        Private short_3 As Integer
         Public DoingReflector As Boolean
-        Private RCount As Short
+        Private RCount As Integer
         Private TheString As String
         Private IsInPauseState As Boolean
         Private HasDoneInit As Boolean
@@ -6135,57 +5921,58 @@ Label_060A:
         Private HasShutDownCard As Boolean
         Private HasBlownUpMachine As Boolean
         Private HasTurnedOffMachine As Boolean
-        Private Machine As Short
-        Private MachineX As Short
-        Private MachineY As Short
-        Public Mouse As Short
-        Private ExitX As Short
-        Private ExitY As Short
+        Private Machine As Integer
+        Private MachineX As Integer
+        Private MachineY As Integer
+        Public Mouse As Integer
+        Private ExitX As Integer
+        Private ExitY As Integer
         Private JustCameFromWater As Boolean
-        Private test As Short
+        Private test As Integer
         Private DisableTeleports As Boolean
-        Private PassageMarker As Short
-        Public ClosedDoor As Short
-        Public OpenDoor As Short
+        Private PassageMarker As Integer
+        Public ClosedDoor As Integer
+        Public OpenDoor As Integer
         Private IsWaitingForMachine As Boolean
         Public HasKilledMouse As Boolean
         Public HasKilledBrutus2 As Boolean
         Public HasMainKey As Boolean
-        Public LockedDoor As Short
-        Private SGen As Short
-        Private EBomb As Short
-        Private CMachine As Short
-        Public ChallAmount As Short
-        Private MenuPos As Short
+        Public LockedDoor As Integer
+        Private SGen As Integer
+        Private EBomb As Integer
+        Private CMachine As Integer
+        Public ChallAmount As Integer
+        Private MenuPos As Integer
         Private IsInMenu As Boolean
-        Private ASubs As Short()
         Public DefCaption As String
         Private FileName As String
         Private HasBeenA As Boolean
         Private HasBeenB As Boolean
         Private HasBeenC As Boolean
-        Private CA As Short
+        Private CA As Integer
         Private C As Single()
-        Public ChallWithKey As Short
-        Public JamesBrutus As Short
+        Public ChallWithKey As Integer
+        Public JamesBrutus As Integer
         Public IsControling As Boolean
-        Public SControl As Short
-        Private AControl As Short
+        Public SControl As Integer
+        Private AControl As Integer
         Public WControl As Long
-        Private controler As Short
+        Private controler As Integer
         Private IsLaunchingControl As Boolean
-        Private DisControl As Short
-        Private DisNeedle As Short
+        Private DisControl As Integer
+        Private DisNeedle As Integer
         Private IsLaunchingNeedle As Boolean
-        Private WNeedle As Short
+        Private WNeedle As Integer
         Private IsFirstTimeLoading As Boolean
-        Private V As Short
+        Private V As Integer
         ' How many milliseconds between each fire of this weapon if the fire button is being held down.
-        Private fireRates As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer) From {{"gun", 100}, {"sword", 50}, {"bombs", 50}, {"laser", 50}, {"missile", 0}, {"reflector", 0}, {"control", 0}}
+        Private fireRates As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer) From {{"gun", 100}, {"sword", 50}, {"bombs", 0}, {"laser", 500}, {"gmissile", 0}, {"reflector", 0}, {"control", 0}}
         Private fireDate As DateTime = DateTime.Now
         Private whichFootstep As Integer
         Private maxFootsteps As Integer = 2
         Private frameTime As Integer = 10 ' Number of ms per frame
+        Dim movedInLastTick As Boolean = False ' Controls how fast the player can move, and also prevents the rapid-fire of remote missile commands
+        Dim pressedActionButtonInLastTick As Boolean = False
         Private pendingKeyUp As Boolean ' In case keyUp fires before keyDown completes
         Private inKeyDown As Boolean
         Friend WithEvents ProgressBar1 As ProgressBar
@@ -6194,7 +5981,17 @@ Label_060A:
         Private completedDownload As Boolean
         Private lastProgress As Integer
         Private totalSize As Integer = 99047691
+        Friend WithEvents Timer1 As Timer
         Private reflectorTime As Integer
+        Private frameTracker As Integer = 0
+        Private maxDepth As Integer = 30
+        Private waterTracker As Integer
+        Private needleTracker As Integer
+        Private bombTracker As Integer
+        Private machineTracker As Integer
+        Private controlTracker As Integer
+        Private tooCloseToMachineTracker As Integer
+        Private controlLaunchTracker As Integer
         ' The directions the player can swim in
         Enum SwimDirection
             north
@@ -6231,6 +6028,7 @@ Label_060A:
             slower
             normal
         End Enum
+
     End Class
 End Namespace
 

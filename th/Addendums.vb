@@ -19,15 +19,15 @@ Namespace th
             Get
                 Dim str3 As String = ""
                 Dim array As String() = Strings.Split(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly.Location).FileName, "\", -1, CompareMethod.Binary)
-                Dim num2 As Short = CShort((Information.UBound(array, 1) - 1))
-                Dim i As Short = 0
+                Dim num2 As Integer = ((Information.UBound(array, 1) - 1))
+                Dim i As Integer = 0
                 Do While (i <= num2)
                     If (i = 0) Then
                         str3 = array(i)
                     Else
                         str3 = (str3 & "\" & array(i))
                     End If
-                    i = CShort((i + 1))
+                    i = ((i + 1))
                 Loop
                 Return str3
             End Get

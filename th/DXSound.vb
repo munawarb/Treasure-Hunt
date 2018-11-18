@@ -8,12 +8,12 @@ Namespace th
     <StandardModule> _
     Friend NotInheritable Class DXSound
         ' Methods
-        Private Shared Sub GetWhere(ByRef TheX As Short, ByRef TheY As Short, ByRef x As Short, ByRef y As Short)
-            Dim px As Short
-            Dim py As Short
+        Private Shared Sub GetWhere(ByRef TheX As Integer, ByRef TheY As Integer, ByRef x As Integer, ByRef y As Integer)
+            Dim px As Integer
+            Dim py As Integer
             If THF.F.IsControling Then
-                px = Conversions.ToShort(NewLateBinding.LateGet(THF.F.GetChall(THF.F.WControl), Nothing, "x", New Object(0  - 1) {}, Nothing, Nothing, Nothing))
-                py = Conversions.ToShort(NewLateBinding.LateGet(THF.F.GetChall(THF.F.WControl), Nothing, "y", New Object(0  - 1) {}, Nothing, Nothing, Nothing))
+                px = Conversions.ToInteger(NewLateBinding.LateGet(THF.F.GetChall(THF.F.WControl), Nothing, "x", New Object(0  - 1) {}, Nothing, Nothing, Nothing))
+                py = Conversions.ToInteger(NewLateBinding.LateGet(THF.F.GetChall(THF.F.WControl), Nothing, "y", New Object(0  - 1) {}, Nothing, Nothing, Nothing))
             Else
                 px = THF.F.px
                 py = THF.F.py
@@ -55,16 +55,16 @@ Namespace th
             Return DXSound.objDS.CreateSoundBufferFromFile(FileName, dsbufferdesc)
         End Function
 
-        Public Shared Sub LocaleNotify(ByRef x As Short, ByRef y As Short, ByRef Optional DVolume As String = "")
-            Dim num As Short
-            Dim num2 As Short
+        Public Shared Sub LocaleNotify(ByRef x As Integer, ByRef y As Integer, ByRef Optional DVolume As String = "")
+            Dim num As Integer
+            Dim num2 As Integer
             DXSound.GetWhere(num, num2, x, y)
             If (DVolume <> "dont") Then
                 Dim flag As Boolean
                 Dim flag2 As Boolean
                 Dim flag3 As Boolean
-                Dim num3 As Short
-                Dim num4 As Short
+                Dim num3 As Integer
+                Dim num4 As Integer
                 Dim str As String
                 Dim flag4 As Boolean
                 Select Case num2
@@ -92,27 +92,27 @@ Namespace th
             End If
         End Sub
 
-        Private Shared Sub PlayAroundCenter(ByRef Sound As DirectSoundSecondaryBuffer8, ByVal x As Short, ByVal y As Short, ByRef position As Single, ByVal Optional Distance As Long = 1)
-            Dim num2 As Short
-            Dim num3 As Short
+        Private Shared Sub PlayAroundCenter(ByRef Sound As DirectSoundSecondaryBuffer8, ByVal x As Integer, ByVal y As Integer, ByRef position As Single, ByVal Optional Distance As Long = 1)
+            Dim num2 As Integer
+            Dim num3 As Integer
             Select Case position
                 Case 0!
-                    num2 = CShort((x - Distance))
+                    num2 = ((x - Distance))
                     num3 = 0
                     DXSound.smethod_1(Sound, True, False, num2, y, num3)
                     Exit Select
                 Case 1!
-                    num3 = CShort((x + Distance))
+                    num3 = ((x + Distance))
                     num2 = 0
                     DXSound.smethod_1(Sound, True, False, num3, y, num2)
                     Exit Select
                 Case 2!
-                    num3 = CShort((y + Distance))
+                    num3 = ((y + Distance))
                     num2 = 0
                     DXSound.smethod_1(Sound, True, False, x, num3, num2)
                     Exit Select
                 Case 3!
-                    num3 = CShort((y - Distance))
+                    num3 = ((y - Distance))
                     num2 = 0
                     DXSound.smethod_1(Sound, True, False, x, num3, num2)
                     Exit Select
@@ -123,7 +123,7 @@ Namespace th
             End Select
         End Sub
 
-        Public Shared Sub PlaySound(ByRef Sound As DirectSoundSecondaryBuffer8, ByRef bCloseFirst As Boolean, ByRef bLoopSound As Boolean, ByRef Optional PerformEffects As Boolean = False, ByRef Optional x As Short = 0, ByRef Optional y As Short = 0, ByRef Optional DVolume As String = "", ByRef Optional WaitTillDone As Boolean = False)
+        Public Shared Sub PlaySound(ByRef Sound As DirectSoundSecondaryBuffer8, ByRef bCloseFirst As Boolean, ByRef bLoopSound As Boolean, ByRef Optional PerformEffects As Boolean = False, ByRef Optional x As Integer = 0, ByRef Optional y As Integer = 0, ByRef Optional DVolume As String = "", ByRef Optional WaitTillDone As Boolean = False)
             If bCloseFirst Then
                 Sound.Stop
                 Sound.SetCurrentPosition(0)
@@ -146,8 +146,8 @@ Namespace th
             Dim bCloseFirst As Boolean = True
             Dim bLoopSound As Boolean = False
             Dim performEffects As Boolean = False
-            Dim x As Short = 0
-            Dim y As Short = 0
+            Dim x As Integer = 0
+            Dim y As Integer = 0
             Dim dVolume As String = ""
             Dim waitTillDone As Boolean = False
             DXSound.PlaySound(THF.F.RadioSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -169,19 +169,19 @@ Namespace th
             THConstVars.CannotDoKeydown = False
         End Sub
 
-        Public Shared Sub SetCoordinates(ByRef x As Short, ByRef y As Short, ByRef Optional z As Short = 0)
+        Public Shared Sub SetCoordinates(ByRef x As Integer, ByRef y As Integer, ByRef Optional z As Integer = 0)
             DXSound.directSound3DListener8_0.SetPosition(CSng(x), CSng(y), CSng(z), CONST_DS3DAPPLYFLAGS.DS3D_IMMEDIATE)
         End Sub
 
-        Private Shared Sub SetSoundPosition1(ByRef TheSound As DirectSoundSecondaryBuffer8, ByRef x As Short, ByRef y As Short, ByRef DVolume As String)
+        Private Shared Sub SetSoundPosition1(ByRef TheSound As DirectSoundSecondaryBuffer8, ByRef x As Integer, ByRef y As Integer, ByRef DVolume As String)
             Dim num As Integer
-            Dim num2 As Short
-            Dim num3 As Short
+            Dim num2 As Integer
+            Dim num3 As Integer
             DXSound.GetWhere(num2, num3, x, y)
-            If (Math.Abs(CShort((THF.F.px - x))) > 10) Then
+            If (Math.Abs(((THF.F.px - x))) > 10) Then
                 num = &H2710
             Else
-                num = (Math.Abs(CShort((THF.F.px - x))) * &H3E8)
+                num = (Math.Abs(((THF.F.px - x))) * &H3E8)
             End If
             Select Case num2
                 Case -1
@@ -194,18 +194,18 @@ Namespace th
                     TheSound.SetPan(num)
                     Exit Select
             End Select
-            If (Math.Abs(CShort((THF.F.py - y))) > Math.Abs(CShort((THF.F.px - x)))) Then
-                If (Math.Abs(CShort((THF.F.py - y))) > 20) Then
+            If (Math.Abs(((THF.F.py - y))) > Math.Abs(((THF.F.px - x)))) Then
+                If (Math.Abs(((THF.F.py - y))) > 20) Then
                     num = &H2710
                 Else
-                    num = (Math.Abs(CShort((THF.F.py - y))) * 100)
+                    num = (Math.Abs(((THF.F.py - y))) * 100)
                 End If
             End If
-            If ((Math.Abs(CShort((THF.F.px - x))) > Math.Abs(CShort((THF.F.py - y)))) Or (Math.Abs(CShort((THF.F.px - x))) = Math.Abs(CShort((THF.F.py - y))))) Then
-                If (Math.Abs(CShort((THF.F.px - x))) > 20) Then
+            If ((Math.Abs(((THF.F.px - x))) > Math.Abs(((THF.F.py - y)))) Or (Math.Abs(((THF.F.px - x))) = Math.Abs(((THF.F.py - y))))) Then
+                If (Math.Abs(((THF.F.px - x))) > 20) Then
                     num = &H2710
                 Else
-                    num = (Math.Abs(CShort((THF.F.px - x))) * 100)
+                    num = (Math.Abs(((THF.F.px - x))) * 100)
                 End If
             End If
             TheSound.SetVolume((0 - num))
@@ -213,8 +213,8 @@ Namespace th
                 Dim flag As Boolean
                 Dim flag2 As Boolean
                 Dim flag3 As Boolean
-                Dim num4 As Short
-                Dim num5 As Short
+                Dim num4 As Integer
+                Dim num5 As Integer
                 Dim str As String
                 Dim flag4 As Boolean
                 Select Case num3
@@ -272,7 +272,7 @@ Namespace th
             Return buffer
         End Function
 
-        Public Shared Sub smethod_1(ByRef Sound As DirectSoundSecondaryBuffer8, ByVal bCloseFirst As Boolean, ByVal bLoopSound As Boolean, ByRef x As Short, ByRef y As Short, ByRef Optional z As Short = 0)
+        Public Shared Sub smethod_1(ByRef Sound As DirectSoundSecondaryBuffer8, ByVal bCloseFirst As Boolean, ByVal bLoopSound As Boolean, ByRef x As Integer, ByRef y As Integer, ByRef Optional z As Integer = 0)
             Dim buffer As DirectSound3DBuffer8 = Sound.GetDirectSound3DBuffer
             If bCloseFirst Then
                 Sound.Stop

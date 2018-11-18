@@ -16,8 +16,8 @@ Namespace th
                     Dim bCloseFirst As Boolean = False
                     Dim bLoopSound As Boolean = True
                     Dim performEffects As Boolean = False
-                    Dim x As Short = 0
-                    Dim y As Short = 0
+                    Dim x As Integer = 0
+                    Dim y As Integer = 0
                     Dim dVolume As String = ""
                     flag4 = False
                     DXSound.PlaySound(THF.F.BackgroundSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, flag4)
@@ -44,7 +44,7 @@ Namespace th
                             Me.TCount = 0
                             Me.hit
                         Else
-                            Me.TCount = CShort((Me.TCount + 1))
+                            Me.TCount = ((Me.TCount + 1))
                         End If
                     ElseIf (Me.SCount >= Me.CSeconds) Then
                         Me.SCount = 0
@@ -54,10 +54,8 @@ Namespace th
                             Me.Move
                         End If
                     Else
-                        Me.SCount = CShort((Me.SCount + 1))
+                        Me.SCount = ((Me.SCount + 1))
                     End If
-                    flag4 = False
-                    THF.F.CharDied(flag4)
                 End If
             Else
                 Me.ChallDied
@@ -73,8 +71,8 @@ Namespace th
                 Dim flag As Boolean
                 Dim flag2 As Boolean
                 Dim flag3 As Boolean
-                Dim num As Short
-                Dim num2 As Short
+                Dim num As Integer
+                Dim num2 As Integer
                 Dim str As String
                 Dim flag4 As Boolean
                 Me.IsBeingControled = False
@@ -203,17 +201,17 @@ Namespace th
             End If
         End Sub
 
-        Public Sub ChallHit(ByRef subtract As Short)
+        Public Sub ChallHit(ByRef subtract As Integer)
             If (Me.A > 0) Then
                 Me.LoadSounds
-                Me.A = CShort((Me.A - subtract))
+                Me.A = ((Me.A - subtract))
                 If (Me.A <= 0) Then
                     Me.ChallDied
                 Else
                     If (Me.challHitSound Is Nothing) Then
                         Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\challgrunt.wav"), 2.0!, 30)
                     End If
-                    Dim z As Short = 0
+                    Dim z As Integer = 0
                     DXSound.smethod_1(Me.challHitSound, True, False, Me.x, Me.y, z)
                 End If
             End If
@@ -228,33 +226,33 @@ Namespace th
             Else
                 If (shift <> &H10000) Then
                     Dim flag As Boolean
-                    Dim num As Short
+                    Dim num As Integer
                     THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
                     If (keyCode = &H25) Then
-                        num = CShort((Me.x - 1))
+                        num = ((Me.x - 1))
                         If Not Me.GetBlock(num, Me.y) Then
-                            Me.x = CShort((Me.x - 1))
+                            Me.x = ((Me.x - 1))
                             flag = True
                         End If
                     End If
                     If (keyCode = &H27) Then
-                        num = CShort((Me.x + 1))
+                        num = ((Me.x + 1))
                         If Not Me.GetBlock(num, Me.y) Then
-                            Me.x = CShort((Me.x + 1))
+                            Me.x = ((Me.x + 1))
                             flag = True
                         End If
                     End If
                     If (keyCode = &H26) Then
-                        num = CShort((Me.y + 1))
+                        num = ((Me.y + 1))
                         If Not Me.GetBlock(Me.x, num) Then
-                            Me.y = CShort((Me.y + 1))
+                            Me.y = ((Me.y + 1))
                             flag = True
                         End If
                     End If
                     If (keyCode = 40) Then
-                        num = CShort((Me.y - 1))
+                        num = ((Me.y - 1))
                         If Not Me.GetBlock(Me.x, num) Then
-                            Me.y = CShort((Me.y - 1))
+                            Me.y = ((Me.y - 1))
                             flag = True
                         End If
                     End If
@@ -283,23 +281,23 @@ Namespace th
             End If
         End Sub
 
-        Private Sub DoDoor(ByRef x As Short, ByRef y As Short)
-            Dim num2 As Short
-            Dim num3 As Short
-            Select Case Me.GetDoor(CShort((x - 1)), y)
+        Private Sub DoDoor(ByRef x As Integer, ByRef y As Integer)
+            Dim num2 As Integer
+            Dim num3 As Integer
+            Select Case Me.GetDoor(((x - 1)), y)
                 Case 1!
                     If Not Me.LDoor Then
                         Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
                     End If
                     Me.LDoor = True
-                    num2 = CShort((x - 1))
+                    num2 = ((x - 1))
                     num3 = 0
                     DXSound.smethod_1(Me.OpenDoorSound, True, False, num2, y, num3)
                     Me.XDir = 0
-                    num3 = CShort((x - 1))
+                    num3 = ((x - 1))
                     THF.F.AllThingReplace(num3, y, THF.F.OpenDoor)
                     If Not Me.IsBeingControled Then
-                        x = CShort((x - 1))
+                        x = ((x - 1))
                     End If
                     Exit Select
                 Case 2!
@@ -311,20 +309,20 @@ Namespace th
                     DXSound.smethod_1(Me.LockedDoorSound, True, False, x, y, num3)
                     Exit Select
             End Select
-            Select Case Me.GetDoor(CShort((x + 1)), y)
+            Select Case Me.GetDoor(((x + 1)), y)
                 Case 1!
                     If Not Me.LDoor Then
                         Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
                     End If
                     Me.LDoor = True
-                    num3 = CShort((x + 1))
+                    num3 = ((x + 1))
                     num2 = 0
                     DXSound.smethod_1(Me.OpenDoorSound, True, False, num3, y, num2)
                     Me.XDir = 1
-                    num3 = CShort((x + 1))
+                    num3 = ((x + 1))
                     THF.F.AllThingReplace(num3, y, THF.F.OpenDoor)
                     If Not Me.IsBeingControled Then
-                        x = CShort((x + 1))
+                        x = ((x + 1))
                     End If
                     Exit Select
                 Case 2!
@@ -336,20 +334,20 @@ Namespace th
                     DXSound.smethod_1(Me.LockedDoorSound, True, False, x, y, num3)
                     Exit Select
             End Select
-            Select Case Me.GetDoor(x, CShort((y + 1)))
+            Select Case Me.GetDoor(x, ((y + 1)))
                 Case 1!
                     If Not Me.LDoor Then
                         Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
                     End If
                     Me.LDoor = True
-                    num3 = CShort((y + 1))
+                    num3 = ((y + 1))
                     num2 = 0
                     DXSound.smethod_1(Me.OpenDoorSound, True, False, x, num3, num2)
                     Me.MDir = 0
-                    num3 = CShort((y + 1))
+                    num3 = ((y + 1))
                     THF.F.AllThingReplace(x, num3, THF.F.OpenDoor)
                     If Not Me.IsBeingControled Then
-                        y = CShort((y + 1))
+                        y = ((y + 1))
                     End If
                     Exit Select
                 Case 2!
@@ -361,20 +359,20 @@ Namespace th
                     DXSound.smethod_1(Me.LockedDoorSound, True, False, x, y, num3)
                     Exit Select
             End Select
-            Select Case Me.GetDoor(x, CShort((y - 1)))
+            Select Case Me.GetDoor(x, ((y - 1)))
                 Case 1!
                     If Not Me.LDoor Then
                         Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
                     End If
                     Me.LDoor = True
-                    num3 = CShort((y - 1))
+                    num3 = ((y - 1))
                     num2 = 0
                     DXSound.smethod_1(Me.OpenDoorSound, True, False, x, num3, num2)
                     Me.MDir = 1
-                    num3 = CShort((y - 1))
+                    num3 = ((y - 1))
                     THF.F.AllThingReplace(x, num3, THF.F.OpenDoor)
                     If Not Me.IsBeingControled Then
-                        y = CShort((y - 1))
+                        y = ((y - 1))
                     End If
                     Exit Select
                 Case 2!
@@ -391,7 +389,7 @@ Namespace th
         Private Sub DoIfBomb()
             If (THF.F.GetGrid(Me.x, Me.y) = THF.F.RBomb) Then
                 Me.LoadSounds
-                Me.A = CShort(Math.Round(CDbl((Me.A - (1! + Conversion.Int(CSng((50! * VBMath.Rnd))))))))
+                Me.A = (Math.Round(CDbl((Me.A - (1! + Conversion.Int(CSng((50! * VBMath.Rnd))))))))
                 If (Me.A <= 0) Then
                     Me.ChallDied
                     Return
@@ -399,7 +397,7 @@ Namespace th
                 If (Me.challHitSound Is Nothing) Then
                     Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\challgrunt.wav"), 2.0!, 30)
                 End If
-                Dim z As Short = 0
+                Dim z As Integer = 0
                 DXSound.smethod_1(Me.challHitSound, True, False, Me.x, Me.y, z)
                 Me.ShowChall
             End If
@@ -417,12 +415,15 @@ Namespace th
 
         Private Sub DoIfGLMissile()
             If ((Not THF.F.HasKilledBrutus2 AndAlso ((Me.x = THF.F.GX) And (Me.y = THF.F.GY))) AndAlso ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!)) Then
-                Me.LoadSounds
+                Me.LoadSounds()
+                If (Me.challGunSound Is Nothing) Then
+                    Me.challGunSound = DXSound.smethod_0((DXSound.SoundPath & "\challgun.wav"), 2.0!, 30)
+                End If
                 Dim bCloseFirst As Boolean = True
                 Dim bLoopSound As Boolean = False
                 Dim performEffects As Boolean = False
-                Dim x As Short = 0
-                Dim y As Short = 0
+                Dim x As Integer = 0
+                Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.challGunSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -435,7 +436,7 @@ Namespace th
         Private Sub DoIfGRMissile()
             If (THF.F.GetGrid(Me.x, Me.y) = THF.F.RMissile) Then
                 Me.LoadSounds
-                Dim subtract As Short = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((80! * VBMath.Rnd)))))))
+                Dim subtract As Integer = (Math.Round(CDbl((1! + Conversion.Int(CSng((80! * VBMath.Rnd)))))))
                 Me.ChallHit(subtract)
                 THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
             End If
@@ -444,26 +445,26 @@ Namespace th
         Private Sub DoIfPoisoned()
             If Me.IsPoisoned Then
                 If Me.IsMaster Then
-                    Me.A = CShort((Me.A - 5))
+                    Me.A = ((Me.A - 5))
                 Else
-                    Me.A = CShort(Math.Round(CDbl((Me.A - ((1! + Conversion.Int(CSng((10! * VBMath.Rnd)))) * (1! + Conversion.Int(CSng((Me.NumOfNeedles * VBMath.Rnd)))))))))
+                    Me.A = (Math.Round(CDbl((Me.A - ((1! + Conversion.Int(CSng((10! * VBMath.Rnd)))) * (1! + Conversion.Int(CSng((Me.NumOfNeedles * VBMath.Rnd)))))))))
                 End If
             End If
         End Sub
 
-        Private Function GetBlock(ByRef x As Short, ByRef y As Short) As Boolean
+        Private Function GetBlock(ByRef x As Integer, ByRef y As Integer) As Boolean
             Dim flag As Boolean
             If ((((x < 1) Or (x > THF.F.x)) Or (y < 1)) Or (y > THF.F.y)) Then
                 Return True
             End If
-            Dim bGrid As Short = THF.F.GetBGrid(x, y)
+            Dim bGrid As Integer = THF.F.GetBGrid(x, y)
             If Not (((((bGrid <> THF.F.Mine) And (bGrid <> THF.F.Water)) And (bGrid <> THF.F.ClosedDoor)) And (bGrid <> THF.F.LockedDoor)) And (bGrid <> THF.F.Wall)) Then
                 flag = True
             End If
             Return flag
         End Function
 
-        Private Function GetDoor(ByVal x As Short, ByVal y As Short) As Single
+        Private Function GetDoor(ByVal x As Integer, ByVal y As Integer) As Single
             Dim num As Single
             If (THF.F.GetBGrid(x, y) = THF.F.OpenDoor) Then
                 Return 0!
@@ -489,7 +490,7 @@ Namespace th
             Me.IsBeingControled = True
         End Sub
 
-        Private Sub GetWhere(ByRef TheX As Short, ByRef TheY As Short)
+        Private Sub GetWhere(ByRef TheX As Integer, ByRef TheY As Integer)
             If (THF.F.px > Me.x) Then
                 TheX = -1
             End If
@@ -511,7 +512,7 @@ Namespace th
         End Sub
 
         Private Sub hit()
-            Dim num4 As Short
+            Dim num4 As Integer
             Dim str As String
             Me.LoadSounds
             If Not Me.IsBeingControled Then
@@ -520,7 +521,7 @@ Namespace th
                         Me.LCount = 1
                         Me.MoveWhileFight
                     Else
-                        Me.LCount = CShort((Me.LCount + 1))
+                        Me.LCount = ((Me.LCount + 1))
                     End If
                 End If
                 If Not ((Me.method_0 = 0) Or (Me.method_0 = 1)) Then
@@ -539,9 +540,9 @@ Namespace th
                         Me.IsFighting = True
                     End If
                 ElseIf Not Me.IsFighting Then
-                    Dim num3 As Short
+                    Dim num3 As Integer
                     If ((THConstVars.Difficulty <> 4!) And Not Me.HasFoundOnce) Then
-                        num3 = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))))))
+                        num3 = (Math.Round(CDbl((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))))))
                     Else
                         num3 = 2
                     End If
@@ -569,7 +570,7 @@ Namespace th
                                 Dim rWait As Boolean = False
                                 DXSound.Radio(str, rWait)
                             End If
-                            THF.F.HowMany = CShort(Math.Round(CDbl((2! * THConstVars.Difficulty))))
+                            THF.F.HowMany = (Math.Round(CDbl((2! * THConstVars.Difficulty))))
                             If Not Me.HasFoundOnce Then
                                 Select Case (1! + Conversion.Int(CSng((4! * VBMath.Rnd))))
                                     Case 1!
@@ -599,12 +600,12 @@ Namespace th
                                 DXSound.smethod_1(Me.Caught5Sound, True, False, Me.x, Me.y, num4)
                             End If
                             THF.F.HasCalledMore = True
-                            Dim challAmount As Short = THF.F.ChallAmount
-                            Dim i As Short = 1
+                            Dim challAmount As Integer = THF.F.ChallAmount
+                            Dim i As Integer = 1
                             Do While (i <= challAmount)
                                 THF.F.GoFight(i)
                                 Application.DoEvents
-                                i = CShort((i + 1))
+                                i = ((i + 1))
                             Loop
                             THF.F.HowManyNum = 0
                         End If
@@ -612,7 +613,7 @@ Namespace th
                 End If
             End If
             If (Me.IsFighting Or Me.IsBeingControled) Then
-                Dim num As Short
+                Dim num As Integer
                 THF.F.ChallNum = Me.PosNum
                 If (Not Me.IsBeingControled AndAlso Not Me.IsDoingBomb) Then
                     If (((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 1!) Or (Me.BCount > 1)) Then
@@ -622,7 +623,7 @@ Namespace th
                         Me.ThrowBomb
                         Return
                     End If
-                    Me.BCount = CShort((Me.BCount + 1))
+                    Me.BCount = ((Me.BCount + 1))
                 End If
                 str = ""
                 DXSound.LocaleNotify(Me.x, Me.y, str)
@@ -633,12 +634,12 @@ Namespace th
                 DXSound.smethod_1(Me.challGunSound, True, False, Me.x, Me.y, num4)
                 If (Me.method_0 = 2) Then
                     If (THF.F.HasKilledBrutus And THF.F.HasKilledBrutus2) Then
-                        num = CShort(Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 20!))) + 1!))))
+                        num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 20!))) + 1!))))
                     Else
-                        num = CShort(Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 150!))) + 1!))))
+                        num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 150!))) + 1!))))
                     End If
                 Else
-                    num = CShort(Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 50!))) + 1!))))
+                    num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 50!))) + 1!))))
                 End If
                 If Not Me.IsBeingControled Then
                     THF.F.ReflectHit(num, Me.PosNum)
@@ -648,7 +649,7 @@ Namespace th
             End If
         End Sub
 
-        Public Sub init(ByRef px As Short, ByRef py As Short, ByRef p As Short, ByRef CHealth As Short, ByRef s As Short, ByRef t As Short, ByRef Optional dead As Boolean = False)
+        Public Sub init(ByRef px As Integer, ByRef py As Integer, ByRef p As Integer, ByRef CHealth As Integer, ByRef s As Integer, ByRef t As Integer, ByRef Optional dead As Boolean = False)
             Me.CSeconds = s
             Me.HSeconds = t
             Me.IsDeadValid = dead
@@ -674,8 +675,8 @@ Namespace th
             End If
         End Sub
 
-        Private Function method_0() As Short
-            Dim num As Short
+        Private Function method_0() As Integer
+            Dim num As Integer
             If Not THF.F.IsFightingLast Then
                 Return 0
             End If
@@ -689,8 +690,8 @@ Namespace th
         End Function
 
         Private Sub Move()
-            Dim num As Short
-            Dim num2 As Short
+            Dim num As Integer
+            Dim num2 As Integer
             If Me.IsFighting Then
                 If (Me.run >= (3! * THConstVars.Difficulty)) Then
                     Dim f As mainFRM = THF.F
@@ -720,14 +721,14 @@ Namespace th
                     Me.IsFighting = False
                     Me.run = 0
                 Else
-                    Me.run = CShort((Me.run + 1))
+                    Me.run = ((Me.run + 1))
                 End If
             End If
             THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
             Me.DoDoor(Me.x, Me.y)
             If ((Me.PosNum <> 5) And ((((THConstVars.Difficulty = 4!) Or ((THF.F.NumAlert > 0) And ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!))) Or Me.HasFoundOnce) Or ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!))) Then
                 If (Me.x < (THF.F.x - 1)) Then
-                    num2 = CShort((Me.x + 1))
+                    num2 = ((Me.x + 1))
                     If Me.GetBlock(num2, Me.y) Then
                         Me.XDir = 0
                     End If
@@ -735,26 +736,26 @@ Namespace th
                     Me.XDir = 0
                 End If
                 If (Me.x > 2) Then
-                    num2 = CShort((Me.x - 1))
+                    num2 = ((Me.x - 1))
                     If Me.GetBlock(num2, Me.y) Then
                         Me.XDir = 1
                     End If
                 Else
                     Me.XDir = 1
                 End If
-                num2 = CShort((Me.x + 1))
-                num = CShort((Me.x - 1))
+                num2 = ((Me.x + 1))
+                num = ((Me.x - 1))
                 If (Not Me.GetBlock(num2, Me.y) And Not Me.GetBlock(num, Me.y)) Then
                     If (Me.XDir = 0!) Then
-                        Me.x = CShort((Me.x - 1))
+                        Me.x = ((Me.x - 1))
                     End If
                     If (Me.XDir = 1!) Then
-                        Me.x = CShort((Me.x + 1))
+                        Me.x = ((Me.x + 1))
                     End If
                 End If
             End If
             If (Me.y < (THF.F.y - 1)) Then
-                num2 = CShort((Me.y + 1))
+                num2 = ((Me.y + 1))
                 If Me.GetBlock(Me.x, num2) Then
                     Me.MDir = 1
                 End If
@@ -762,58 +763,58 @@ Namespace th
                 Me.MDir = 1
             End If
             If (Me.y > 2) Then
-                num2 = CShort((Me.y - 1))
+                num2 = ((Me.y - 1))
                 If Me.GetBlock(Me.x, num2) Then
                     Me.MDir = 0
                 End If
             Else
                 Me.MDir = 0
             End If
-            num2 = CShort((Me.y + 1))
-            num = CShort((Me.y - 1))
+            num2 = ((Me.y + 1))
+            num = ((Me.y - 1))
             If Not (Me.GetBlock(Me.x, num2) And Me.GetBlock(Me.x, num)) Then
                 If (Me.MDir = 1!) Then
-                    Me.y = CShort((Me.y - 1))
+                    Me.y = ((Me.y - 1))
                 Else
-                    Me.y = CShort((Me.y + 1))
+                    Me.y = ((Me.y + 1))
                 End If
             End If
             Me.ShowChall
         End Sub
 
         Private Sub MoveWhileFight()
-            Dim num As Short
+            Dim num As Integer
             THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
-            Select Case CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((4! * VBMath.Rnd)))))))
+            Select Case (Math.Round(CDbl((1! + Conversion.Int(CSng((4! * VBMath.Rnd)))))))
                 Case 1
                     If ((THF.F.px + 1) <= THF.F.x) Then
-                        num = CShort((THF.F.px + 1))
+                        num = ((THF.F.px + 1))
                         If Not Me.GetBlock(num, Me.y) Then
-                            Me.x = CShort((THF.F.px + 1))
+                            Me.x = ((THF.F.px + 1))
                         End If
                     End If
                     Exit Select
                 Case 2
                     If ((THF.F.px - 1) >= 1) Then
-                        num = CShort((THF.F.px - 1))
+                        num = ((THF.F.px - 1))
                         If Not Me.GetBlock(num, Me.y) Then
-                            Me.x = CShort((THF.F.px - 1))
+                            Me.x = ((THF.F.px - 1))
                         End If
                     End If
                     Exit Select
                 Case 3
                     If ((THF.F.py + 1) <= THF.F.y) Then
-                        num = CShort((THF.F.py + 1))
+                        num = ((THF.F.py + 1))
                         If Not Me.GetBlock(Me.x, num) Then
-                            Me.y = CShort((THF.F.py + 1))
+                            Me.y = ((THF.F.py + 1))
                         End If
                     End If
                     Exit Select
                 Case 4
                     If ((THF.F.py - 1) >= 1) Then
-                        num = CShort((THF.F.py - 1))
+                        num = ((THF.F.py - 1))
                         If Not Me.GetBlock(Me.x, num) Then
-                            Me.y = CShort((THF.F.py - 1))
+                            Me.y = ((THF.F.py - 1))
                         End If
                     End If
                     Exit Select
@@ -829,8 +830,8 @@ Namespace th
             Dim bCloseFirst As Boolean = True
             Dim bLoopSound As Boolean = False
             Dim performEffects As Boolean = False
-            Dim x As Short = 0
-            Dim y As Short = 0
+            Dim x As Integer = 0
+            Dim y As Integer = 0
             Dim dVolume As String = ""
             Dim waitTillDone As Boolean = False
             DXSound.PlaySound(THF.F.TeleportSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
@@ -844,9 +845,9 @@ Namespace th
             Me.IsMaster = False
         End Sub
 
-        Private Function ScanForChar(ByRef Range As Short) As Boolean
+        Private Function ScanForChar(ByRef Range As Integer) As Boolean
             Dim flag As Boolean
-            If ((THF.F.WDepth < 10) AndAlso ((Math.Abs(CShort((THF.F.px - Me.x))) <= Range) And (Math.Abs(CShort((THF.F.py - Me.y))) <= Range))) Then
+            If ((THF.F.WDepth < 10) AndAlso ((Math.Abs(((THF.F.px - Me.x))) <= Range) And (Math.Abs(((THF.F.py - Me.y))) <= Range))) Then
                 flag = True
             End If
             Return flag
@@ -854,20 +855,20 @@ Namespace th
 
         Private Sub SetSoundPosition(ByRef TheSound As DirectSoundSecondaryBuffer8, ByRef DVolume As Boolean)
             Dim num As Integer
-            Dim num2 As Short
-            Dim num3 As Short
+            Dim num2 As Integer
+            Dim num3 As Integer
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
-            Dim num4 As Short
-            Dim num5 As Short
+            Dim num4 As Integer
+            Dim num5 As Integer
             Dim str As String
             Dim flag4 As Boolean
             Me.GetWhere(num2, num3)
-            If (Math.Abs(CShort((THF.F.px - Me.x))) > 10) Then
+            If (Math.Abs(((THF.F.px - Me.x))) > 10) Then
                 num = &H2710
             Else
-                num = (Math.Abs(CShort((THF.F.px - Me.x))) * &H3E8)
+                num = (Math.Abs(((THF.F.px - Me.x))) * &H3E8)
             End If
             Select Case num2
                 Case -1
@@ -880,18 +881,18 @@ Namespace th
                     TheSound.SetPan(num)
                     Exit Select
             End Select
-            If (Math.Abs(CShort((THF.F.py - Me.y))) > Math.Abs(CShort((THF.F.px - Me.x)))) Then
-                If (Math.Abs(CShort((THF.F.py - Me.y))) > 20) Then
+            If (Math.Abs(((THF.F.py - Me.y))) > Math.Abs(((THF.F.px - Me.x)))) Then
+                If (Math.Abs(((THF.F.py - Me.y))) > 20) Then
                     num = &H2710
                 Else
-                    num = (Math.Abs(CShort((THF.F.py - Me.y))) * 100)
+                    num = (Math.Abs(((THF.F.py - Me.y))) * 100)
                 End If
             End If
-            If ((Math.Abs(CShort((THF.F.px - Me.x))) > Math.Abs(CShort((THF.F.py - Me.y)))) Or (Math.Abs(CShort((THF.F.px - Me.x))) = Math.Abs(CShort((THF.F.py - Me.y))))) Then
-                If (Math.Abs(CShort((THF.F.px - Me.x))) > 20) Then
+            If ((Math.Abs(((THF.F.px - Me.x))) > Math.Abs(((THF.F.py - Me.y)))) Or (Math.Abs(((THF.F.px - Me.x))) = Math.Abs(((THF.F.py - Me.y))))) Then
+                If (Math.Abs(((THF.F.px - Me.x))) > 20) Then
                     num = &H2710
                 Else
-                    num = (Math.Abs(CShort((THF.F.px - Me.x))) * 100)
+                    num = (Math.Abs(((THF.F.px - Me.x))) * 100)
                 End If
             End If
             TheSound.SetVolume((0 - num))
@@ -947,7 +948,7 @@ Namespace th
 
         Private Sub ThrowBomb()
             If Not (((Me.IsMaster And THF.F.HasKilledBrutus) And THF.F.HasKilledBrutus2) And Not THF.F.HasKilledMouse) Then
-                Dim num3 As Short
+                Dim num3 As Integer
                 If Not Me.IsDoingBomb Then
                     If (Me.BombLaunchSound Is Nothing) Then
                         Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launch.wav"), 2.0!, 30)
@@ -957,8 +958,8 @@ Namespace th
                     Me.IsDoingBomb = True
                 End If
                 If (Me.BombLaunchSound.GetStatus <> CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
-                    Dim num As Short
-                    Dim num2 As Short
+                    Dim num As Integer
+                    Dim num2 As Integer
                     If (Me.BombDetSound Is Nothing) Then
                         Me.BombDetSound = DXSound.smethod_0((DXSound.SoundPath & "\explode.wav"), 2.0!, 30)
                     End If
@@ -967,10 +968,10 @@ Namespace th
                     Me.IsDoingBomb = False
                     If (Me.method_0 = 2) Then
                         num2 = 1
-                        num = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((200! * VBMath.Rnd)))))))
+                        num = (Math.Round(CDbl((1! + Conversion.Int(CSng((200! * VBMath.Rnd)))))))
                     Else
                         num2 = 3
-                        num = CShort(Math.Round(CDbl((1! + Conversion.Int(CSng((30! * VBMath.Rnd)))))))
+                        num = (Math.Round(CDbl((1! + Conversion.Int(CSng((30! * VBMath.Rnd)))))))
                     End If
                     If Me.ScanForChar(num2) Then
                         THF.F.ReflectHit(num, Me.PosNum)
@@ -1064,7 +1065,7 @@ Namespace th
         Private Const South As Single = 1!
         Private Const West As Single = 0!
         Private Const east As Single = 1!
-        Public NumOfNeedles As Short
+        Public NumOfNeedles As Integer
         Public IsPoisoned As Boolean
         Public IsBeingControled As Boolean
         Private LDoor As Boolean
@@ -1075,23 +1076,23 @@ Namespace th
         Private LockedDoorSound As DirectSoundSecondaryBuffer8
         Public challHitSound As DirectSoundSecondaryBuffer8
         Public IsFighting As Boolean
-        Public A As Short
-        Public x As Short = 400
-        Public y As Short = 400
-        Private up As Short
-        Private down As Short
-        Private MDir As Short
-        Private XDir As Short
-        Private countdown As Short
-        Private LCount As Short
-        Private BCount As Short
-        Private PosNum As Short
+        Public A As Integer
+        Public x As Integer = 400
+        Public y As Integer = 400
+        Private up As Integer
+        Private down As Integer
+        Private MDir As Integer
+        Private XDir As Integer
+        Private countdown As Integer
+        Private LCount As Integer
+        Private BCount As Integer
+        Private PosNum As Integer
         Public IsDeadValid As Boolean
-        Private run As Short
-        Public CSeconds As Short
-        Private SCount As Short
-        Public HSeconds As Short
-        Private TCount As Short
+        Private run As Integer
+        Public CSeconds As Integer
+        Private SCount As Integer
+        Public HSeconds As Integer
+        Private TCount As Integer
         Public IsMaster As Boolean
         Private RedAlertSound As DirectSoundSecondaryBuffer8
         Private BombLaunchSound As DirectSoundSecondaryBuffer8
@@ -1109,7 +1110,7 @@ Namespace th
         Private Caught5Sound As DirectSoundSecondaryBuffer8
         Private HasUnloadedSounds As Boolean
         Private IsDoingBomb As Boolean
-        Private LRange As Short
+        Private LRange As Integer
         Public HasKey As Boolean
         Public HasFoundOnce As Boolean
     End Class

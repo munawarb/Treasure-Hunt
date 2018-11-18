@@ -148,7 +148,7 @@ Namespace th
             If Not movedInLastTick Then
                 Return True
             End If
-            If If(Not IsControling, Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING), CFootstepSound.GetStatus = Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
+            If If(Not inMindOfGuard(), Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING), CFootstepSound.GetStatus = Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
                 Return True
             End If
             Return False
@@ -3957,28 +3957,28 @@ Label_060A:
             Dim ty As Integer = py
             Select Case w
                 Case WalkDirection.north
-                    If Not IsControling Then
+                    If Not inMindOfGuard() Then
                         py += 1
                     Else
                         challs(WControl).ControlChall(chall.ControlAction.north)
                     End If
                     Exit Select
                 Case WalkDirection.south
-                    If Not IsControling Then
+                    If Not inMindOfGuard() Then
                         py -= 1
                     Else
                         challs(WControl).ControlChall(chall.ControlAction.south)
                     End If
                     Exit Select
                 Case WalkDirection.east
-                    If Not IsControling Then
+                    If Not inMindOfGuard() Then
                         px += 1
                     Else
                         challs(WControl).ControlChall(chall.ControlAction.east)
                     End If
                     Exit Select
                 Case WalkDirection.west
-                    If Not IsControling Then
+                    If Not inMindOfGuard() Then
                         px -= 1
                     Else
                         challs(WControl).ControlChall(chall.ControlAction.west)
@@ -4082,6 +4082,10 @@ Label_060A:
 
         Private Sub OpenOrCloseDoor()
             If keyDownDisabled() Then
+                Exit Sub
+            End If
+            If inMindOfGuard() Then
+                challs(WControl).ControlChall(chall.ControlAction.openOrCloseDoor)
                 Exit Sub
             End If
             Dim num As Integer
@@ -5062,6 +5066,10 @@ Label_060A:
             Return THConstVars.CannotDoKeydown Or Me.IsInMenu
         End Function
 
+        Function inMindOfGuard() As Boolean
+            Return IsControling And Strings.LCase(Me.Weapons(Me.WPos)) = "control"
+        End Function
+
         Private Sub SwitchToWeapon(ByRef pos As Integer)
             If keyDownDisabled() Then
                 Exit Sub
@@ -5309,6 +5317,9 @@ Label_060A:
         End Sub
 
         Private Sub UseControler()
+            If IsFightingLast Then
+                Exit Sub
+            End If
             Dim flag As Boolean
             Dim flag2 As Boolean
             Dim flag3 As Boolean
@@ -5330,6 +5341,7 @@ Label_060A:
                     Me.AControl = ((Me.AControl - 1))
                 End If
                 Me.DisControl = 1
+                controlLaunchTracker = 0
                 THConstVars.CannotDoKeydown = True
                 flag4 = True
                 flag3 = False
@@ -5393,7 +5405,11 @@ Label_060A:
                         Me.UseReflector()
                         Exit Select
                     Case "control"
-                        Me.UseControler()
+                        If Not inMindOfGuard() Then
+                            Me.UseControler()
+                        Else
+                            challs(WControl).ControlChall(chall.ControlAction.fireWeapon)
+                        End If
                         Exit Select
                 End Select
                 fireDate = DateTime.Now

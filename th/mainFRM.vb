@@ -148,7 +148,7 @@ Namespace th
             If Not movedInLastTick Then
                 Return True
             End If
-            If If(Not inMindOfGuard(), Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING), CFootstepSound.GetStatus = Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
+            If If(Not inMindOfGuard(), Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING), Not CFootstepSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
                 Return True
             End If
             Return False
@@ -1507,6 +1507,9 @@ Label_02E2:
             If Not HasDoneInit Then
                 Exit Sub
             End If
+            If IsInPauseState Or THConstVars.CannotDoKeydown Then
+                Exit Sub
+            End If
             For i As Integer = 1 To Me.ChallAmount
                 Me.challs(i).Activate()
             Next i
@@ -2467,17 +2470,23 @@ Label_02E2:
             Return flag
         End Function
 
-        Public Sub GExplodeMissile()
+        Public Sub GExplodeMissile(Optional playAtPlayerCoords As Boolean = False)
+            Dim whereToPlayX As Integer = GX
+            Dim whereToPlayY As Integer = GY
+            If playAtPlayerCoords Then
+                whereToPlayX = px
+                whereToPlayY = py
+            End If
             Dim num2 As Integer
             Me.IsDoingGMissile = False
             If (Me.BGrid(Me.GX, Me.GY) = Me.Water) Then
                 num2 = 0
-                DXSound.smethod_1(Me.JumpInWaterSound, True, False, Me.GX, Me.GY, num2)
+                DXSound.smethod_1(Me.JumpInWaterSound, True, False, whereToPlayX, whereToPlayY, num2)
                 Me.Grid(Me.GX, Me.GY) = Me.Water
             Else
                 Dim num3 As Integer
                 num2 = 0
-                DXSound.smethod_1(Me.GExplodeSound, True, False, Me.GX, Me.GY, num2)
+                DXSound.smethod_1(Me.GExplodeSound, True, False, whereToPlayX, whereToPlayY, num2)
                 If (((Me.Grid(Me.GX, Me.GY) = Me.Wall) Or (Me.Grid(Me.GX, Me.GY) = Me.ClosedDoor)) Or (Me.Grid(Me.GX, Me.GY) = Me.LockedDoor)) Then
                     num2 = 0
                     DXSound.smethod_1(Me.DestroyWallSound, True, False, Me.GX, Me.GY, num2)
@@ -2981,7 +2990,7 @@ Label_02E2:
             If Me.IsDoingGMissile Then
                 gX = Me.GX
                 gY = Me.GY
-            ElseIf Me.IsControling Then
+            ElseIf inMindOfGuard() Then
                 gX = Me.challs(CInt(Me.WControl)).x
                 gY = Me.challs(CInt(Me.WControl)).y
             Else
@@ -3867,7 +3876,7 @@ Label_060A:
                     Exit Select
                 Case MissileAction.turnLeft
                     GFront -= 90
-                    If GFront < 0 Then GFront = 0
+                    If GFront < 0 Then GFront = 270
                     Exit Select
                 Case MissileAction.speedUp
                     GSpeed += 1
@@ -4303,6 +4312,8 @@ Label_060A:
                             If Me.IsChall(Me.px, cY) Then
                                 Me.IsLaunchingControl = False
                                 Me.IsControling = True
+                                controlTracker = 0
+                                SControl = 0
                                 cY = ((Me.py + Me.DisControl))
                                 Me.WControl = Me.GetChallID(Me.px, cY)
                                 Me.challs(CInt(Me.WControl)).GetReadyForControl()
@@ -5079,12 +5090,6 @@ Label_060A:
             Dim str As String = Strings.LCase(Me.Weapons(pos))
             If (Me.Weapons(pos) <> "") Then
                 Dim flag As Boolean
-                If (Me.Weapons(pos) <> "control") Then
-                    Me.IsControling = False
-                End If
-                If (((Me.Weapons(pos) = "control") AndAlso (Me.WControl > 0)) AndAlso Me.challs(CInt(Me.WControl)).IsBeingControled) Then
-                    Me.IsControling = True
-                End If
                 Select Case str
                     Case "gun"
                         flag = False
@@ -5827,7 +5832,7 @@ Label_060A:
         Private directSoundSecondaryBuffer8_5 As DirectSoundSecondaryBuffer8
         Private WonSound As IMediaControl
         Private directSoundSecondaryBuffer8_6 As DirectSoundSecondaryBuffer8
-        Private GExplodeSound As DirectSoundSecondaryBuffer8
+        Public GExplodeSound As DirectSoundSecondaryBuffer8
         Private DisChestSound As DirectSoundSecondaryBuffer8
         Private AccessDeniedSound As DirectSoundSecondaryBuffer8
         Private DestroyWallSound As DirectSoundSecondaryBuffer8

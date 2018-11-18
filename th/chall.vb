@@ -426,8 +426,9 @@ Namespace th
                 Dim y As Integer = 0
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
-                DXSound.PlaySound(Me.challGunSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
-                THF.F.GExplodeMissile()
+                DXSound.smethod_1(THF.F.CaughtSound, True, False, THF.F.px, THF.F.py, 0)
+                DXSound.PlaySound(Me.challGunSound, bCloseFirst, bLoopSound, performEffects, THF.F.px, THF.F.py, dVolume, waitTillDone)
+                THF.F.GExplodeMissile(True)
                 Me.A = 0
                 Me.ChallDied()
             End If

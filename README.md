@@ -1,16 +1,26 @@
 #### Introduction
-This is a first-person shooter for the blind and visually impaired I wrote in 2004 using Visual BASIC.NET. The game uses audio-only cues to represent enemies and other objects.
+This is a first-person shooter for the blind and visually impaired (called an audiogame) I wrote in 2004 using Visual BASIC.NET. The game uses audio-only cues to represent enemies and other objects. There are no graphics in this game.
 
 #### Support The Project
 This project is open source, so it'll remain free. If you'd like to show your support for it, [please consider donating!](http://paypal.me/munawarb)
 
 #### Background
-In Treasure Hunt, your goal is to stop a mad scientist from completing his experiment of cloning. For some reason, the US doesn't like the idea of people cloning creatures, so you're the lucky one sent in to stop this scientist who goes by the name of James Brutus.
+In Treasure Hunt, your goal is to stop a mad scientist from completing his experiment of cloning. For some reason, the US doesn't like the idea of people cloning creatures, so you're the lucky agent sent in to stop this scientist who goes by the name of James Brutus.
+
+You navigate his overly-complex, underground laboratory (which I guess is the basement in his house,) walking through rooms and corridors looking for his cloning machine.
+
+When I first wrote Treasure Hunt, I wanted to make weapons OSP, but decided against it because "boom" sounds are cool. You start out with a gun (I don't know what type, it's just a gun,) a sword to hack your enemy to death, and some poison-tip needles (what?)
+
+On-site weapons (this is where Treasure Hunt starts to get cool) are
+- A laser gun (so I guess you can kill your enemies with a laser?)
+- A bullet reflector (it's not a weapon, but serves as good armor. I don't have a sarcastic statement here.)
+- A remote-controlled missile that you can use to literally blast your way through the game (it's my personal favorite!) Really though, it does have its uses in the mission.
+- A Mental Capacity Breacher that you can use to mind-control a guard. I enjoy controlling them and having them kill a bunch of guards. :)
 
 This game is the prequel to Three-D Velocity, which is also available on my GitHub.
 
 #### Why is the code such a mess?
-When I had decided to open-source Three-D Velocity, there was a lot of interest around Treasure Hunt. Unfortunately, I had lost the source code to Treasure Hunt years ago (keep in mind that this is a 2004 project.) So, much to my dismay, I couldn't release something that removed the demo restrictions.
+When I had decided to open-source Three-D Velocity, there was a lot of interest around Treasure Hunt. Unfortunately, I had lost the source code to Treasure Hunt years ago (keep in mind that this is a 2004 project.) So, much to my dismay, I couldn't release something that removed the demo restrictions and call it a day.
 
 My next thought was to reverse-engineer the Treasure Hunt executable (a .NET assembly.) Maybe I could modify the IL code. It's not illegal if the original game developer does it, right? So I tried to open th.exe in ILDasm, and it failed!
 
@@ -33,6 +43,9 @@ From the time I first recovered my source code to the GitHub push, it's taken at
 So, if you poke through the source code, keep in mind that most of the code you see is directly translated from IL code.
 
 I had originally tried DotPeek to get a Visual Studio project, but the tool wasn't accessible. Fortunately, .NET Reflector is built using standard Windows GUI components so it worked well with my assistive technology, and their trial version is fully functional for a limited time.
+
+#### What's New
+The latest version is 4.44, released on 11/18/2018. If you want to check out the list of changes, you can [view the change log here](changelog.md).
 
 #### Downloading Treasure Hunt
 You can either [download the zip file of the master branch](https://github.com/munawarb/Treasure-Hunt/archive/master.zip), or if you're normal like the rest of us and prefer to use Git, just execute:

@@ -148,7 +148,7 @@ Namespace th
             If Not movedInLastTick Then
                 Return True
             End If
-            If Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
+            If If(Not IsControling, Not (Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or Footstep2Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING Or WallCrashSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING), CFootstepSound.GetStatus = Footstep1Sound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING) Then
                 Return True
             End If
             Return False
@@ -3955,19 +3955,34 @@ Label_060A:
             End If
             Dim tx As Integer = px
             Dim ty As Integer = py
-            movedInLastTick = True
             Select Case w
                 Case WalkDirection.north
-                    py += 1
+                    If Not IsControling Then
+                        py += 1
+                    Else
+                        challs(WControl).ControlChall(chall.ControlAction.north)
+                    End If
                     Exit Select
                 Case WalkDirection.south
-                    py -= 1
+                    If Not IsControling Then
+                        py -= 1
+                    Else
+                        challs(WControl).ControlChall(chall.ControlAction.south)
+                    End If
                     Exit Select
                 Case WalkDirection.east
-                    px += 1
+                    If Not IsControling Then
+                        px += 1
+                    Else
+                        challs(WControl).ControlChall(chall.ControlAction.east)
+                    End If
                     Exit Select
                 Case WalkDirection.west
-                    px -= 1
+                    If Not IsControling Then
+                        px -= 1
+                    Else
+                        challs(WControl).ControlChall(chall.ControlAction.west)
+                    End If
                     Exit Select
             End Select
             If isBlocked(px, py) Then
@@ -3981,8 +3996,8 @@ Label_060A:
                     DXSound.PlaySound(Me.Footstep2Sound, True, False, False, 0, 0, "", False)
                 End If
                 Me.whichFootstep = (whichFootstep + 1) Mod maxFootsteps
+                Determine()
             End If
-            Determine()
         End Sub
 
         Public Sub MuteSounds()

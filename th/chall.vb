@@ -10,7 +10,7 @@ Namespace th
         Public Sub Activate()
             Dim flag4 As Boolean
             If (THF.F.IsFightingLast Or (THF.F.NumAlert = 0)) Then
-                THF.F.DuelSound.Stop
+                THF.F.DuelSound.Stop()
                 THF.F.DuelSound.SetCurrentPosition(0)
                 If Not THF.F.IsFightingLast Then
                     Dim bCloseFirst As Boolean = False
@@ -25,15 +25,16 @@ Namespace th
             End If
             If (Me.A > 0) Then
                 If (Me.HasLoadedSounds AndAlso (Me.IsDoingBomb And (Me.BombLaunchSound.GetStatus <> CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING))) Then
-                    Me.ThrowBomb
+                    Me.ThrowBomb()
                 End If
-                Me.DoIfBomb
-                Me.DoIfGRMissile
-                Me.DoIfGLMissile
-                Me.DoIfClosedDoor
-                Me.DoIfPoisoned
+                Me.DoIfBomb()
+                Me.DoIfGRMissile()
+                Me.DoIfGLMissile()
+                Me.DoIfClosedDoor()
+                Me.DoIfPoisoned()
+
                 If Not Me.IsBeingControled Then
-                    Me.ShowChall
+                    Me.ShowChall()
                 End If
                 If Not Me.IsBeingControled Then
                     If ((Me.x = THF.F.px) And (Me.y = THF.F.py)) Then
@@ -42,25 +43,26 @@ Namespace th
                     If Me.ScanForChar(THF.F.DetectRange) Then
                         If (Me.TCount >= Me.HSeconds) Then
                             Me.TCount = 0
-                            Me.hit
+                            Me.hit()
                         Else
                             Me.TCount = ((Me.TCount + 1))
                         End If
                     ElseIf (Me.SCount >= Me.CSeconds) Then
                         Me.SCount = 0
                         If (Me.method_0 = 2) Then
-                            Me.hit
+                            Me.hit()
                         Else
-                            Me.Move
+                            Me.Move()
                         End If
                     Else
                         Me.SCount = ((Me.SCount + 1))
                     End If
                 End If
             Else
-                Me.ChallDied
+                Me.ChallDied()
+
                 If Not Me.HasUnloadedSounds Then
-                    Me.UnloadSounds
+                    Me.UnloadSounds()
                 End If
             End If
         End Sub
@@ -91,7 +93,7 @@ Namespace th
                             str = ""
                             flag4 = False
                             DXSound.PlaySound(THF.F.BackgroundSound, flag, flag2, flag3, num, num2, str, flag4)
-                            THF.F.DuelSound.Stop
+                            THF.F.DuelSound.Stop()
                             THF.F.DuelSound.SetCurrentPosition(0)
                         End If
                     End If
@@ -104,7 +106,7 @@ Namespace th
                     DXSound.smethod_1(Me.ChallDieSound, True, False, Me.x, Me.y, num2)
                 Else
                     THConstVars.CannotDoKeydown = True
-                    THF.F.TargetSound.Stop
+                    THF.F.TargetSound.Stop()
                     flag4 = True
                     flag3 = False
                     flag2 = False
@@ -117,7 +119,7 @@ Namespace th
                 If (Me.method_0 = 2) Then
                     THConstVars.CannotDoKeydown = True
                     Do While (Me.ChallDieSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                        Application.DoEvents
+                        Application.DoEvents()
                     Loop
                     If Not THF.F.HasKilledBrutus Then
                         THF.F.HasKilledBrutus = True
@@ -130,7 +132,7 @@ Namespace th
                         flag = False
                         DXSound.PlaySound(THF.F.KillBrutusSound, flag4, flag3, flag2, num2, num, str, flag)
                         Do While (THF.F.KillBrutusSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                            Application.DoEvents
+                            Application.DoEvents()
                         Loop
                         flag4 = True
                         flag3 = False
@@ -141,39 +143,39 @@ Namespace th
                         flag = False
                         DXSound.PlaySound(THF.F.BackToVaultSound, flag4, flag3, flag2, num2, num, str, flag)
                         Do While (THF.F.BackToVaultSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                            Application.DoEvents
+                            Application.DoEvents()
                         Loop
-                        Me.ReturnToGame
+                        Me.ReturnToGame()
                         flag4 = False
                         THF.F.DoIfDemo(flag4)
                         Return
                     End If
                     If (Not THF.F.HasKilledBrutus2 And THF.F.HasKilledBrutus) Then
                         THF.F.HasKilledBrutus2 = True
-                        Me.ReturnToGame
+                        Me.ReturnToGame()
                         Return
                     End If
                     If (Not THF.F.HasKilledMouse And THF.F.HasKilledBrutus2) Then
                         THF.F.HasKilledMouse = True
-                        THF.F.Won
+                        THF.F.Won()
                     End If
                 End If
                 Me.IsDeadValid = True
                 f = THF.F
-                f.Points = CInt(Math.Round(CDbl((f.Points + (1! + Conversion.Int(CSng((10! * VBMath.Rnd))))))))
+                f.Points = CInt(Math.Round(CDbl((f.Points + (1.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd))))))))
                 f = THF.F
                 f.ch += 1
                 If ((THF.F.ch = 250) AndAlso THF.F.IsFull) Then
                     FileSystem.FileOpen(1, (Addendums.FilePath & "\cheats.txt"), OpenMode.Output, OpenAccess.Default, OpenShare.Default, -1)
-                    FileSystem.PrintLine(1, New Object() { "----------" })
-                    FileSystem.PrintLine(1, New Object() { ("Cheats for Treasure Hunt " & THF.F.AppVersion & ".") })
-                    FileSystem.PrintLine(1, New Object() { "NOTE: All cheats must be entered by pressing P at the control panel." })
-                    FileSystem.PrintLine(1, New Object() { "Unlimited bullets: unlimit my bullets now!" })
-                    FileSystem.PrintLine(1, New Object() { "Unlimited health: unlimit my health now!" })
-                    FileSystem.PrintLine(1, New Object() { "Get all special weapons: I want all weapons!" })
-                    FileSystem.FileClose(New Integer() { 1 })
+                    FileSystem.PrintLine(1, New Object() {"----------"})
+                    FileSystem.PrintLine(1, New Object() {("Cheats for Treasure Hunt " & THF.F.AppVersion & ".")})
+                    FileSystem.PrintLine(1, New Object() {"NOTE: All cheats must be entered by pressing P at the control panel."})
+                    FileSystem.PrintLine(1, New Object() {"Unlimited bullets: unlimit my bullets now!"})
+                    FileSystem.PrintLine(1, New Object() {"Unlimited health: unlimit my health now!"})
+                    FileSystem.PrintLine(1, New Object() {"Get all special weapons: I want all weapons!"})
+                    FileSystem.FileClose(New Integer() {1})
                     THConstVars.CannotDoKeydown = True
-                    THF.F.MuteSounds
+                    THF.F.MuteSounds()
                     THF.F.CheatFileSound = DXSound.LoadSound((DXSound.SoundPath & "\cheatfile.wav"))
                     flag4 = True
                     flag3 = False
@@ -184,10 +186,10 @@ Namespace th
                     flag = False
                     DXSound.PlaySound(THF.F.CheatFileSound, flag4, flag3, flag2, num2, num, str, flag)
                     Do While (THF.F.CheatFileSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                        Application.DoEvents
+                        Application.DoEvents()
                     Loop
                     THF.F.CheatFileSound = Nothing
-                    THF.F.UnmuteSounds
+                    THF.F.UnmuteSounds()
                     THConstVars.CannotDoKeydown = False
                 End If
                 Me.IsFighting = False
@@ -203,10 +205,10 @@ Namespace th
 
         Public Sub ChallHit(ByRef subtract As Integer)
             If (Me.A > 0) Then
-                Me.LoadSounds
+                Me.LoadSounds()
                 Me.A = ((Me.A - subtract))
                 If (Me.A <= 0) Then
-                    Me.ChallDied
+                    Me.ChallDied()
                 Else
                     If (Me.challHitSound Is Nothing) Then
                         Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\challgrunt.wav"), 2.0!, 30)
@@ -217,59 +219,57 @@ Namespace th
             End If
         End Sub
 
-        Public Sub ControlChall(ByVal shift As Long, ByVal keyCode As Long)
+        Public Sub ControlChall(c As ControlAction)
             If Not Me.HasLoadedSounds Then
-                Me.LoadSounds
+                Me.LoadSounds()
             End If
             If (Me.A <= 0) Then
-                Me.ChallDied
+                Me.ChallDied()
             Else
-                If (shift <> &H10000) Then
-                    Dim flag As Boolean
-                    Dim num As Integer
-                    THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
-                    If (keyCode = &H25) Then
-                        num = ((Me.x - 1))
-                        If Not Me.GetBlock(num, Me.y) Then
-                            Me.x = ((Me.x - 1))
-                            flag = True
-                        End If
-                    End If
-                    If (keyCode = &H27) Then
-                        num = ((Me.x + 1))
-                        If Not Me.GetBlock(num, Me.y) Then
-                            Me.x = ((Me.x + 1))
-                            flag = True
-                        End If
-                    End If
-                    If (keyCode = &H26) Then
-                        num = ((Me.y + 1))
-                        If Not Me.GetBlock(Me.x, num) Then
-                            Me.y = ((Me.y + 1))
-                            flag = True
-                        End If
-                    End If
-                    If (keyCode = 40) Then
-                        num = ((Me.y - 1))
-                        If Not Me.GetBlock(Me.x, num) Then
-                            Me.y = ((Me.y - 1))
-                            flag = True
-                        End If
-                    End If
-                    If flag Then
-                        num = 0
-                        DXSound.smethod_1(THF.F.CFootstepSound, True, False, Me.x, Me.y, num)
-                        Return
+                Dim flag As Boolean
+                Dim num As Integer
+                THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
+                If c = ControlAction.west Then
+                    num = ((Me.x - 1))
+                    If Not Me.GetBlock(num, Me.y) Then
+                        Me.x = ((Me.x - 1))
+                        flag = True
                     End If
                 End If
-                If (keyCode = &H20) Then
-                    Me.hit
+                If c = ControlAction.east Then
+                    num = ((Me.x + 1))
+                    If Not Me.GetBlock(num, Me.y) Then
+                        Me.x = ((Me.x + 1))
+                        flag = True
+                    End If
                 End If
-                If (keyCode = &H52) Then
+                If c = ControlAction.north Then
+                    num = ((Me.y + 1))
+                    If Not Me.GetBlock(Me.x, num) Then
+                        Me.y = ((Me.y + 1))
+                        flag = True
+                    End If
+                End If
+                If c = ControlAction.south Then
+                    num = ((Me.y - 1))
+                    If Not Me.GetBlock(Me.x, num) Then
+                        Me.y = ((Me.y - 1))
+                        flag = True
+                    End If
+                End If
+                If flag Then
+                    num = 0
+                    DXSound.smethod_1(THF.F.CFootstepSound, True, False, Me.x, Me.y, num)
+                    Return
+                End If
+                If c = ControlAction.fireWeapon Then
+                    Me.hit()
+                End If
+                If c = ControlAction.assistPlayer Then
                     Me.x = THF.F.px
                     Me.y = THF.F.py
                 End If
-                If (keyCode = 13) Then
+                If c = ControlAction.openOrCloseDoor Then
                     Me.DoDoor(Me.x, Me.y)
                 End If
             End If
@@ -277,7 +277,7 @@ Namespace th
 
         Private Sub DetectCharForHit()
             If Me.ScanForChar(THF.F.DetectRange) Then
-                Me.hit
+                Me.hit()
             End If
         End Sub
 
@@ -285,9 +285,9 @@ Namespace th
             Dim num2 As Integer
             Dim num3 As Integer
             Select Case Me.GetDoor(((x - 1)), y)
-                Case 1!
+                Case 1.0!
                     If Not Me.LDoor Then
-                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
+                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2.0!, 7)
                     End If
                     Me.LDoor = True
                     num2 = ((x - 1))
@@ -300,9 +300,9 @@ Namespace th
                         x = ((x - 1))
                     End If
                     Exit Select
-                Case 2!
+                Case 2.0!
                     If Not Me.LCDoor Then
-                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2!, 7)
+                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2.0!, 7)
                     End If
                     Me.LCDoor = True
                     num3 = 0
@@ -310,9 +310,9 @@ Namespace th
                     Exit Select
             End Select
             Select Case Me.GetDoor(((x + 1)), y)
-                Case 1!
+                Case 1.0!
                     If Not Me.LDoor Then
-                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
+                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2.0!, 7)
                     End If
                     Me.LDoor = True
                     num3 = ((x + 1))
@@ -325,9 +325,9 @@ Namespace th
                         x = ((x + 1))
                     End If
                     Exit Select
-                Case 2!
+                Case 2.0!
                     If Not Me.LCDoor Then
-                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2!, 7)
+                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2.0!, 7)
                     End If
                     Me.LCDoor = True
                     num3 = 0
@@ -335,9 +335,9 @@ Namespace th
                     Exit Select
             End Select
             Select Case Me.GetDoor(x, ((y + 1)))
-                Case 1!
+                Case 1.0!
                     If Not Me.LDoor Then
-                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
+                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2.0!, 7)
                     End If
                     Me.LDoor = True
                     num3 = ((y + 1))
@@ -350,9 +350,9 @@ Namespace th
                         y = ((y + 1))
                     End If
                     Exit Select
-                Case 2!
+                Case 2.0!
                     If Not Me.LCDoor Then
-                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2!, 7)
+                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2.0!, 7)
                     End If
                     Me.LCDoor = True
                     num3 = 0
@@ -360,9 +360,9 @@ Namespace th
                     Exit Select
             End Select
             Select Case Me.GetDoor(x, ((y - 1)))
-                Case 1!
+                Case 1.0!
                     If Not Me.LDoor Then
-                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2!, 7)
+                        Me.OpenDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\opendoor.wav"), 2.0!, 7)
                     End If
                     Me.LDoor = True
                     num3 = ((y - 1))
@@ -375,9 +375,9 @@ Namespace th
                         y = ((y - 1))
                     End If
                     Exit Select
-                Case 2!
+                Case 2.0!
                     If Not Me.LCDoor Then
-                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2!, 7)
+                        Me.LockedDoorSound = DXSound.smethod_0((DXSound.SoundPath & "\knob.wav"), 2.0!, 7)
                     End If
                     Me.LCDoor = True
                     num3 = 0
@@ -388,10 +388,10 @@ Namespace th
 
         Private Sub DoIfBomb()
             If (THF.F.GetGrid(Me.x, Me.y) = THF.F.RBomb) Then
-                Me.LoadSounds
-                Me.A = (Math.Round(CDbl((Me.A - (1! + Conversion.Int(CSng((50! * VBMath.Rnd))))))))
+                Me.LoadSounds()
+                Me.A = (Math.Round(CDbl((Me.A - (1.0! + Conversion.Int(CSng((50.0! * VBMath.Rnd))))))))
                 If (Me.A <= 0) Then
-                    Me.ChallDied
+                    Me.ChallDied()
                     Return
                 End If
                 If (Me.challHitSound Is Nothing) Then
@@ -399,22 +399,22 @@ Namespace th
                 End If
                 Dim z As Integer = 0
                 DXSound.smethod_1(Me.challHitSound, True, False, Me.x, Me.y, z)
-                Me.ShowChall
+                Me.ShowChall()
             End If
             THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
         End Sub
 
         Private Sub DoIfClosedDoor()
             If ((THF.F.GetBGrid(Me.x, Me.y) = THF.F.ClosedDoor) Or (THF.F.GetBGrid(Me.x, Me.y) = THF.F.LockedDoor)) Then
-                Me.LoadSounds
+                Me.LoadSounds()
                 Me.A = 0
-                Me.ChallDied
+                Me.ChallDied()
                 THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
             End If
         End Sub
 
         Private Sub DoIfGLMissile()
-            If ((Not THF.F.HasKilledBrutus2 AndAlso ((Me.x = THF.F.GX) And (Me.y = THF.F.GY))) AndAlso ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!)) Then
+            If ((Not THF.F.HasKilledBrutus2 AndAlso ((Me.x = THF.F.GX) And (Me.y = THF.F.GY))) AndAlso ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!)) Then
                 Me.LoadSounds()
                 If (Me.challGunSound Is Nothing) Then
                     Me.challGunSound = DXSound.smethod_0((DXSound.SoundPath & "\challgun.wav"), 2.0!, 30)
@@ -427,16 +427,16 @@ Namespace th
                 Dim dVolume As String = ""
                 Dim waitTillDone As Boolean = False
                 DXSound.PlaySound(Me.challGunSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
-                THF.F.GExplodeMissile
+                THF.F.GExplodeMissile()
                 Me.A = 0
-                Me.ChallDied
+                Me.ChallDied()
             End If
         End Sub
 
         Private Sub DoIfGRMissile()
             If (THF.F.GetGrid(Me.x, Me.y) = THF.F.RMissile) Then
-                Me.LoadSounds
-                Dim subtract As Integer = (Math.Round(CDbl((1! + Conversion.Int(CSng((80! * VBMath.Rnd)))))))
+                Me.LoadSounds()
+                Dim subtract As Integer = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((80.0! * VBMath.Rnd)))))))
                 Me.ChallHit(subtract)
                 THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
             End If
@@ -447,7 +447,7 @@ Namespace th
                 If Me.IsMaster Then
                     Me.A = ((Me.A - 5))
                 Else
-                    Me.A = (Math.Round(CDbl((Me.A - ((1! + Conversion.Int(CSng((10! * VBMath.Rnd)))) * (1! + Conversion.Int(CSng((Me.NumOfNeedles * VBMath.Rnd)))))))))
+                    Me.A = (Math.Round(CDbl((Me.A - ((1.0! + Conversion.Int(CSng((10.0! * VBMath.Rnd)))) * (1.0! + Conversion.Int(CSng((Me.NumOfNeedles * VBMath.Rnd)))))))))
                 End If
             End If
         End Sub
@@ -470,17 +470,17 @@ Namespace th
                 Return 0!
             End If
             If (THF.F.GetBGrid(x, y) = THF.F.ClosedDoor) Then
-                Return 1!
+                Return 1.0!
             End If
             If (THF.F.GetBGrid(x, y) = THF.F.LockedDoor) Then
-                num = 2!
+                num = 2.0!
             End If
             Return num
         End Function
 
         Public Sub GetReadyForControl()
             If Not Me.HasLoadedSounds Then
-                Me.LoadSounds
+                Me.LoadSounds()
             End If
             If (Me.IsFighting And Not Me.IsMaster) Then
                 Me.IsFighting = False
@@ -514,12 +514,13 @@ Namespace th
         Private Sub hit()
             Dim num4 As Integer
             Dim str As String
-            Me.LoadSounds
+            Me.LoadSounds()
+
             If Not Me.IsBeingControled Then
                 If (Me.method_0 = 2) Then
-                    If (((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!) Or (Me.LCount > 1)) Then
+                    If (((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!) Or (Me.LCount > 1)) Then
                         Me.LCount = 1
-                        Me.MoveWhileFight
+                        Me.MoveWhileFight()
                     Else
                         Me.LCount = ((Me.LCount + 1))
                     End If
@@ -529,7 +530,7 @@ Namespace th
                         If Not Me.ScanForChar(Me.LRange) Then
                             Me.x = THF.F.px
                             Me.y = THF.F.py
-                            If ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!) Then
+                            If ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!) Then
                                 num4 = 0
                                 DXSound.smethod_1(Me.BAttemptEscape2Sound, True, False, Me.x, Me.y, num4)
                             Else
@@ -541,8 +542,8 @@ Namespace th
                     End If
                 ElseIf Not Me.IsFighting Then
                     Dim num3 As Integer
-                    If ((THConstVars.Difficulty <> 4!) And Not Me.HasFoundOnce) Then
-                        num3 = (Math.Round(CDbl((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))))))
+                    If ((THConstVars.Difficulty <> 4.0!) And Not Me.HasFoundOnce) Then
+                        num3 = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))))))
                     Else
                         num3 = 2
                     End If
@@ -564,38 +565,38 @@ Namespace th
                             num4 = 0
                             DXSound.smethod_1(THF.F.CaughtSound, True, False, Me.x, Me.y, num4)
                         End If
-                        If (Not THF.F.HasCalledMore AndAlso (((((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!) Or (THConstVars.Difficulty = 3!)) Or (THConstVars.Difficulty = 4!)) Or Me.HasFoundOnce)) Then
-                            If ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!) Then
+                        If (Not THF.F.HasCalledMore AndAlso (((((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!) Or (THConstVars.Difficulty = 3.0!)) Or (THConstVars.Difficulty = 4.0!)) Or Me.HasFoundOnce)) Then
+                            If ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!) Then
                                 str = "r17.wav"
                                 Dim rWait As Boolean = False
                                 DXSound.Radio(str, rWait)
                             End If
-                            THF.F.HowMany = (Math.Round(CDbl((2! * THConstVars.Difficulty))))
+                            THF.F.HowMany = (Math.Round(CDbl((2.0! * THConstVars.Difficulty))))
                             If Not Me.HasFoundOnce Then
-                                Select Case (1! + Conversion.Int(CSng((4! * VBMath.Rnd))))
-                                    Case 1!
-                                        Me.Caught1Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught1.wav"), 2!, 30)
+                                Select Case (1.0! + Conversion.Int(CSng((4.0! * VBMath.Rnd))))
+                                    Case 1.0!
+                                        Me.Caught1Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught1.wav"), 2.0!, 30)
                                         num4 = 0
                                         DXSound.smethod_1(Me.Caught1Sound, True, False, Me.x, Me.y, num4)
                                         Exit Select
-                                    Case 2!
-                                        Me.Caught2Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught2.wav"), 2!, 30)
+                                    Case 2.0!
+                                        Me.Caught2Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught2.wav"), 2.0!, 30)
                                         num4 = 0
                                         DXSound.smethod_1(Me.Caught2Sound, True, False, Me.x, Me.y, num4)
                                         Exit Select
-                                    Case 3!
-                                        Me.Caught3Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught3.wav"), 2!, 30)
+                                    Case 3.0!
+                                        Me.Caught3Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught3.wav"), 2.0!, 30)
                                         num4 = 0
                                         DXSound.smethod_1(Me.Caught3Sound, True, False, Me.x, Me.y, num4)
                                         Exit Select
-                                    Case 4!
-                                        Me.Caught4Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught4.wav"), 2!, 30)
+                                    Case 4.0!
+                                        Me.Caught4Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught4.wav"), 2.0!, 30)
                                         num4 = 0
                                         DXSound.smethod_1(Me.Caught4Sound, True, False, Me.x, Me.y, num4)
                                         Exit Select
                                 End Select
                             Else
-                                Me.Caught5Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught5.wav"), 2!, 30)
+                                Me.Caught5Sound = DXSound.smethod_0((DXSound.SoundPath & "\caught5.wav"), 2.0!, 30)
                                 num4 = 0
                                 DXSound.smethod_1(Me.Caught5Sound, True, False, Me.x, Me.y, num4)
                             End If
@@ -604,7 +605,7 @@ Namespace th
                             Dim i As Integer = 1
                             Do While (i <= challAmount)
                                 THF.F.GoFight(i)
-                                Application.DoEvents
+                                Application.DoEvents()
                                 i = ((i + 1))
                             Loop
                             THF.F.HowManyNum = 0
@@ -616,11 +617,11 @@ Namespace th
                 Dim num As Integer
                 THF.F.ChallNum = Me.PosNum
                 If (Not Me.IsBeingControled AndAlso Not Me.IsDoingBomb) Then
-                    If (((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 1!) Or (Me.BCount > 1)) Then
+                    If (((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 1.0!) Or (Me.BCount > 1)) Then
                         Me.BCount = 1
                         str = ""
                         DXSound.LocaleNotify(Me.x, Me.y, str)
-                        Me.ThrowBomb
+                        Me.ThrowBomb()
                         Return
                     End If
                     Me.BCount = ((Me.BCount + 1))
@@ -634,12 +635,12 @@ Namespace th
                 DXSound.smethod_1(Me.challGunSound, True, False, Me.x, Me.y, num4)
                 If (Me.method_0 = 2) Then
                     If (THF.F.HasKilledBrutus And THF.F.HasKilledBrutus2) Then
-                        num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 20!))) + 1!))))
+                        num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1.0!) * 20.0!))) + 1.0!))))
                     Else
-                        num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 150!))) + 1!))))
+                        num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1.0!) * 150.0!))) + 1.0!))))
                     End If
                 Else
-                    num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1!) * 50!))) + 1!))))
+                    num = (Math.Round(CDbl((Conversion.Int(CSng((VBMath.Rnd(1.0!) * 50.0!))) + 1.0!))))
                 End If
                 If Not Me.IsBeingControled Then
                     THF.F.ReflectHit(num, Me.PosNum)
@@ -662,13 +663,13 @@ Namespace th
                 Me.y = &HB2
             End If
             Me.PosNum = p
-            Me.ShowChall
+            Me.ShowChall()
         End Sub
 
         Public Sub LoadSounds()
             If Not Me.HasLoadedSounds Then
                 THConstVars.CannotDoKeydown = True
-                Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launch.wav"), 2!, 30)
+                Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launch.wav"), 2.0!, 30)
                 THConstVars.CannotDoKeydown = False
                 Me.HasLoadedSounds = True
                 Me.HasUnloadedSounds = False
@@ -693,12 +694,12 @@ Namespace th
             Dim num As Integer
             Dim num2 As Integer
             If Me.IsFighting Then
-                If (Me.run >= (3! * THConstVars.Difficulty)) Then
+                If (Me.run >= (3.0! * THConstVars.Difficulty)) Then
                     Dim f As mainFRM = THF.F
                     f.NumAlert -= 1
                     Me.HasFoundOnce = True
-                    If ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!) Then
-                        Me.LostSound = DXSound.smethod_0((DXSound.SoundPath & "\lost.wav"), 2!, 30)
+                    If ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!) Then
+                        Me.LostSound = DXSound.smethod_0((DXSound.SoundPath & "\lost.wav"), 2.0!, 30)
                         num = 0
                         DXSound.smethod_1(Me.LostSound, True, False, Me.x, Me.y, num)
                     End If
@@ -713,7 +714,7 @@ Namespace th
                             Dim dVolume As String = ""
                             Dim waitTillDone As Boolean = False
                             DXSound.PlaySound(THF.F.BackgroundSound, bCloseFirst, bLoopSound, performEffects, num, num2, dVolume, waitTillDone)
-                            THF.F.DuelSound.Stop
+                            THF.F.DuelSound.Stop()
                             THF.F.DuelSound.SetCurrentPosition(0)
                         End If
                         THF.F.HasCalledMore = False
@@ -726,7 +727,7 @@ Namespace th
             End If
             THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
             Me.DoDoor(Me.x, Me.y)
-            If ((Me.PosNum <> 5) And ((((THConstVars.Difficulty = 4!) Or ((THF.F.NumAlert > 0) And ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!))) Or Me.HasFoundOnce) Or ((1! + Conversion.Int(CSng((2! * VBMath.Rnd)))) = 2!))) Then
+            If ((Me.PosNum <> 5) And ((((THConstVars.Difficulty = 4.0!) Or ((THF.F.NumAlert > 0) And ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!))) Or Me.HasFoundOnce) Or ((1.0! + Conversion.Int(CSng((2.0! * VBMath.Rnd)))) = 2.0!))) Then
                 If (Me.x < (THF.F.x - 1)) Then
                     num2 = ((Me.x + 1))
                     If Me.GetBlock(num2, Me.y) Then
@@ -749,7 +750,7 @@ Namespace th
                     If (Me.XDir = 0!) Then
                         Me.x = ((Me.x - 1))
                     End If
-                    If (Me.XDir = 1!) Then
+                    If (Me.XDir = 1.0!) Then
                         Me.x = ((Me.x + 1))
                     End If
                 End If
@@ -773,19 +774,19 @@ Namespace th
             num2 = ((Me.y + 1))
             num = ((Me.y - 1))
             If Not (Me.GetBlock(Me.x, num2) And Me.GetBlock(Me.x, num)) Then
-                If (Me.MDir = 1!) Then
+                If (Me.MDir = 1.0!) Then
                     Me.y = ((Me.y - 1))
                 Else
                     Me.y = ((Me.y + 1))
                 End If
             End If
-            Me.ShowChall
+            Me.ShowChall()
         End Sub
 
         Private Sub MoveWhileFight()
             Dim num As Integer
             THF.F.ThingReplace(Me.x, Me.y, THF.F.GetBGrid(Me.x, Me.y))
-            Select Case (Math.Round(CDbl((1! + Conversion.Int(CSng((4! * VBMath.Rnd)))))))
+            Select Case (Math.Round(CDbl((1.0! + Conversion.Int(CSng((4.0! * VBMath.Rnd)))))))
                 Case 1
                     If ((THF.F.px + 1) <= THF.F.x) Then
                         num = ((THF.F.px + 1))
@@ -819,7 +820,7 @@ Namespace th
                     End If
                     Exit Select
             End Select
-            Me.ShowChall
+            Me.ShowChall()
             num = 0
             DXSound.smethod_1(Me.directSoundSecondaryBuffer8_0, True, False, Me.x, Me.y, num)
         End Sub
@@ -836,7 +837,7 @@ Namespace th
             Dim waitTillDone As Boolean = False
             DXSound.PlaySound(THF.F.TeleportSound, bCloseFirst, bLoopSound, performEffects, x, y, dVolume, waitTillDone)
             Do While (THF.F.TeleportSound.GetStatus = CONST_DSBSTATUSFLAGS.DSBSTATUS_PLAYING)
-                Application.DoEvents
+                Application.DoEvents()
             Loop
             THF.F.px = 3
             THF.F.py = 130
@@ -968,10 +969,10 @@ Namespace th
                     Me.IsDoingBomb = False
                     If (Me.method_0 = 2) Then
                         num2 = 1
-                        num = (Math.Round(CDbl((1! + Conversion.Int(CSng((200! * VBMath.Rnd)))))))
+                        num = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((200.0! * VBMath.Rnd)))))))
                     Else
                         num2 = 3
-                        num = (Math.Round(CDbl((1! + Conversion.Int(CSng((30! * VBMath.Rnd)))))))
+                        num = (Math.Round(CDbl((1.0! + Conversion.Int(CSng((30.0! * VBMath.Rnd)))))))
                     End If
                     If Me.ScanForChar(num2) Then
                         THF.F.ReflectHit(num, Me.PosNum)
@@ -982,36 +983,36 @@ Namespace th
 
         Public Sub TurnIntoMaster()
             If Not Me.HasLoadedSounds Then
-                Me.LoadSounds
+                Me.LoadSounds()
             End If
             THConstVars.CannotDoKeydown = True
             If ((THF.F.HasKilledBrutus2 And THF.F.HasKilledBrutus) And Not THF.F.HasKilledMouse) Then
-                Me.challGunSound = DXSound.smethod_0((DXSound.SoundPath & "\mm5.wav"), 2!, 30)
-                Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\mm3.wav"), 2!, 30)
+                Me.challGunSound = DXSound.smethod_0((DXSound.SoundPath & "\mm5.wav"), 2.0!, 30)
+                Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\mm3.wav"), 2.0!, 30)
                 Me.ChallDieSound = DXSound.LoadSound((DXSound.SoundPath & "\mm4.wav"))
-                Me.BAttemptEscape1Sound = DXSound.smethod_0((DXSound.SoundPath & "\mm2.wav"), 2!, 30)
-                Me.BAttemptEscape2Sound = DXSound.smethod_0((DXSound.SoundPath & "\mm2.wav"), 2!, 30)
-                Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launchlast.wav"), 2!, 30)
-                Me.BombDetSound = DXSound.smethod_0((DXSound.SoundPath & "\explodelast.wav"), 2!, 30)
-                Me.directSoundSecondaryBuffer8_0 = DXSound.smethod_0((DXSound.SoundPath & "\mm2.wav"), 2!, 30)
+                Me.BAttemptEscape1Sound = DXSound.smethod_0((DXSound.SoundPath & "\mm2.wav"), 2.0!, 30)
+                Me.BAttemptEscape2Sound = DXSound.smethod_0((DXSound.SoundPath & "\mm2.wav"), 2.0!, 30)
+                Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launchlast.wav"), 2.0!, 30)
+                Me.BombDetSound = DXSound.smethod_0((DXSound.SoundPath & "\explodelast.wav"), 2.0!, 30)
+                Me.directSoundSecondaryBuffer8_0 = DXSound.smethod_0((DXSound.SoundPath & "\mm2.wav"), 2.0!, 30)
                 Me.CSeconds = 0
                 Me.HSeconds = 0
                 Me.A = &H1D4C
                 Me.LRange = 1
             End If
             If (Not THF.F.HasKilledBrutus Or Not THF.F.HasKilledBrutus2) Then
-                Me.challGunSound = DXSound.smethod_0((DXSound.SoundPath & "\challgunl.wav"), 2!, 30)
-                Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\challgruntl.wav"), 2!, 30)
+                Me.challGunSound = DXSound.smethod_0((DXSound.SoundPath & "\challgunl.wav"), 2.0!, 30)
+                Me.challHitSound = DXSound.smethod_0((DXSound.SoundPath & "\challgruntl.wav"), 2.0!, 30)
                 If Not THF.F.HasKilledBrutus Then
                     Me.ChallDieSound = DXSound.LoadSound((DXSound.SoundPath & "\challdiel.wav"))
                 Else
                     Me.ChallDieSound = DXSound.LoadSound((DXSound.SoundPath & "\challdiel2.wav"))
                 End If
-                Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launchlast.wav"), 2!, 30)
-                Me.BombDetSound = DXSound.smethod_0((DXSound.SoundPath & "\explodelast.wav"), 2!, 30)
-                Me.BAttemptEscape1Sound = DXSound.smethod_0((DXSound.SoundPath & "\brutus1.wav"), 2!, 30)
-                Me.BAttemptEscape2Sound = DXSound.smethod_0((DXSound.SoundPath & "\brutus3.wav"), 2!, 30)
-                Me.directSoundSecondaryBuffer8_0 = DXSound.smethod_0((DXSound.SoundPath & "\brutus2.wav"), 2!, 30)
+                Me.BombLaunchSound = DXSound.smethod_0((DXSound.SoundPath & "\launchlast.wav"), 2.0!, 30)
+                Me.BombDetSound = DXSound.smethod_0((DXSound.SoundPath & "\explodelast.wav"), 2.0!, 30)
+                Me.BAttemptEscape1Sound = DXSound.smethod_0((DXSound.SoundPath & "\brutus1.wav"), 2.0!, 30)
+                Me.BAttemptEscape2Sound = DXSound.smethod_0((DXSound.SoundPath & "\brutus3.wav"), 2.0!, 30)
+                Me.directSoundSecondaryBuffer8_0 = DXSound.smethod_0((DXSound.SoundPath & "\brutus2.wav"), 2.0!, 30)
                 Me.CSeconds = 1
                 Me.HSeconds = 1
                 Me.A = &H1B58
@@ -1059,12 +1060,12 @@ Namespace th
 
         ' Fields
         Private Const Open_Door As Single = 0!
-        Private Const Closed_Door As Single = 1!
-        Private Const Locked_Door As Single = 2!
+        Private Const Closed_Door As Single = 1.0!
+        Private Const Locked_Door As Single = 2.0!
         Private Const North As Single = 0!
-        Private Const South As Single = 1!
+        Private Const South As Single = 1.0!
         Private Const West As Single = 0!
-        Private Const east As Single = 1!
+        Private Const east As Single = 1.0!
         Public NumOfNeedles As Integer
         Public IsPoisoned As Boolean
         Public IsBeingControled As Boolean
@@ -1113,6 +1114,16 @@ Namespace th
         Private LRange As Integer
         Public HasKey As Boolean
         Public HasFoundOnce As Boolean
+        ' All the actions the player can take when controlling this guard
+        Public Enum ControlAction
+            north
+            south
+            east
+            west
+            fireWeapon
+            assistPlayer
+            openOrCloseDoor
+        End Enum
     End Class
 End Namespace
 

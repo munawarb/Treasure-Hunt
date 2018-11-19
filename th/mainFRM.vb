@@ -4498,42 +4498,27 @@ Label_060A:
                 Dim nWait As Boolean = False
                 Me.NLS((DXSound.string_0 & "\nunlimited.wav"), nWait)
             Else
-                Dim bullets As Long
                 Select Case Strings.LCase(Me.Weapons(Me.WPos))
                     Case "gun"
-                        bullets = Me.Bullets
-                        Me.VoiceNumber(bullets)
-                        Me.Bullets = (bullets)
+                        Me.VoiceNumber(Bullets)
                         Exit Select
                     Case "sword"
-                        bullets = Me.Swrd
-                        Me.VoiceNumber(bullets)
-                        Me.Swrd = (bullets)
+                        Me.VoiceNumber(Swrd)
                         Exit Select
                     Case "bombs"
-                        bullets = Me.bombs
-                        Me.VoiceNumber(bullets)
-                        Me.bombs = (bullets)
+                        Me.VoiceNumber(bombs)
                         Exit Select
                     Case "laser"
-                        bullets = Me.ALaser
-                        Me.VoiceNumber(bullets)
-                        Me.ALaser = (bullets)
+                        Me.VoiceNumber(ALaser)
                         Exit Select
                     Case "gmissile"
-                        bullets = Me.short_2
-                        Me.VoiceNumber(bullets)
-                        Me.short_2 = (bullets)
+                        Me.VoiceNumber(short_2)
                         Exit Select
                     Case "reflector"
-                        bullets = Me.short_3
-                        Me.VoiceNumber(bullets)
-                        Me.short_3 = (bullets)
+                        Me.VoiceNumber(short_3)
                         Exit Select
                     Case "control"
-                        bullets = Me.AControl
-                        Me.VoiceNumber(bullets)
-                        Me.AControl = (bullets)
+                        Me.VoiceNumber(AControl)
                         Exit Select
                 End Select
             End If
@@ -5620,7 +5605,7 @@ Label_060A:
             End If
         End Sub
 
-        Private Sub VoiceNumber(ByRef number As Long)
+        Private Sub VoiceNumber(ByVal number As Long)
             Me.NNumber.Stop()
             Dim str As String = Conversion.Str(CLng(number))
             str = Strings.Mid(str, 2, (Strings.Len(str) - 1))

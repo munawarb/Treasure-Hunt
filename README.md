@@ -52,3 +52,6 @@ You can either [download the zip file of the master branch](https://github.com/m
 `git clone https://github.com/munawarb/Treasure-Hunt.git`
 
 Run the file Treasure-Hunt/Bin/Debug/th.exe to start the game. If you find any issues or have suggestions, simply post them on the issues page. And most of all, have fun! It's been quite a challenge for me to get this game working from nothing but a Reactor-protected executable, so I really hope you enjoy this classic. Oh yeah, I removed the demo restrictions. You're welcome.
+
+#### Metal Gear Solid Mod
+A user of the [Audiogames Forum](http://forum.audiogames.net) created an awesome Metal Gear Solid mod for Treasure Hunt many years ago. You can [download the mod here](https://www.agarchive.net/games/bpc/Treasure%20Hunt%20Mod%20by%20locutus.zip). Future plans for Treasure Hunt are to have it allow you to switch between the default sounds and the sounds contained in this mod, but for now you can download and extract it manually. Instructions are in the readme.txt file packaged with the zip.

@@ -51,7 +51,9 @@ The latest version is 4.45, released on 11/18/2018. If you want to check out the
 You can either [download the zip file of the master branch](https://github.com/munawarb/Treasure-Hunt/archive/master.zip), or if you're normal like the rest of us and prefer to use Git, just execute:
 `git clone https://github.com/munawarb/Treasure-Hunt.git`
 
-Run the file Treasure-Hunt/Bin/Debug/th.exe to start the game. If you find any issues or have suggestions, simply post them on the issues page. And most of all, have fun! It's been quite a challenge for me to get this game working from nothing but a Reactor-protected executable, so I really hope you enjoy this classic. Oh yeah, I removed the demo restrictions. You're welcome.
+Run the file Treasure-Hunt/Bin/Debug/th.exe to start the game. The executable of the latest version already exists in this package and you don't need to compile it.
+
+If you find any issues or have suggestions, simply post them on the issues page. And most of all, have fun! It's been quite a challenge for me to get this game working from nothing but a Reactor-protected executable, so I really hope you enjoy this classic. Oh yeah, I removed the demo restrictions. You're welcome.
 
 #### Metal Gear Solid Mod
 A user of the [Audiogames Forum](http://forum.audiogames.net) created an awesome Metal Gear Solid mod for Treasure Hunt many years ago. You can [download the mod here](https://www.agarchive.net/games/bpc/Treasure%20Hunt%20Mod%20by%20locutus.zip). Future plans for Treasure Hunt are to have it allow you to switch between the default sounds and the sounds contained in this mod, but for now you can download and extract it manually. Instructions are in the readme.txt file packaged with the zip.

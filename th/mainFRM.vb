@@ -5905,7 +5905,7 @@ Label_060A:
         Private IsFirstTimeLoading As Boolean
         Private V As Integer
         ' How many milliseconds between each fire of this weapon if the fire button is being held down.
-        Private fireRates As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer) From {{"gun", 100}, {"sword", 50}, {"bombs", 0}, {"laser", 500}, {"gmissile", 0}, {"reflector", 0}, {"control", 0}}
+        Private fireRates As Dictionary(Of String, Integer) = New Dictionary(Of String, Integer) From {{"gun", 100}, {"sword", 500}, {"bombs", 0}, {"laser", 500}, {"gmissile", 0}, {"reflector", 0}, {"control", 0}}
         Private fireDate As DateTime = DateTime.Now
         Private whichFootstep As Integer
         Private maxFootsteps As Integer = 2

@@ -1,5 +1,5 @@
 #### Introduction
-This is a first-person shooter for the blind and visually impaired (called an audiogame) I wrote in 2004 using Visual BASIC.NET. The game uses audio-only cues to represent enemies and other objects. There are no graphics in this game.
+This is a top-down shooter for the blind and visually impaired (called an audiogame) I wrote in 2004 using Visual BASIC.NET. The game uses audio-only cues to represent enemies and other objects. There are no graphics in this game.
 
 #### Support The Project
 This project is open source, so it'll remain free. If you'd like to show your support for it, [please consider donating!](http://paypal.me/munawarb)
@@ -51,7 +51,7 @@ The latest version is 4.46, released on 11/19/2018. If you want to check out the
 You can either [download the zip file of the master branch](https://github.com/munawarb/Treasure-Hunt/archive/master.zip), or if you're normal like the rest of us and prefer to use Git, just execute:
 `git clone https://github.com/munawarb/Treasure-Hunt.git`
 
-Run the file Treasure-Hunt/Bin/Debug/th.exe to start the game. The executable of the latest version already exists in this package and you don't need to compile it.
+Run the file Treasure-Hunt/bin/Debug/th.exe to start the game. The executable of the latest version already exists in this package and you don't need to compile it. Instructions for playing are in Treasure-Hunt/bin/Debug/readme.txt. The readme.txt file contains key commands as well.
 
 If you find any issues or have suggestions, simply post them on the issues page. And most of all, have fun! It's been quite a challenge for me to get this game working from nothing but a Reactor-protected executable, so I really hope you enjoy this classic. Oh yeah, I removed the demo restrictions. You're welcome.
 

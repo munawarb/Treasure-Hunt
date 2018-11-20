@@ -1,6 +1,9 @@
 #### What's New
 On this page you'll find a list of all updates made to Treasure Hunt since it's open-source push on November 11, 2018. The Master branch incorporates all of the changes noted here; therefore, to get the latest version, either pull the latest Master branch or download its zip file.
 
+##### 4.46 
+- Saving and loading games from the main menu works again ([14](../../issues/14))
+
 ##### 4.45 11/18/2018
 - If a remote-controlled missile is shot down, the player will hear the explosion no matter how far away the missile is. This will make it obvious that the missile was destroyed ([#12](../../issues/12))
 - An issue where pressing the action button while the ammunition count is being read out would fail to decrease the rounds left in the weapon has been fixed ([#13](../../issues/13))

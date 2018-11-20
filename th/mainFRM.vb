@@ -1814,13 +1814,11 @@ Label_02E2:
                         Me.NNumber.Stop()
                     End If
                 End If
-                Me.NStop = False
-                Me.FileName = ""
-                Me.NNumber.Stop()
-                Me.ClickSound.Stop()
             Finally
                 FileSystem.Reset()
-                enableGameLoop()
+                If Not IsInMenu Then ' The menu will re-enable it's own game loop
+                    enableGameLoop()
+                End If
             End Try
         End Sub
 
@@ -1918,6 +1916,7 @@ Label_02E2:
                             Me.ClickSound.Stop()
                             Me.NStop = True
                         Else
+                            Me.FileName = ""
                             Me.NNumber.Stop()
                             flag4 = False
                             Me.NLS((DXSound.string_0 & "\nnotslot.wav"), flag4)
@@ -1930,7 +1929,9 @@ Label_02E2:
                 End If
             Finally
                 FileSystem.Reset()
-                enableGameLoop()
+                If Not IsInMenu Then ' The menu will re-enable it's own game loop
+                    enableGameLoop()
+                End If
             End Try
         End Sub
 
@@ -3571,27 +3572,22 @@ Label_02E2:
                     Case 1
                         Exit Do
                     Case 2
-                        If Not Me.IsFull Then
-                            Exit Select
-                        End If
                         Me.file_load_click()
 
                         If (Me.FileName <> "") Then
                             ResumeGame = True
-                            Me.MenuSound.Stop()
-                            Me.MenuSound = Nothing
-                            THConstVars.CannotDoKeydown = False
-                            Me.IsInMenu = False
-                            Me.HasDoneInit = True
                             Exit Do
                         End If
                         Exit Select
                     Case 3
-                        If Not Me.IsFull Then
-                            GoTo Label_01A7
+                        If Not ResumeGame Then ' Don't let them save a game that hasn't even started.
+                            Exit Select
                         End If
                         Me.file_save_click()
-                        GoTo Label_060A
+                        If Me.FileName <> "" Then
+                            Exit Do
+                        End If
+                        Exit Select
                     Case 4
                         num5 = 0
                         GoTo Label_0505

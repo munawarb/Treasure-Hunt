@@ -1,7 +1,8 @@
 #### What's New
 On this page you'll find a list of all updates made to Treasure Hunt since it's open-source push on November 11, 2018. The Master branch incorporates all of the changes noted here; therefore, to get the latest version, either pull the latest Master branch or download its zip file.
 
-##### 4.46 
+##### 4.46 11/19/2018
+- The door alert sound to alert the player of a door in the area is fixed. The alert will no longer be interrupted and then resumed as the player walks away from a door ([#16](../../issues/16))
 - Saving and loading games from the main menu works again ([14](../../issues/14))
 
 ##### 4.45 11/18/2018

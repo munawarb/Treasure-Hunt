@@ -1940,7 +1940,7 @@ Label_02E2:
             Dim y As Integer
             Dim num5 As Integer
             Dim num6 As Integer
-            If Me.IsControling Then
+            If inMindOfGuard() Then
                 x = Me.challs(CInt(Me.WControl)).x
                 y = Me.challs(CInt(Me.WControl)).y
             Else
@@ -1952,10 +1952,10 @@ Label_02E2:
             Dim passageSouth As Boolean = Me.GetPassageSouth
             Dim passageNorth As Boolean = Me.GetPassageNorth
             Dim passageCurrent As Boolean = Me.GetPassageCurrent
-            Dim doorWest As Boolean = Me.GetDoorWest
-            Dim doorEast As Boolean = Me.GetDoorEast
-            Dim doorSouth As Boolean = Me.GetDoorSouth
-            Dim doorNorth As Boolean = Me.GetDoorNorth
+            Dim doorWest As Boolean = IsDoorInRange(WalkDirection.west)
+            Dim doorEast As Boolean = IsDoorInRange(WalkDirection.east)
+            Dim doorSouth As Boolean = IsDoorInRange(WalkDirection.south)
+            Dim doorNorth As Boolean = IsDoorInRange(WalkDirection.north)
             If passageCurrent Then
                 Dim cX As Integer = ((x - 1))
                 Dim num4 As Integer = ((x + 1))
@@ -2216,120 +2216,42 @@ Label_02E2:
             Return flag
         End Function
 
-        Private Function GetDoorEast() As Boolean
+        Private Function IsDoorInRange(a As WalkDirection) As Boolean
             Dim x As Integer
             Dim y As Integer
-            Dim flag As Boolean
-            If Me.IsControling Then
+            If inMindOfGuard() Then
                 x = Me.challs(CInt(Me.WControl)).x
                 y = Me.challs(CInt(Me.WControl)).y
             Else
                 x = Me.px
                 y = Me.py
             End If
-            Dim num3 As Integer = 1
-            Do While (((x + num3)) <= Me.x)
-                If Me.GetDoorBlock(x, y) Then
-                    Return flag
+            For i As Integer = 1 To 5
+                Select Case a
+                    Case WalkDirection.north
+                        y += 1
+                        Exit Select
+                    Case WalkDirection.south
+                        y -= 1
+                        Exit Select
+                    Case WalkDirection.east
+                        x += 1
+                        Exit Select
+                    Case WalkDirection.west
+                        x -= 1
+                        Exit Select
+                End Select
+                If x < 1 Or x > Me.x Or y < 1 Or y > Me.y Then
+                    Return False
                 End If
-                x = ((x + num3))
-                If Me.GetDoor(x, y) Then
+                If GetDoorBlock(x, y) Then
+                    Return False
+                End If
+                If GetDoor(x, y) Then
                     Return True
                 End If
-                Application.DoEvents()
-                num3 = ((num3 + 1))
-                If (num3 > 5) Then
-                    Return flag
-                End If
-            Loop
-            Return flag
-        End Function
-
-        Private Function GetDoorNorth() As Boolean
-            Dim x As Integer
-            Dim y As Integer
-            Dim flag As Boolean
-            If Me.IsControling Then
-                x = Me.challs(CInt(Me.WControl)).x
-                y = Me.challs(CInt(Me.WControl)).y
-            Else
-                x = Me.px
-                y = Me.py
-            End If
-            Dim num3 As Integer = 1
-            Do While (((y - num3)) >= 1)
-                If Me.GetDoorBlock(x, y) Then
-                    Return flag
-                End If
-                y = ((y - num3))
-                If Me.GetDoor(x, y) Then
-                    Return True
-                End If
-                Application.DoEvents()
-                num3 = ((num3 + 1))
-                If (num3 > 5) Then
-                    Return flag
-                End If
-            Loop
-            Return flag
-        End Function
-
-        Private Function GetDoorSouth() As Boolean
-            Dim x As Integer
-            Dim y As Integer
-            Dim flag As Boolean
-            If Me.IsControling Then
-                x = Me.challs(CInt(Me.WControl)).x
-                y = Me.challs(CInt(Me.WControl)).y
-            Else
-                x = Me.px
-                y = Me.py
-            End If
-            Dim num3 As Integer = 1
-            Do While (((y + num3)) <= Me.y)
-                If Me.GetDoorBlock(x, y) Then
-                    Return flag
-                End If
-                y = ((y + num3))
-                If Me.GetDoor(x, y) Then
-                    Return True
-                End If
-                Application.DoEvents()
-                num3 = ((num3 + 1))
-                If (num3 > 5) Then
-                    Return flag
-                End If
-            Loop
-            Return flag
-        End Function
-
-        Private Function GetDoorWest() As Boolean
-            Dim x As Integer
-            Dim y As Integer
-            Dim flag As Boolean
-            If Me.IsControling Then
-                x = Me.challs(CInt(Me.WControl)).x
-                y = Me.challs(CInt(Me.WControl)).y
-            Else
-                x = Me.px
-                y = Me.py
-            End If
-            Dim num3 As Integer = 1
-            Do While (((x - num3)) >= 1)
-                If Me.GetDoorBlock(x, y) Then
-                    Return flag
-                End If
-                x = ((x - num3))
-                If Me.GetDoor(x, y) Then
-                    Return True
-                End If
-                Application.DoEvents()
-                num3 = ((num3 + 1))
-                If (num3 > 5) Then
-                    Return flag
-                End If
-            Loop
-            Return flag
+            Next i
+            Return False
         End Function
 
         Public Function GetGrid(ByRef x As Integer, ByRef y As Integer) As Integer
@@ -2879,7 +2801,7 @@ Label_02E2:
             Me.WControl = 0
         End Sub
 
-        Public Function IsChall(ByRef x As Integer, ByRef y As Integer) As Boolean
+        Public Function IsChall(ByVal x As Integer, ByVal y As Integer) As Boolean
             Dim flag As Boolean
             Dim num As Integer = Me.Grid(x, y)
             If ((((num = Me.challenger) Or (num = Me.Mouse)) Or (num = Me.JamesBrutus)) Or (num = Me.ChallWithKey)) Then
@@ -5126,7 +5048,7 @@ Label_060A:
 
         Private Sub TargetBeep()
             Dim flag As Boolean
-            If Me.IsControling Then
+            If inMindOfGuard() Then
                 flag = Me.IsChall(Me.challs(CInt(Me.WControl)).x, Me.challs(CInt(Me.WControl)).y)
             Else
                 flag = Me.IsChall(Me.px, Me.py)
@@ -5145,7 +5067,7 @@ Label_060A:
             End If
         End Sub
 
-        Public Sub ThingReplace(ByRef x As Integer, ByRef y As Integer, ByRef thing As Integer)
+        Public Sub ThingReplace(ByRef x As Integer, ByRef y As Integer, ByVal thing As Integer)
             Me.Grid(x, y) = thing
         End Sub
 

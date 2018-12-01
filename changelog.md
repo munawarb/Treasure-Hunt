@@ -3,7 +3,8 @@ On this page you'll find a list of all updates made to Treasure Hunt since it's 
 
 ##### 4.47 11/30/2018
 - The footstep sounds now have a higher volume and are no longer as quiet as they used to be ([#19](../../issues/19))
-
+- When the player presses ENTER on a sound in the "Learn Game Sounds" menu, their last position is retained and the game no longer returns to the top of the sounds menu ([#20](../../issues/20))
+- The "Registration" menu option has been removed since the game no longer runs in demo mode ([#18](../../issues/18))
 
 ##### 4.46 11/19/2018
 - The door alert sound to alert the player of a door in the area is fixed. The alert will no longer be interrupted and then resumed as the player walks away from a door ([#16](../../issues/16))

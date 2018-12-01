@@ -3454,6 +3454,127 @@ Label_02E2:
             End Try
         End Sub
 
+        Private Sub learnGameSounds()
+            Dim dVolume As String = ""
+            Dim str3 As String = "menu_b1.wav|menu_b2.wav|menu_b3.wav|menu_b4.wav|menu_b5.wav|menu_b6.wav|menu_b7.wav|menu_b8.wav|menu_b9.wav|menu_b10.wav|menu_b11.wav|menu_b12.wav|menu_b13.wav|menu_return.wav "
+            Dim choice As Integer = 1
+            Dim waitTillDone As Boolean = False
+            Dim performEffects As Boolean = False
+            Dim bLoopSound As Boolean = False
+            Dim y As Integer = 0
+            Dim x As Integer = 0
+            Dim bCloseFirst As Boolean = False
+            While True
+                choice = Me.GenerateMenu(dVolume, str3, choice)
+                Select Case choice
+                    Case 1
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = False
+                        DXSound.PlaySound(Me.PickUpHealthSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 2
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = False
+                        DXSound.PlaySound(Me.TargetSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 3
+                        y = 0
+                        DXSound.smethod_1(Me.directSoundSecondaryBuffer8_3, True, False, Me.px, Me.py, y)
+                        Exit Select
+                    Case 4
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = False
+                        DXSound.PlaySound(Me.directSoundSecondaryBuffer8_4, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 5
+                        y = 0
+                        DXSound.smethod_1(Me.DoorSound(1), True, False, Me.px, Me.py, y)
+                        Exit Select
+                    Case 6
+                        y = 0
+                        DXSound.smethod_1(Me.PassageSound(1), True, False, Me.px, Me.py, y)
+                        Exit Select
+                    Case 7
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = True
+                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\launch.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 8
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = True
+                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\challgun.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 9
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = True
+                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\caught.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 10
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = True
+                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\redalert.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 11
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = False
+                        DXSound.PlaySound(Me.GetSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 12
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = False
+                        DXSound.PlaySound(Me.AccessDeniedSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 13
+                        waitTillDone = True
+                        performEffects = False
+                        bLoopSound = False
+                        y = 0
+                        x = 0
+                        bCloseFirst = False
+                        DXSound.PlaySound(Me.EmptySound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
+                        Exit Select
+                    Case 14
+                        Exit Sub
+                End Select
+            End While
+        End Sub
+
         Private Sub MainMenu(ByRef Optional ResumeGame As Boolean = False)
             System.Diagnostics.Debug.WriteLine("In mainmenu")
             disableGameLoop()
@@ -3482,7 +3603,7 @@ Label_02E2:
             Else
                 str2 = "menu_a1.wav"
             End If
-            str2 = (str2 & "|menu_a2.wav|menu_a6.wav|menu_a3.wav|menu_a5.wav|menu_a4.wav")
+            str2 = (str2 & "|menu_a2.wav|menu_a6.wav|menu_a3.wav|menu_a4.wav")
             Do While (num4 <> 1)
                 Dim num5 As Integer
                 Dim num6 As Integer
@@ -3511,205 +3632,12 @@ Label_02E2:
                         End If
                         Exit Select
                     Case 4
-                        num5 = 0
-                        GoTo Label_0505
+                        learnGameSounds()
+                        Exit Select
                     Case 5
-                        num7 = 0
-                        GoTo Label_05FA
-                    Case 6
                         Me.ExitGame()
-                        GoTo Label_060A
-                    Case Else
-                        GoTo Label_060A
-                End Select
-                waitTillDone = True
-                performEffects = False
-                bLoopSound = False
-                y = 0
-                x = 0
-                dVolume = ""
-                bCloseFirst = False
-                DXSound.PlaySound(Me.AccessDeniedSound, waitTillDone, performEffects, bLoopSound, y, x, dVolume, bCloseFirst)
-                GoTo Label_060A
-Label_01A7:
-                waitTillDone = True
-                performEffects = False
-                bLoopSound = False
-                y = 0
-                x = 0
-                dVolume = ""
-                bCloseFirst = False
-                DXSound.PlaySound(Me.AccessDeniedSound, waitTillDone, performEffects, bLoopSound, y, x, dVolume, bCloseFirst)
-                GoTo Label_060A
-Label_01E2:
-                dVolume = ""
-                str3 = "menu_b1.wav|menu_b2.wav|menu_b3.wav|menu_b4.wav|menu_b5.wav|menu_b6.wav|menu_b7.wav|menu_b8.wav|menu_b9.wav|menu_b10.wav|menu_b11.wav|menu_b12.wav|menu_b13.wav|menu_return.wav "
-                y = ((num6 - 1))
-                Select Case Me.GenerateMenu(dVolume, str3, y)
-                    Case 1
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = False
-                        DXSound.PlaySound(Me.PickUpHealthSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 2
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = False
-                        DXSound.PlaySound(Me.TargetSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 3
-                        y = 0
-                        DXSound.smethod_1(Me.directSoundSecondaryBuffer8_3, True, False, Me.px, Me.py, y)
-                        Exit Select
-                    Case 4
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = False
-                        DXSound.PlaySound(Me.directSoundSecondaryBuffer8_4, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 5
-                        y = 0
-                        DXSound.smethod_1(Me.DoorSound(1), True, False, Me.px, Me.py, y)
-                        Exit Select
-                    Case 6
-                        y = 0
-                        DXSound.smethod_1(Me.PassageSound(1), True, False, Me.px, Me.py, y)
-                        Exit Select
-                    Case 7
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = True
-                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\launch.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 8
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = True
-                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\challgun.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 9
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = True
-                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\caught.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 10
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = True
-                        DXSound.PlaySound(DXSound.LoadSound((DXSound.SoundPath & "\redalert.wav")), waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 11
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = False
-                        DXSound.PlaySound(Me.GetSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 12
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = False
-                        DXSound.PlaySound(Me.AccessDeniedSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 13
-                        waitTillDone = True
-                        performEffects = False
-                        bLoopSound = False
-                        y = 0
-                        x = 0
-                        str3 = ""
-                        bCloseFirst = False
-                        DXSound.PlaySound(Me.EmptySound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                        Exit Select
-                    Case 14
-                        num5 = 1
                         Exit Select
                 End Select
-                Application.DoEvents()
-Label_0505:
-                If (num5 <> 1) Then
-                    GoTo Label_01E2
-                End If
-                GoTo Label_060A
-Label_051A:
-                str3 = "menu.wav"
-                dVolume = "menu_c1.wav|menu_c2.wav|menu_c3.wav|menu_c4.wav|menu_return.wav"
-                y = ((num8 - 1))
-                Select Case Me.GenerateMenu(str3, dVolume, y)
-                    Case 1
-                        Exit Select
-                    Case 2
-                        Exit Select
-                    Case 3
-                        Exit Select
-                    Case 4
-                        Exit Select
-                    Case Else
-                        Exit Select
-                End Select
-                waitTillDone = True
-                performEffects = False
-                bLoopSound = False
-                y = 0
-                x = 0
-                str3 = ""
-                bCloseFirst = False
-                DXSound.PlaySound(Me.AccessDeniedSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-                GoTo Label_05F5
-Label_05BA:
-                waitTillDone = True
-                performEffects = False
-                bLoopSound = False
-                y = 0
-                x = 0
-                str3 = ""
-                bCloseFirst = False
-                DXSound.PlaySound(Me.AccessDeniedSound, waitTillDone, performEffects, bLoopSound, y, x, str3, bCloseFirst)
-Label_05F5:
-                Application.DoEvents()
-Label_05FA:
-                If (num7 <> 1) Then
-                    GoTo Label_051A
-                End If
-Label_060A:
-                Application.DoEvents()
             Loop
             If Not ResumeGame Then
                 Dim num9 As Single

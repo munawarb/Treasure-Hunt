@@ -1,6 +1,10 @@
 #### What's New
 On this page you'll find a list of all updates made to Treasure Hunt since it's open-source push on November 11, 2018. The Master branch incorporates all of the changes noted here; therefore, to get the latest version, either pull the latest Master branch or download its zip file.
 
+##### 4.47 11/30/2018
+- The footstep sounds now have a higher volume and are no longer as quiet as they used to be ([#19](../../issues/19))
+
+
 ##### 4.46 11/19/2018
 - The door alert sound to alert the player of a door in the area is fixed. The alert will no longer be interrupted and then resumed as the player walks away from a door ([#16](../../issues/16))
 - The sword no longer swings so rapidly ([#15](../../issues/15))

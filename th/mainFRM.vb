@@ -1598,7 +1598,7 @@ Label_02E2:
                     Me.NLS((DXSound.string_0 & "\nloadgame1.wav"), flag4)
                     System.Diagnostics.Debug.WriteLine("in load Passed nls")
                     Me.FileName = InputBox("Slot (1-3):", "Load Game", "", -1, -1)
-                    System.Diagnostics.Debug.WriteLine("load: inputbox returned")
+                    System.Diagnostics.Debug.WriteLine("load: inputbox returned" & Me.FileName)
                     If (Me.FileName <> "") Then
                         If ((Conversion.Val(Me.FileName) > 0) And (Conversion.Val(Me.FileName) < 4)) Then
                             Dim num5 As Integer
@@ -2089,7 +2089,6 @@ Label_02E2:
 
         Private Function GenerateMenu(ByRef intro As String, ByRef menu_Renamed As String, ByRef Optional StartPos As Integer = 0) As Integer
             Dim hasSaid As Boolean = False
-            Me.IsInMenu = True
             Dim array As String() = Strings.Split(menu_Renamed, "|", -1, CompareMethod.Binary)
             Dim num2 As Integer = (Information.UBound(array, 1))
             Me.NStop = False
@@ -2126,7 +2125,6 @@ Label_02E2:
                 End If
                 Application.DoEvents()
             Loop
-            Me.IsInMenu = False
             Me.NStop = True
             Return ((Me.MenuPos + 1))
         End Function
@@ -3457,7 +3455,7 @@ Label_02E2:
         Private Sub learnGameSounds()
             Dim dVolume As String = ""
             Dim str3 As String = "menu_b1.wav|menu_b2.wav|menu_b3.wav|menu_b4.wav|menu_b5.wav|menu_b6.wav|menu_b7.wav|menu_b8.wav|menu_b9.wav|menu_b10.wav|menu_b11.wav|menu_b12.wav|menu_b13.wav|menu_return.wav "
-            Dim choice As Integer = 1
+            Dim choice As Integer = 0
             Dim waitTillDone As Boolean = False
             Dim performEffects As Boolean = False
             Dim bLoopSound As Boolean = False
@@ -3465,7 +3463,7 @@ Label_02E2:
             Dim x As Integer = 0
             Dim bCloseFirst As Boolean = False
             While True
-                choice = Me.GenerateMenu(dVolume, str3, choice)
+                choice = Me.GenerateMenu(dVolume, str3, choice - 1)
                 Select Case choice
                     Case 1
                         waitTillDone = True
@@ -3578,6 +3576,7 @@ Label_02E2:
         Private Sub MainMenu(ByRef Optional ResumeGame As Boolean = False)
             System.Diagnostics.Debug.WriteLine("In mainmenu")
             disableGameLoop()
+            IsInMenu = True
             Dim str2 As String
             Dim num4 As Integer
             Dim str3 As String
@@ -3604,7 +3603,7 @@ Label_02E2:
                 str2 = "menu_a1.wav"
             End If
             str2 = (str2 & "|menu_a2.wav|menu_a6.wav|menu_a3.wav|menu_a4.wav")
-            Do While (num4 <> 1)
+            Do While True
                 Dim num5 As Integer
                 Dim num6 As Integer
                 Dim num7 As Integer
@@ -3677,6 +3676,7 @@ Label_02E2:
             If Me.IsFightingLast Then
                 Me.FinalDuelSound.SetVolume(Me.V)
             End If
+            IsInMenu = False
             enableGameLoop()
         End Sub
 

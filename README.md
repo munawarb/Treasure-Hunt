@@ -45,7 +45,7 @@ So, if you poke through the source code, keep in mind that most of the code you 
 I had originally tried DotPeek to get a Visual Studio project, but the tool wasn't accessible. Fortunately, .NET Reflector is built using standard Windows GUI components so it worked well with my assistive technology, and their trial version is fully functional for a limited time.
 
 #### What's New
-The latest version is 4.46, released on 11/19/2018. If you want to check out the list of changes, you can [view the change log here](changelog.md).
+The latest version is 4.47, released on 11/30/2018. If you want to check out the list of changes, you can [view the change log here](changelog.md).
 
 #### Downloading Treasure Hunt
 You can either [download the zip file of the master branch](https://github.com/munawarb/Treasure-Hunt/archive/master.zip), or if you're normal like the rest of us and prefer to use Git, just execute:
